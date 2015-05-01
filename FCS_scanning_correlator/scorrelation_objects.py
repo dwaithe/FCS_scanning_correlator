@@ -1,7 +1,7 @@
 import sys, os
 import numpy as np
 import cPickle as pickle
-from correlation_methods import *
+from scorrelation_methods import *
 import csv
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
 from fitting_methods import equation_

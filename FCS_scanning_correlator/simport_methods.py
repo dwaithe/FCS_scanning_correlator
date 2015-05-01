@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 import tifffile as tif_fn
 
-from correlation_objects import scanObject
+from scorrelation_objects import scanObject
 def Import_tiff(filename,par_obj,win_obj):
     tif = tif_fn.TiffFile(str(filename))
     name = str(filename).split('/')[-1]

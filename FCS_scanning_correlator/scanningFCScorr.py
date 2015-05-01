@@ -16,10 +16,10 @@ import matplotlib.gridspec as gridspec
 
 import matplotlib.cm as cm
 
-sys.path.append('../FCS_point_correlator')
-from import_methods import Import_lif, Import_tiff, Import_lsm
-from plugin_methods import bleachCorr, ImpAdvWin
-from correlation_objects import corrObject
+sys.path.append('../../FCS_point/FCS_point_correlator')
+from simport_methods import Import_lif, Import_tiff, Import_lsm
+from splugin_methods import bleachCorr, ImpAdvWin
+from scorrelation_objects import corrObject
 
 from fitting_gui import Form
 import os.path

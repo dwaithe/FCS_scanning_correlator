@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 import numpy as np
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
 from matplotlib.patches import Rectangle
-from correlation_objects import scanObject
+from scorrelation_objects import scanObject
 class ImpAdvWin(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj,obj_id_num):
         QtGui.QMainWindow.__init__(self)
