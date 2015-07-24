@@ -178,6 +178,7 @@ class Window(QtGui.QWidget):
 
         self.ex = FileDialog(self, par_obj, fit_obj)
         self.folderOutput = folderOutput(self)
+        self.folderOutput.type = 'output_corr_dir'
         # Just some button connected to `plot` method
         self.openFile = QtGui.QPushButton('Open File')
         self.openFile.clicked.connect(self.ex.showDialog)
@@ -209,7 +210,7 @@ class Window(QtGui.QWidget):
         self.mEdit.type ='m'
         self.DeltatText = QtGui.QLabel('Deltat (ms):')
         self.DeltatEdit = QtGui.QLabel()
-        self.DeltatEdit.parObj = self
+        self.DeltatEdit.par_obj = self
         self.DeltatEdit.type = 'deltat'
         
         
@@ -281,7 +282,7 @@ class Window(QtGui.QWidget):
         self.spatialBinEdit = QtGui.QSpinBox()
         self.spatialBinEdit.setRange(1,51);
         self.spatialBinEdit.setSingleStep(2)
-        self.spatialBinEdit.parObj = self
+        self.spatialBinEdit.par_obj = self
         self.spatialBinEdit.resize(40,50)
         
         self.left_panel_top_btns.addWidget(prevPane)
@@ -424,7 +425,7 @@ class Window(QtGui.QWidget):
         
         
         
-        for objId in self.objectRef:
+        for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
                 height = objId.AutoCorr_carpetCH0.shape[1]
                 width = objId.AutoCorr_carpetCH0.shape[0]
@@ -837,7 +838,7 @@ class ClickMovie():
 
         def draw_line(self):
                 self.win_obj.plt1.cla()
-                #self.parObj.plt1.set_autoscale_on(True)
+                #self.par_obj.plt1.set_autoscale_on(True)
                 
                 
                 self.win_obj.plt1.set_xscale('log');
@@ -869,13 +870,13 @@ class lineEditSp(QtGui.QLineEdit):
     def __init__(self,text,win_obj,par_obj):
         QtGui.QLineEdit.__init__(self,text)
         self.editingFinished.connect(self.__handleEditingFinished)
-        self.parObj = par_obj
+        self.par_obj = par_obj
         self.win_obj = win_obj
         self.obj = []
         self.type = []
         self.TGid =[]
     def __handleEditingFinished(self):
-        self.parObj.m = float(self.text())
+        self.par_obj.m = float(self.text())
         print 'activated go go.'
         if(self.type == 'tgt0' ):
             
@@ -912,7 +913,7 @@ class pushButtonSp(QtGui.QPushButton):
         self.xmin = []
         self.xmax =[]
         self.TGid = []
-        self.parObj = []
+        self.par_obj = []
         self.win_obj = win_obj
         self.par_obj = par_obj
     def __activated(self):
@@ -1007,8 +1008,9 @@ class scanFileList():
             
             #Adds save button to the file.
             sb = pushButtonSp2('save file')
-            sb.parObj = self.par_obj
-            sb.obj = self.par_obj.objectRef[i]
+            sb.par_obj = self.par_obj
+            sb.win_obj = self.win_obj
+            sb.objId = self.par_obj.objectRef[i]
             self.win_obj.modelTab2.setCellWidget(i, 4, sb)
 
             b = baseList()
@@ -1016,33 +1018,33 @@ class scanFileList():
             self.win_obj.modelTab2.setCellWidget(i, 5, b)
             
             
-            #self.parObj.label.objCheck.append(cb)
+            #self.par_obj.label.objCheck.append(cb)
             j = i+1
         
         
 
 class GateScanFileList():
     #Generates scroll box for time-gating data.
-    def __init__(self, win_obj, parObj):
+    def __init__(self, win_obj, par_obj):
         self.TGnumOfRgn = 0
         self.x0 =[]
         self.x1 =[]
         self.facecolor =[]
         self.TGid = []
         self.rect =[]
-        self.parObj = parObj
+        self.par_obj = par_obj
         self.win_obj = win_obj
 
     def generateList(self):
-        for i in range(0, self.parObj.TGnumOfRgn):
+        for i in range(0, self.par_obj.TGnumOfRgn):
                 self.win_obj.modelTab.setRowCount(i+1)
                 
                 txt2 = QtGui.QLabel()
-                txt2.setText('<HTML><p style="color:'+str(self.parObj.colors[i])+';margin-top:0">t0:</p></HTML>')
+                txt2.setText('<HTML><p style="color:'+str(self.par_obj.colors[i])+';margin-top:0">t0:</p></HTML>')
                 self.win_obj.modelTab.setCellWidget(i, 0, txt2)
 
 
-                lb1 = lineEditSp(str(self.x0[i]),self,self.parObj)
+                lb1 = lineEditSp(str(self.x0[i]),self,self.par_obj)
                 lb1.setMaxLength(5)
                 lb1.setFixedWidth(40)
                 lb1.setText(str(self.x0[i]))
@@ -1051,12 +1053,12 @@ class GateScanFileList():
                 self.win_obj.modelTab.setCellWidget(i, 1, lb1)
 
                 txt3 = QtGui.QLabel()
-                txt3.setText('<HTML><p style="color:'+str(self.parObj.colors[i])+';margin-top:0">t1:</p></HTML>')
+                txt3.setText('<HTML><p style="color:'+str(self.par_obj.colors[i])+';margin-top:0">t1:</p></HTML>')
                 self.win_obj.modelTab.setCellWidget(i, 2, txt3)
                 
                 
 
-                lb2 = lineEditSp(str(self.x1[i]),self,self.parObj)
+                lb2 = lineEditSp(str(self.x1[i]),self,self.par_obj)
                 
                 lb2.setMaxLength(5)
                 lb2.setFixedWidth(40)
@@ -1070,14 +1072,14 @@ class GateScanFileList():
                 #photoCrr_btn = FCSfn.pushButtonSp(self)
                 #Populates comboBox with datafiles to which to apply the time-gating.
                 #photoCrr_btn.TGid = i
-                #photoCrr_btn.parObj =self.parObj
+                #photoCrr_btn.par_obj =self.par_obj
                 #photoCrr_btn.xmin =self.x0[i]
                 #photoCrr_btn.xmax = self.x1[i]
                 #photoCrr_btn.type = 'photoCrr'
 
 
-                #self.parObj.modelTab.setCellWidget(i, 4, photoCrr_btn)
-                cbtn = pushButtonSp('Export to fit',self.win_obj,self.parObj)
+                #self.par_obj.modelTab.setCellWidget(i, 4, photoCrr_btn)
+                cbtn = pushButtonSp('Export to fit',self.win_obj,self.par_obj)
             
                 cbtn.TGid = i
                 cbtn.xmin = int(self.x0[i])
@@ -1089,28 +1091,30 @@ class pushButtonSp2(QtGui.QPushButton):
     def __init__(self, parent=None):
         QtGui.QPushButton.__init__(self,parent)
         self.clicked.connect(self.__clicked)
-        self.obj =[];
+        self.objId =[];
+        self.par_obj = []
+        self.win_obj = []
     def __clicked(self):
-        print self.obj.autotime
-        f = open(main.folderOutput.filepath+'/'+self.obj.name+'_CH1_Auto_Corr.csv', 'w')
+        
+        f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH1_Auto_Corr.csv', 'w')
         f.write('# Time (ns)\tCH1 Auto-Correlation\n')
-        for x in range(0,self.obj.autotime.shape[0]):
-            f.write(str(int(self.obj.autotime[x][0]))+','+str(self.obj.autoNorm[x,0,0])+ '\n')
+        for x in range(0,self.objId.autotime.shape[0]):
+            f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,0,0])+ '\n')
 
-        f = open(main.folderOutput.filepath+'/'+self.obj.name+'_CH2_Auto_Corr.csv', 'w')
+        f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH2_Auto_Corr.csv', 'w')
         f.write('# Time (ns)\tCH2 Auto-Correlation\n')
-        for x in range(0,self.obj.autotime.shape[0]):
-            f.write(str(int(self.obj.autotime[x][0]))+','+str(self.obj.autoNorm[x,1,1])+ '\n')
+        for x in range(0,self.objId.autotime.shape[0]):
+            f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,1,1])+ '\n')
         
-        f = open(main.folderOutput.filepath+'/'+self.obj.name+'_CH1_Cross_Corr.csv', 'w')
+        f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH1_Cross_Corr.csv', 'w')
         f.write('# Time (ns)\tCH1 Cross-Correlation\n')
-        for x in range(0,self.obj.autotime.shape[0]):
-            f.write(str(int(self.obj.autotime[x][0]))+','+str(self.obj.autoNorm[x,0,1])+ '\n')
+        for x in range(0,self.objId.autotime.shape[0]):
+            f.write(str(int(self.obj.autotime[x][0]))+','+str(self.objId.autoNorm[x,0,1])+ '\n')
         
-        f = open(main.folderOutput.filepath+'/'+self.obj.name+'_CH2_Cross_Corr.csv', 'w')
+        f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH2_Cross_Corr.csv', 'w')
         f.write('# Time (ns)\tCH2 Cross-Correlation\n')
-        for x in range(0,self.obj.autotime.shape[0]):
-            f.write(str(int(self.obj.autotime[x][0]))+','+str(self.obj.autoNorm[x,1,0])+ '\n')
+        for x in range(0,self.objId.autotime.shape[0]):
+            f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,1,0])+ '\n')
         print 'file Saved'
 class folderOutput(QtGui.QMainWindow):
     
@@ -1206,7 +1210,8 @@ class ParameterClass():
         self.start_pt = 0
         self.end_pt = 0
         self.interval_pt = 1
-        self.colors = ['blue','green','red','cyan','magenta','yellow','black']  
+        self.colors = ['blue','green','red','cyan','magenta','yellow','black']
+        self.gui  ='show'
     
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
