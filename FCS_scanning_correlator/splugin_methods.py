@@ -9,6 +9,146 @@ import numpy as np
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
 from matplotlib.patches import Rectangle
 from scorrelation_objects import scanObject
+class bleachCorr2(QtGui.QMainWindow):
+    def __init__(self,par_obj,win_obj):
+        QtGui.QMainWindow.__init__(self)
+        #self.fileArray = fileArray
+        #self.create_main_frame()
+        self.par_obj = par_obj
+        self.win_obj = win_obj
+        self.corrFn = False
+        
+
+    def create_main_frame(self):
+        for objId in self.par_obj.objectRef:
+            if(objId.cb.isChecked() == True):
+                self.objId=objId
+                break;
+        self.corrFn = False      
+        #self.trace_idx = self.par_obj.clickedS1
+
+        page = QtGui.QWidget()        
+        hbox_main = QtGui.QHBoxLayout()
+        vbox1 = QtGui.QVBoxLayout()
+        vbox0 = QtGui.QVBoxLayout()
+        self.setWindowTitle("Bleach correction")
+        self.figure1 = plt.figure(figsize=(10,4))
+        
+        # this is the Canvas Widget that displays the `figure`
+        # it takes the `figure` instance as a parameter to __init__
+        #self.canvas1 = FigureCanvas(self.figure1)
+        
+        self.figure1.patch.set_facecolor('white')
+        self.canvas1 = FigureCanvas(self.figure1)
+
+        if objId.numOfCH ==1:
+            self.plt1 = self.figure1.add_subplot(1,1,1)
+
+        elif objId.numOfCH == 2:
+            self.plt1 = self.figure1.add_subplot(1,2,1)
+            self.plt2 = self.figure1.add_subplot(1,2,2)
+        
+        
+        
+        self.export_trace_btn = QtGui.QPushButton('Apply to Data')
+        self.vbox2 = QtGui.QHBoxLayout()
+        self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
+        #hbox1.addLayout(vbox1)
+        self.export_trace_btn.clicked.connect(self.outputData)
+        #self.apply_corr_btn.clicked.connect(self.plot_corrFn)
+        #vbox0.addLayout(hbox1)
+        hbox_main.addLayout(vbox0)
+        hbox_main.addLayout(vbox1)
+        
+        
+        
+        vbox0.addLayout(self.vbox2)
+        vbox0.addWidget(self.apply_corr_btn)
+        vbox0.addWidget(self.export_trace_btn)
+        vbox0.addStretch();
+        vbox1.addWidget(self.canvas1)
+        
+        page.setLayout(hbox_main)
+        self.setCentralWidget(page)
+        self.show()
+        self.plotData()
+        #self.
+        #self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
+    def export_traceFn(self):
+        corrObj= corrObject(self.objId.filepath,form);
+        form.objIdArr.append(corrObj.objId)
+        corrObj.name = self.objId.name+'_CH0_Auto_Corr'
+        corrObj.updateFitList()
+        corrObj.autoNorm = np.array(self.corltd_corr[:,1]).reshape(-1)
+        corrObj.autotime = np.array(self.corltd_corr[:,0]).reshape(-1)
+        corrObj.param = form.def_param
+        form.fill_series_list(form.objIdArr)
+    def outputData(self):
+        start_x = 0
+        
+
+        num_of_lines  = 10000#self.CH0.shape[0]
+        if num_of_lines%2 == 1:
+            num_of_lines -= 1
+
+        k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
+        lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+        AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1],1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
+        if self.objId.numOfCH==2:
+            AC_all_CH1  = np.zeros((AC_all_CH0.shape))
+            CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+        
+        c = 0
+        for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
+            #Function which calculates the correlation carpet.
+            if self.objId.numOfCH==1:
+                self.objId.corrArrScale_pc, AC_carCH0, ap, aq = self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
+                AC_all_CH0[:,:,c] = AC_carCH0
+
+
+            elif self.objId.numOfCH==2:
+                self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
+                AC_all_CH0[:,:,c]  = AC_carCH0
+                AC_all_CH1[:,:,c]  = AC_carCH1
+                CC_all_CH01[:,:,c] = CC_carCH01
+            
+            c = c + 1
+
+        print'theloci', AC_all_CH0.shape
+        self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
+        if self.objId.numOfCH == 2:
+            self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
+            self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+
+        
+        self.objId.bleachCorr2 = True
+        self.win_obj.bleachCorr2_checked = True
+        self.win_obj.bleachCorr2fn()
+        self.win_obj.bleachCorr2_on_off.setText('ON')
+        self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
+
+        
+
+    def plotData(self):
+        self.plt1.cla()
+        
+        #Calculate the total integral
+        totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
+        #Plot 1 in 10 pixels from the Gasussian.
+        self.plt1.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],'blue')
+        #If plotting with correction:
+        
+
+        self.canvas1.draw()
+
+    
+
+
+
+
+
+
+
 class ImpAdvWin(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj,obj_id_num):
         QtGui.QMainWindow.__init__(self)
@@ -161,22 +301,22 @@ class ImpAdvWin(QtGui.QMainWindow):
 
 
 class bleachCorr(QtGui.QMainWindow):
-    def __init__(self,parObj,win_obj):
+    def __init__(self,par_obj,win_obj):
         QtGui.QMainWindow.__init__(self)
         #self.fileArray = fileArray
         #self.create_main_frame()
-        self.parObj = parObj
+        self.par_obj = par_obj
         self.win_obj = win_obj
         self.corrFn = False
         
 
     def create_main_frame(self):
-        for objId in self.parObj.objectRef:
+        for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
                 self.objId=objId
                 break;
         self.corrFn = False      
-        #self.trace_idx = self.parObj.clickedS1
+        #self.trace_idx = self.par_obj.clickedS1
 
         page = QtGui.QWidget()        
         hbox_main = QtGui.QHBoxLayout()
@@ -280,12 +420,12 @@ class bleachCorr(QtGui.QMainWindow):
             
         #Save the data to carpets.
         if self.objId.numOfCH == 1:
-            a,b,c,d = self.objId.calculateCarpet(self.objId.CH0_pc,None)
+            a,b,c,d = self.objId.calc_carpet(self.objId.CH0_pc,None,self.objId.lenG)
         elif self.objId.numOfCH == 2:
             for i in range(0, self.objId.CH1.shape[1]):
                 inFn = self.objId.CH1[:,i]
                 self.objId.CH1_pc[:,i] = self.apply_corr_fn(inFn,corr_ratio)
-            a,b,c,d = self.objId.calculateCarpet(self.objId.CH0_pc,self.objId.CH1_pc)
+            a,b,c,d = self.objId.calc_carpet(self.objId.CH0_pc,self.objId.CH1_pc,self.objId.lenG)
         
         self.objId.corrArrScale_pc = a
         self.objId.AutoCorr_carpetCH0_pc = b

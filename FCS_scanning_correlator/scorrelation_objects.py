@@ -43,7 +43,10 @@ class scanObject():
 
         self.pane = 0;
         self.maxPane = 0;
-        self.bleachCorr = False
+        self.bleachCorr1 = False
+        self.bleachCorr1_checked = False
+        self.bleachCorr2 = False
+        
         
         self.processData()
         
@@ -55,7 +58,7 @@ class scanObject():
     def correctBleach(self):
         print correctingBleach
         
-    def calculateCarpet(self, photonCarpetCH0,photonCarpetCH1):
+    def calc_carpet(self, photonCarpetCH0,photonCarpetCH1,lenG):
             
             #For making a correlation carpet.
             CH0arr =[]
@@ -69,16 +72,12 @@ class scanObject():
             self.numberNandBCH1 =[]
             self.brightnessNandBCH0 =[]
             self.brightnessNandBCH1 =[]
+
             numOfOp = photonCarpetCH0.shape[1]
             mar = int((self.spatialBin-1)/2)
             
 
-            N  = photonCarpetCH0.shape[0]
-            if N%2 == 1:
-                N -= 1
-            self.num_of_lines = N;
-            k = int(np.floor(np.log2(N/self.m)))
-            self.lenG = np.int(np.floor(self.m + k*self.m/2))
+            
             
             for i in range(mar,numOfOp-mar):
                 #The spatial bin is either side of the column
@@ -91,13 +90,19 @@ class scanObject():
                 if self.numOfCH ==2:
                     inFnCH1 = np.sum(photonCarpetCH1[:,i-lmar:i+umar],1).astype(np.float64)
                 
+                #nlines = self.num_of_lines
+                start_x = 0
                 #Correlation applied to each column of the correlation carpet.
                 if np.sum(np.array(inFnCH0))>0:
+
+                    
                     AC0 = autocorrelate(np.array(inFnCH0), m=self.m, deltat=self.deltat, normalize=True,copy=True, dtype=None)
+                    
+
                     corrArrScale = AC0[:,0]
                 else:
 
-                    AC0 = np.zeros((self.lenG,2))
+                    AC0 = np.zeros((lenG,2))
                     
                 
                 #Calculate number of counts
@@ -144,13 +149,13 @@ class scanObject():
                     self.kcountCH1.append(kcount)#average count per window. Need to convert to second.
                 
             #Create ouput image.
-            AutoCorr_carpetCH0 = np.zeros((self.lenG,corrArrCH0.__len__()))
+            AutoCorr_carpetCH0 = np.zeros((lenG,corrArrCH0.__len__()))
             AutoCorr_carpetCH1 = None
             CrossCorr_carpet01 = None
             
             if self.numOfCH ==2:
-                AutoCorr_carpetCH1 = np.zeros((self.lenG,corrArrCH1.__len__()))
-                CrossCorr_carpet01 = np.zeros((self.lenG,corrArrCC.__len__()))
+                AutoCorr_carpetCH1 = np.zeros((lenG,corrArrCH1.__len__()))
+                CrossCorr_carpet01 = np.zeros((lenG,corrArrCC.__len__()))
             
                     
             
@@ -277,40 +282,61 @@ class scanObject():
         self.CH0_arrayColSum = np.sum(self.CH0[:,:],0).astype(np.float64)
         self.maxCountCH0 = np.max(self.CH0_arraySum)
         
-        CH0auto = autocorrelate(self.CH0_arraySum, m=self.m, deltat=self.deltat, normalize=True, copy=True, dtype=None)
+        #CH0auto = autocorrelate(self.CH0_arraySum, m=self.m, deltat=self.deltat, normalize=True, copy=True, dtype=None)
         if self.numOfCH ==2:
             self.CH1_arraySum = np.sum(self.CH1[:,:],1).astype(np.float64)
             self.CH1_arrayColSum = np.sum(self.CH1[:,:],0).astype(np.float64)
-            CH1auto = autocorrelate(self.CH1_arraySum, m=self.m, deltat=self.deltat, normalize=True, copy=True, dtype=None)
-            CH0CH1cross = correlate(a=self.CH0_arraySum, v=self.CH1_arraySum, m=self.m, deltat=self.deltat, normalize=False, copy=True, dtype=None)
             self.maxCountCH1 = np.max(self.CH1_arraySum)
-        #Colour assigned to file.
-        self.color =self.parObj.colors[self.unqID % len(self.parObj.colors)]
-
-        #Function which calculates the correlation carpet.
-        if self.numOfCH==1:
-            self.corrArrScale, self.AutoCorr_carpetCH0, ap, aq = self.calculateCarpet(self.CH0,None)
-        elif self.numOfCH==2:
-            self.corrArrScale, self.AutoCorr_carpetCH0, self.AutoCorr_carpetCH1, self.CrossCorr_carpet01= self.calculateCarpet(self.CH0,self.CH1)
-
         
 
-        #Normalisation of the TCSPC data:
-        #maxY = np.ceil(max(self.trueTimeArr))
-        self.autoNorm = np.zeros((CH0auto.shape[0],4,4))
-        self.autoNorm[:,0,0] = CH0auto[:,1]
-        #self.timeSeries1,self.timeSeriesScale1 = intensity2bin(self.CH0_arraySum, self.photonCountBin)
+        #Colour assigned to file.
+        self.color =self.parObj.colors[self.unqID % len(self.parObj.colors)]
+        start_x = 0
+        self.num_of_lines  = self.CH0.shape[0]
+        if self.num_of_lines%2 == 1:
+            self.num_of_lines -= 1
 
-        if self.numOfCH ==2:
-            self.autoNorm[:,1,1] = CH1auto[:,1]
-            self.autoNorm[:,0,1] = CH0CH1cross[:,1]
-        #    self.timeSeries2,self.timeSeriesScale2 = intensity2bin(self.CH1_arraySum, self.photonCountBin)
+        k = int(np.floor(np.log2(self.num_of_lines/self.m)))
+        self.lenG = np.int(np.floor(self.m + k*self.m/2))
+        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),self.CH0.shape[1],1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines))
+        if self.numOfCH==2:
+            AC_all_CH1  = np.zeros((AC_all_CH0.shape))
+            CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+        
+        c = 0
+        for stx in range(start_x,self.CH0.shape[0]-self.num_of_lines+1,self.num_of_lines):
+            #Function which calculates the correlation carpet.
+            if self.numOfCH==1:
+                self.corrArrScale, AC_carCH0, ap, aq = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],None,self.lenG)
+                AC_all_CH0[:,:,c] = AC_carCH0
 
-        self.autotime = CH0auto[:,0]
 
-       #Adds names to the fit function for later fitting.
+            elif self.numOfCH==2:
+                self.corrArrScale, AC_carCH0, AC_carCH1, CC_carCH01 = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],self.CH1[stx:stx+self.num_of_lines,:],self.lenG)
+                AC_all_CH0[:,:,c]  = AC_carCH0
+                AC_all_CH1[:,:,c]  = AC_carCH1
+                CC_all_CH01[:,:,c] = CC_carCH01
+            
+            c = c+1
 
-       #Calculate the factorical cumulants
+
+        self.AutoCorr_carpetCH0 = np.average(AC_all_CH0,2)
+        if self.numOfCH == 2:
+            self.AutoCorr_carpetCH1 = np.average(AC_all_CH1,2)
+            self.CrossCorr_carpet01 = np.average(CC_all_CH01,2)
+
+        #Creates data for initial plot distribution.
+        self.autoNorm = np.zeros((AC_all_CH0.shape[0],4,4))
+        self.autoNorm[:,0,0] = np.average(AC_all_CH0,2)[:,0]
+        if self.numOfCH == 2:
+            self.autoNorm[:,1,1] = np.average(AC_all_CH1,2)[:,0]
+            self.autoNorm[:,0,1] = np.average(CC_all_CH01,2)[:,0]
+
+
+
+        self.autotime = self.corrArrScale
+
+
        
         
 class corrObject():

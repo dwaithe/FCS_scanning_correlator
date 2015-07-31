@@ -105,10 +105,9 @@ class Import_lif():
 
                     except:
                         pass
-
-        self.win_obj.testWin = self.AppForm(self.store,self)
-        
-        self.win_obj.testWin.show()
+        if self.parObj.gui == 'show':
+            self.win_obj.testWin = self.AppForm(self.store,self)
+            self.win_obj.testWin.show()
     def import_lif_sing(self,selList):
         self.imDataStore =[];
         self.imDataDesc=[];
@@ -186,14 +185,14 @@ class Import_lif():
             s.append(scanObject(self.fname,self.parObj,self.imDataDesc[i],self.imDataStore[i],0,0));
         
         
+        if self.parObj.gui == 'show':
+            self.win_obj.label.generateList()
+            self.win_obj.GateScanFileListObj.generateList()
+            
 
-        self.win_obj.label.generateList()
-        self.win_obj.GateScanFileListObj.generateList()
         
-
-        
-        self.parObj.objectRef[-1].cb.setChecked(True)
-        self.parObj.objectRef[-1].plotOn = True
+            self.parObj.objectRef[-1].cb.setChecked(True)
+            self.parObj.objectRef[-1].plotOn = True
         #self.parObj.plotDataQueueFn()
     class AppForm(QtGui.QMainWindow):
         def __init__(self, fileArray=None,parObj=None):
@@ -240,7 +239,7 @@ class Import_lif():
             self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
 
         def clicked(self):
-            print 'clicked'
+            
             c=0
             selList =[];
             for name in self.fileArray:
