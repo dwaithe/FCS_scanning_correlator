@@ -44,7 +44,8 @@ class scanObject():
         self.pane = 0;
         self.maxPane = 0;
         self.bleachCorr1 = False
-        self.bleachCorr1_checked = False
+        #self.bleachCorr1_checked = False
+        #self.bleachCorr2_checked = False
         self.bleachCorr2 = False
         
         
@@ -74,8 +75,8 @@ class scanObject():
             self.brightnessNandBCH1 =[]
 
             numOfOp = photonCarpetCH0.shape[1]
-            mar = int((self.spatialBin-1)/2)
             
+            mar = int((self.spatialBin-1)/2)
 
             
             
@@ -298,7 +299,11 @@ class scanObject():
 
         k = int(np.floor(np.log2(self.num_of_lines/self.m)))
         self.lenG = np.int(np.floor(self.m + k*self.m/2))
-        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),self.CH0.shape[1],1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines))
+        
+        mar = int((self.spatialBin-1)/2)
+
+
+        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),self.CH0.shape[1]-(2*mar),1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines))
         if self.numOfCH==2:
             AC_all_CH1  = np.zeros((AC_all_CH0.shape))
             CC_all_CH01 = np.zeros((AC_all_CH0.shape))

@@ -18,6 +18,8 @@ def Import_tiff(filename,par_obj,win_obj):
         #pickle.dump(tif.asarray(), open('extra.p',"wb"))
 
         scanObject(filename,par_obj,[deltat,float(text_2)],tif.asarray(),0,0);
+        win_obj.bleachCorr1 = False
+        win_obj.bleachCorr2 = False
         win_obj.label.generateList()
         win_obj.GateScanFileListObj.generateList()
         #par_obj.objectRef[-1].cb.setChecked(True)
@@ -35,6 +37,8 @@ def Import_lsm(filename,par_obj,win_obj):
         #par_obj.objectRef[-1].cb.setChecked(True)
         win_obj.DeltatEdit.setText(str(deltat));
         
+        win_obj.bleachCorr1 = False
+        win_obj.bleachCorr2 = False
         win_obj.label.generateList()
         win_obj.GateScanFileListObj.generateList()
 class Import_lif():
@@ -186,6 +190,10 @@ class Import_lif():
         
         
         if self.parObj.gui == 'show':
+            self.win_obj.bleachCorr1 = False
+            self.win_obj.bleachCorr2 = False
+            #self.win_obj.bleachCorr1_checked = False
+            #self.win_obj.bleachCorr2_checked = False
             self.win_obj.label.generateList()
             self.win_obj.GateScanFileListObj.generateList()
             

@@ -199,16 +199,17 @@ class Window(QtGui.QWidget):
 		#The table which shows the details of each correlated file. 
 		self.modelTab2 = QtGui.QTableWidget()
 		self.modelTab2.setRowCount(0)
-		self.modelTab2.setColumnCount(6)
+		self.modelTab2.setColumnCount(7)
 		self.modelTab2.setColumnWidth(0,80);
 		self.modelTab2.setColumnWidth(1,140);
 		self.modelTab2.setColumnWidth(2,30);
 		self.modelTab2.setColumnWidth(3,100);
 		self.modelTab2.setColumnWidth(4,100);
-		self.modelTab2.setColumnWidth(5,100);
+		self.modelTab2.setColumnWidth(5,30);
+		self.modelTab2.setColumnWidth(6,100);
 		self.modelTab2.horizontalHeader().setStretchLastSection(True)
 		self.modelTab2.resize(800,400)
-		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file name").split(","))
+		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,,file name").split(","))
 
 		
 		correlationBtns =  QtGui.QVBoxLayout()
@@ -316,49 +317,41 @@ class Window(QtGui.QWidget):
 		
 		self.right_panel.addWidget(self.modelTab2)
 
-		self.bleachCorr1_btn = QtGui.QPushButton('Photo Corr')
-		self.bleachCorr1_btn.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
+		self.bleachCorr1_btn = QtGui.QPushButton('PBC (Fit)')
+		#self.bleachCorr1_btn.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.bleachCorr1_on_off = QtGui.QPushButton('OFF')
-		self.bleachCorr1_on_off.setStyleSheet(" color: red; padding-left: 5px; padding-right: 25px;padding-top: 1px; padding-bottom: 0px;");
+		self.bleachCorr1_on_off.setStyleSheet(" color: red;");
 		self.bleachCorr1_on_off.clicked.connect(self.bleachCorr1fn)
-		#self.bleachCorr_on_off.setMinimumWidth(40)
-		#self.bleachCorr_on_off.setMaximumWidth(20)
+		
 
-		#self.bleachCorr_on_off.setEnabled(False);
-
-		self.bleachCorr2_btn = QtGui.QPushButton('Photo Corr2')
-		self.bleachCorr2_btn.setStyleSheet("padding-left: 5px; padding-right: 15px;padding-top: 1px; padding-bottom: 0px;");
+		self.bleachCorr2_btn = QtGui.QPushButton('PBC (LA)')
+		#self.bleachCorr2_btn.setStyleSheet("padding-left: 5px; padding-right: 15px;padding-top: 1px; padding-bottom: 0px;");
 		self.bleachCorr2_on_off = QtGui.QPushButton('OFF')
-		self.bleachCorr2_on_off.setStyleSheet(" color: red; padding-left: 5px; padding-right: 15px;padding-top: 1px; padding-bottom: 0px;");
+		self.bleachCorr2_on_off.setStyleSheet(" color: red;");
 		self.bleachCorr2_on_off.clicked.connect(self.bleachCorr2fn)
 		#self.bleachCorr2_on_off.setEnabled(False);
 
-		self.bleachCorr_check_box = checkBoxSp2(self, par_obj)
-		self.bleachCorr_check_box.obj = self
-		self.bleachCorr_check_box.setMinimumHeight(15)
-		self.bleachCorr_check_box.setMaximumHeight(15)
-
-		self.bleachCorr_check_box.setStyleSheet("padding-left: 10px; padding-right: 5px;padding-bottom: -2px;");
+		
 		self.displayCarpetText = QtGui.QLabel('Display:')
 		self.displayCarpetText.setMinimumHeight(12)
 		self.displayCarpetText.setMaximumHeight(12)
-		self.displayCarpetText.setStyleSheet("border-radius:0px;padding-left: 10px; padding-right: 5px;padding-top 5px;");
+		#self.displayCarpetText.setStyleSheet("border-radius:0px;padding-left: 10px; padding-right: 5px;padding-top 5px;");
 		self.CH0Auto_btn = QtGui.QPushButton('Auto CH0')
-		self.CH0Auto_btn.setStyleSheet("color: green; padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
+		self.CH0Auto_btn.setStyleSheet("color: green;");
 		self.CH1Auto_btn = QtGui.QPushButton('Auto CH1')
-		self.CH1Auto_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
+		#self.CH1Auto_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.CH01Cross_btn = QtGui.QPushButton('Cross CH01')
 		self.displayExportText = QtGui.QLabel('Export:')
 		self.displayExportText.setMinimumHeight(12)
 		self.displayExportText.setMaximumHeight(12)
 
-		self.displayExportText.setStyleSheet("padding-left: 10px; padding-right: 5px;padding-top: 5px; ");
+		#self.displayExportText.setStyleSheet("padding-left: 10px; padding-right: 5px;padding-top: 5px; ");
 		self.export_region_btn = QtGui.QPushButton('Export to Fit');
-		self.CH01Cross_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
+		#self.CH01Cross_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.addRegion_btn = QtGui.QPushButton('Store Region');
-		self.addRegion_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
+		#self.addRegion_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.export_region_btn = QtGui.QPushButton('Export to Fit');
-		self.export_region_btn.setStyleSheet("padding-left: 10px; padding-right: 10px;padding-top: 1px; padding-bottom: 0px;");
+		#self.export_region_btn.setStyleSheet("padding-left: 10px; padding-right: 10px;padding-top: 1px; padding-bottom: 0px;");
 		
 		self.CH0Auto_btn.clicked.connect(self.CH0AutoFn)
 		self.CH1Auto_btn.clicked.connect(self.CH1AutoFn)
@@ -390,24 +383,24 @@ class Window(QtGui.QWidget):
 		self.folderOutput.type = 'output_corr_dir'
 
 		self.folderSelect_btn = QtGui.QPushButton('Set Output Folder')
-		self.folderSelect_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
+		#self.folderSelect_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.folderSelect_btn.clicked.connect(self.folderOutput.showDialog)
 		
 	
 		self.save_corr_txt = QtGui.QLabel('Save:')
-		self.save_corr_txt.setStyleSheet("spacing: 0px;padding-left: 10px; padding-right:2px;padding-top: 0px; padding-bottom: 0px;");
+		#self.save_corr_txt.setStyleSheet("spacing: 0px;padding-left: 10px; padding-right:2px;padding-top: 0px; padding-bottom: 0px;");
 		self.save_corr_txt.setMinimumHeight(12)
 		self.save_corr_txt.setMaximumHeight(12)
 		self.save_corr_carpet_btn = QtGui.QPushButton('Raw Carpet')
-		self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
+		#self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_corr_carpet_btn.clicked.connect(self.save_carpets)
 
 		self.save_log_corr_carpet_btn = QtGui.QPushButton('Log Norm. Carpet')
-		self.save_log_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
+		#self.save_log_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_log_corr_carpet_btn.clicked.connect(self.save_carpets)
 
 		self.save_figure_btn = QtGui.QPushButton('Figure')
-		self.save_figure_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
+		#self.save_figure_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_figure_btn.clicked.connect(self.save_figure)
 
 		
@@ -467,59 +460,43 @@ class Window(QtGui.QWidget):
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				if objId.bleachCorr1 == True:
-					if self.bleachCorr1_checked == True:
-						
+					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+						#The bleach correction is on now we turn it off.
 						self.bleachCorr1_on_off.setText('OFF')
 						self.bleachCorr1_on_off.setStyleSheet("color: red");
-						if self.carpetDisplay == 0:
-							sel.CH0AutoFn()
-						if self.carpetDisplay == 1:
-							self.CH1AutoFn()
-						if self.carpetDisplay == 2:
-							self.CH01CrossFn()	
 						self.bleachCorr1_checked = False
+						self.plotDataQueueFn()
 					else:
-						
+						#The bleach correction is off now we turn it on.
 						self.bleachCorr1_on_off.setText('ON')
 						self.bleachCorr1_on_off.setStyleSheet("color: green");
-						if self.carpetDisplay == 3:
-							self.CH0AutoFn()
-						if self.carpetDisplay == 4:
-							self.CH1AutoFn()
-						if self.carpetDisplay == 5:
-							self.CH01CrossFn()
 						self.bleachCorr1_checked = True
-					self.plotDataQueueFn()
+						self.plotDataQueueFn()
+				
+						
+						
 
 		
 	def bleachCorr2fn(self):
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				if objId.bleachCorr2 == True:
-					if self.bleachCorr2_checked == False:
-						
+					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+						#The bleach correction is on now we turn it off.
 						self.bleachCorr2_on_off.setText('OFF')
 						self.bleachCorr2_on_off.setStyleSheet("color: red");
-						if self.carpetDisplay == 3:
-							self.CH0AutoFn()
-						if self.carpetDisplay == 4:
-							self.CH1AutoFn()
-						if self.carpetDisplay == 5:
-							self.CH01CrossFn()
+						self.bleachCorr2_checked = False
 						self.plotDataQueueFn()
-						self.bleachCorr2_checked = True
 					else:
-						
+						#The bleach correction is off now we turn it on.
 						self.bleachCorr2_on_off.setText('ON')
 						self.bleachCorr2_on_off.setStyleSheet("color: green");
-						if self.carpetDisplay == 0:
-							self.CH0AutoFn()
-						if self.carpetDisplay == 1:
-							self.CH1AutoFn()
-						if self.carpetDisplay == 2:
-							self.CH01CrossFn()
+						self.bleachCorr2_checked = True
 						self.plotDataQueueFn()
-						self.bleachCorr2_checked = False
+				
+						
+
+						
 					
 					
 					
@@ -535,36 +512,42 @@ class Window(QtGui.QWidget):
 
 
 	def update_correlation_parameters(self):
+		""""""
 		self.par_obj.spatialBin = int(self.spatialBinEdit.value())
 		self.par_obj.m = float(self.mEdit.text())
 		
 	def CH0AutoFn(self):
-
-			print 'y',self.bleachCorr1_checked,'2',self.bleachCorr2_checked
-			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-				self.carpetDisplay = 3
-			else:
-				self.carpetDisplay = 0
-			self.plotDataQueueFn()
+		"""We change the view of the carpetDisplay to the auto-correlation channel 0. """
+		self.carpetDisplay = 0
+		self.CH0Auto_btn.setStyleSheet(" color: green")
+		self.CH1Auto_btn.setStyleSheet(" color: black")
+		self.CH01Cross_btn.setStyleSheet(" color: black")
+		self.plotDataQueueFn()
 
 	def CH1AutoFn(self):
-			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-				self.carpetDisplay = 4
-			else:
-				self.carpetDisplay = 1
-			self.plotDataQueueFn()
+		"""We change the view of the carpetDisplay to the auto-correlation channel 1. """
+		for objId in self.par_obj.objectRef:
+			if(objId.cb.isChecked() == True):
+				if objId.numOfCH ==2:
+					self.carpetDisplay = 1
+					self.plotDataQueueFn()
+					self.CH0Auto_btn.setStyleSheet(" color: black")
+					self.CH1Auto_btn.setStyleSheet(" color: green")
+					self.CH01Cross_btn.setStyleSheet(" color: black")
+
 	def CH01CrossFn(self):
-			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-				self.carpetDisplay = 5
-			else:
-				self.carpetDisplay = 2
-			self.plotDataQueueFn()
+		"""We change the view of the carpetDisplay to the cross-correlation channel 0 to 1. """
+		for objId in self.par_obj.objectRef:
+			if(objId.cb.isChecked() == True):
+				if objId.numOfCH ==2:
+					self.carpetDisplay = 2
+					self.plotDataQueueFn()
+					self.CH0Auto_btn.setStyleSheet(" color: black")
+					self.CH1Auto_btn.setStyleSheet(" color: black")
+					self.CH01Cross_btn.setStyleSheet(" color: green")
+
 	def save_carpets(self):
 		"""Saves the carpet raw data to an image file"""
-		
-		
-		
-		
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				height = objId.AutoCorr_carpetCH0.shape[1]
@@ -572,7 +555,7 @@ class Window(QtGui.QWidget):
 				
 				self.plot_PhotonCount(objId)
 				if objId.numOfCH ==1:
-					if objId.bleachCorr == True:
+					if objId.bleachCorr1 == True or objId.bleachCorr2 == True:
 						export_im =np.zeros((2,height,width))
 						export_im[0,:,:] = objId.AutoCorr_carpetCH0[:,:].T;
 						export_im[1,:,:] = objId.AutoCorr_carpetCH0_pc[:,:].T;
@@ -581,7 +564,7 @@ class Window(QtGui.QWidget):
 						export_im[:,:] = objId.AutoCorr_carpetCH0[:,:].T;
 
 				if objId.numOfCH ==2:
-					if objId.bleachCorr == True:
+					if objId.bleachCorr1 == True or objId.bleachCorr2 == True:
 						export_im =np.zeros((4,height,width))
 						export_im[0,:,:] = objId.AutoCorr_carpetCH0[:,:].T;
 						export_im[1,:,:] = objId.AutoCorr_carpetCH0_pc[:,:].T;
@@ -633,8 +616,16 @@ class Window(QtGui.QWidget):
 		self.update_correlation_parameters()
 		for objId in self.par_obj.objectRef:
 					objId.processData()
-	   
+					objId.bleachCorr1 = False
+					objId.bleachCorr2 = False
 
+
+		self.bleachCorr2_checked = False
+		self.bleachCorr1_checked = False
+		self.bleachCorr1_on_off.setText('OFF')
+		self.bleachCorr1_on_off.setStyleSheet(" color: red");
+		self.bleachCorr2_on_off.setText('OFF')
+		self.bleachCorr2_on_off.setStyleSheet(" color: red");
 		self.plotDataQueueFn();
 		self.plot_PhotonCount(objId)
 		
@@ -664,22 +655,13 @@ class Window(QtGui.QWidget):
 		yLimMn = int(((objId.pane)*(objId.CH0.shape[1]/64)*150))
 		yLimMx = int(((objId.pane+1)*(objId.CH0.shape[1]/64)*150))
 		
-		#barX = object.timeSeriesScale1[::-1]#*object.deltat
-		#barX = np.array(object.timeSeries1).astype(np.float32)[::-1]
-		#barXC = barX[yLimMn:yLimMx]
-
-		#self.plt4.bar(np.arange(0,objId.CH0.shape[0],10),np.sum(objId.CH0, 1).astype(np.float64)[::10], color=objId.color)
 		totalFn = np.sum(objId.CH0, 1).astype(np.float64)
-		self.plt4.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],color=objId.color)
+		self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],color=objId.color)
 		if objId.numOfCH == 2:
-			totalFn = np.sum(objId.CH0, 1).astype(np.float64)
-			self.plt4.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],'grey')
-		#    barX = object.timeSeriesScale2[::-1]*object.deltat
-		#    barY = np.array(object.timeSeries2).astype(np.float32)[::-1]
-		#    self.plt4.barh(barX[yLimMn:yLimMx],np.arange(yLimMn,yLimMx), height=object.photonCountBin,color="grey",linewidth=0,edgecolor = None)
+			totalFn = np.sum(objId.CH1, 1).astype(np.float64)
+			self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],'grey')
 		
-		#self.plt4.set_xlim(0,objId.maxCountCH0)
-		#self.plt4.set_ylim(yLimMx,yLimMn)
+
 
 		self.figure4.subplots_adjust(bottom=0.15,right=0.95)
 		self.plt4.tick_params(axis='both', which='major', labelsize=8)
@@ -738,33 +720,36 @@ class Window(QtGui.QWidget):
 		self.canvas5.draw()
 
 
-
+		
 		#Checks which channel is displayed and then loads the relevant carpet.
-		if self.carpetDisplay == 0:
-			img = np.flipud(objId.AutoCorr_carpetCH0[:,:].T);
-			sum_img = np.flipud(objId.CH0_arrayColSum)
-			carp_scale = objId.corrArrScale
-		if self.carpetDisplay == 1:
-			img = np.flipud(objId.AutoCorr_carpetCH1[:,:].T);
-			sum_img = np.flipud(objId.CH1_arrayColSum)
-			carp_scale = objId.corrArrScale
-		if self.carpetDisplay == 2:
-			img = np.flipud(objId.CrossCorr_carpet01[:,:].T);
-			sum_img = np.flipud(objId.CH0_arrayColSum)
-			carp_scale = objId.corrArrScale
-		#This is for the photo-corrected version of the carpets.
-		if self.carpetDisplay == 3:
-			img = np.flipud(objId.AutoCorr_carpetCH0_pc[:,:].T);
-			sum_img = np.flipud(objId.CH0_arrayColSum)
-			carp_scale = objId.corrArrScale_pc
-		if self.carpetDisplay == 4:
-			img = np.flipud(objId.AutoCorr_carpetCH1_pc[:,:].T);
-			sum_img = np.flipud(objId.CH1_arrayColSum)
-			carp_scale = objId.corrArrScale_pc
-		if self.carpetDisplay == 5:
-			img = np.flipud(objId.CrossCorr_carpet01_pc[:,:].T);
-			sum_img = np.flipud(objId.CH0_arrayColSum)
-			carp_scale = objId.corrArrScale_pc
+		if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+			
+			#This is for the photo-corrected version of the carpets.
+			if self.carpetDisplay == 0:
+				img = np.flipud(objId.AutoCorr_carpetCH0_pc[:,:].T);
+				sum_img = np.flipud(objId.CH0_arrayColSum)
+				carp_scale = objId.corrArrScale_pc
+			if self.carpetDisplay == 1:
+				img = np.flipud(objId.AutoCorr_carpetCH1_pc[:,:].T);
+				sum_img = np.flipud(objId.CH1_arrayColSum)
+				carp_scale = objId.corrArrScale_pc
+			if self.carpetDisplay == 2:
+				img = np.flipud(objId.CrossCorr_carpet01_pc[:,:].T);
+				sum_img = np.flipud(objId.CH0_arrayColSum)
+				carp_scale = objId.corrArrScale_pc
+		else:
+			if self.carpetDisplay == 0:
+				img = np.flipud(objId.AutoCorr_carpetCH0[:,:].T);
+				sum_img = np.flipud(objId.CH0_arrayColSum)
+				carp_scale = objId.corrArrScale
+			if self.carpetDisplay == 1:
+				img = np.flipud(objId.AutoCorr_carpetCH1[:,:].T);
+				sum_img = np.flipud(objId.CH1_arrayColSum)
+				carp_scale = objId.corrArrScale
+			if self.carpetDisplay == 2:
+				img = np.flipud(objId.CrossCorr_carpet01[:,:].T);
+				sum_img = np.flipud(objId.CH0_arrayColSum)
+				carp_scale = objId.corrArrScale
 
 
 		
@@ -865,7 +850,7 @@ class Window(QtGui.QWidget):
 			except:
 				pass
 			self.line = self.plt2.axhspan(self.x0, self.x1, facecolor=None,fill=False, alpha=1.0)
-			print'select'
+			
 			self.draw_single_line()
 	def draw_single_line(self):
 				self.plt1.cla()
@@ -878,12 +863,13 @@ class Window(QtGui.QWidget):
 						if self.clickedS1 != None  and self.clickedS2 != None:
 							for b in range(self.clickedS1,self.clickedS2):
 								self.plt1.set_autoscale_on(True)
-								if self.bleachCorr2_checked == True:
-									if self.carpetDisplay == 3:
+								#Is the button checked.
+								if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+									if self.carpetDisplay == 0:
 										self.plt1.plot(objId.corrArrScale_pc, objId.AutoCorr_carpetCH0_pc[:,int(b)],objId.color)
-									if self.carpetDisplay == 4:
+									if self.carpetDisplay == 1:
 										self.plt1.plot(objId.corrArrScale_pc, objId.AutoCorr_carpetCH1_pc[:,int(b)],objId.color)
-									if self.carpetDisplay == 5:
+									if self.carpetDisplay == 2:
 										self.plt1.plot(objId.corrArrScale_pc, objId.CrossCorr_carpet01_pc[:,int(b)],objId.color)
 								else:
 									if self.carpetDisplay == 0:
@@ -917,18 +903,20 @@ class Window(QtGui.QWidget):
 					corrObj1.param = copy.deepcopy(self.fit_obj.def_param)
 					corrObj1.ch_type = 0
 					corrObj1.prepare_for_fit()
-					corrObj1.autotime = objId.corrArrScale[:]
+					
 					corrObj1.kcount = objId.kcountCH0[i]
 					corrObj1.numberNandB = objId.numberNandBCH0[i]
 					corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
 					corrObj1.type = "scan"
 					corrObj1.siblings = None
 
-					if self.bleachCorr_check_box.isChecked() == True:
+					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
+						corrObj1.autotime = objId.corrArrScale_pc[:]
 						corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
 					else:
 						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
+						corrObj1.autotime = objId.corrArrScale[:]
 						corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
 					
 					
@@ -944,7 +932,7 @@ class Window(QtGui.QWidget):
 						corrObj2.numberNandB = objId.numberNandBCH1[i]
 						corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
 						corrObj2.type = "scan"
-						if self.bleachCorr_check_box.isChecked() == True:
+						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
 							corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
 						else:
@@ -961,7 +949,7 @@ class Window(QtGui.QWidget):
 						corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 						corrObj3.prepare_for_fit()
 						corrObj3.autotime = objId.corrArrScale[:]
-						if self.bleachCorr_check_box.isChecked() == True:
+						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
 							corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
 
@@ -1051,8 +1039,7 @@ class checkBoxSp3(QtGui.QCheckBox):
 		self.par_obj = par_obj
 		self.win_obj = win_obj
 	def updateChecked(self):
-		print self.isChecked()
-		print self.obj
+		
 		if self.isChecked() == True:  
 
 			for objId in self.par_obj.objectRef:
@@ -1064,6 +1051,19 @@ class checkBoxSp3(QtGui.QCheckBox):
 		
 		
 			self.obj.plotOn = self.isChecked()
+			
+			#The 
+			if self.obj.bleachCorr2 == False:
+				self.win_obj.bleachCorr2_on_off.setText('OFF')
+				self.win_obj.bleachCorr2_on_off.setStyleSheet("color: red");
+				self.win_obj.bleachCorr2_checked = False
+
+			if self.obj.bleachCorr1 == False:
+				self.win_obj.bleachCorr1_on_off.setText('OFF')
+				self.win_obj.bleachCorr1_on_off.setStyleSheet("color: red");
+				self.win_obj.bleachCorr1_checked = False
+			
+			
 			self.win_obj.plotDataQueueFn()
 		
 
@@ -1093,7 +1093,7 @@ class scanFileList():
 			a =baseList()
 			a.listId = i
 			type_obj = self.par_obj.objectRef[i].type
-			a.setText('<HTML><p style="color:'+str(self.par_obj.colors[i% len(self.par_obj.colors)])+';margin-top:0">'+type_obj+' : </p></HTML>')
+			a.setText('<HTML><p style="color:'+str(self.par_obj.objectRef[i].color)+';margin-top:0">'+type_obj+' : </p></HTML>')
 			
 
 			self.win_obj.modelTab2.setCellWidget(i, 0, a)
@@ -1132,9 +1132,20 @@ class scanFileList():
 			sb.objId = self.par_obj.objectRef[i]
 			self.win_obj.modelTab2.setCellWidget(i, 4, sb)
 
+			#Adds save button to the file.
+			xb = pushButtonSp3('X')
+			xb.par_obj = self.par_obj
+			xb.win_obj = self.win_obj
+			xb.id = i
+			xb.type = 'remove_file'
+			xb.parent_id = self
+			self.win_obj.modelTab2.setCellWidget(i, 5, xb)
+
+
+			#The filename
 			b = baseList()
 			b.setText('<HTML><p style="margin-top:0">'+self.par_obj.objectRef[i].ext+' file :'+str(self.par_obj.data[i])+' </p></HTML>')
-			self.win_obj.modelTab2.setCellWidget(i, 5, b)
+			self.win_obj.modelTab2.setCellWidget(i, 6, b)
 			
 			
 			#self.par_obj.label.objCheck.append(cb)
@@ -1223,6 +1234,13 @@ class pushButtonSp3(QtGui.QPushButton):
 			self.win_obj.modelTab.setRowCount(0)
 			#self.win_obj.modelTab.setRowCount(self.par_obj.TGnumOfRgn.__len__())
 			self.parent_id.generateList()
+		if self.type =='remove_file':
+			print 'self.par_obj.numOfLoaded',self.par_obj.numOfLoaded
+			self.par_obj.numOfLoaded = self.par_obj.numOfLoaded - 1
+			self.par_obj.objectRef.pop(self.id)
+			self.win_obj.modelTab2.setRowCount(0)
+			self.parent_id.generateList()
+
 
 class pushButtonSp2(QtGui.QPushButton):
 	def __init__(self, parent=None):
@@ -1304,29 +1322,7 @@ class folderOutput(QtGui.QMainWindow):
 				self.parent.config['output_corr_filepath'] = str(tfilepath)
 				pickle.dump(self.parent.config, open(str(os.path.expanduser('~')+'/FCS_Analysis/config.p'), "w" ))              
 
-class checkBoxSp2(QtGui.QCheckBox):
-	def __init__(self, win_obj, par_obj):
-		QtGui.QCheckBox.__init__(self)
-		self.obj = []
-		self.type = []
-		self.name =[]
-		self.stateChanged.connect(self.__changed)
-	def __changed(self,state):
-		
-		if state == 2:
-			if self.obj.carpetDisplay == 0:
-				self.obj.CH0AutoFn()
-			if self.obj.carpetDisplay == 1:
-				self.obj.CH1AutoFn()
-			if self.obj.carpetDisplay == 2:
-				self.obj.CH01CrossFn()
-		if state == 0:
-			if self.obj.carpetDisplay == 3:
-				self.obj.CH0AutoFn()
-			if self.obj.carpetDisplay == 4:
-				self.obj.CH1AutoFn()
-			if self.obj.carpetDisplay == 5:
-				self.obj.CH01CrossFn()
+
 class baseList(QtGui.QLabel):
 	def __init__(self):
 		super(baseList, self).__init__()
@@ -1365,8 +1361,8 @@ if __name__ == '__main__':
 	
 
 	
-	path = '/Users/dwaithe/Documents/collaborators/EggelingC/data/Scanning FCS data/lif_scanning_data/From Jorge/'
-	filename = '20140731-last scans on PLL.lif'
+	path = '/Users/dwaithe/Documents/collaborators/EggelingC/data/Scanning FCS data/from Jorge/'
+	filename = '20140902_ScanFCCS_Jcam Glass LCksnap STAR Sri.lif'
 	par_obj.gui  ='show'
 	filepath = path+filename
 	scanlist = Import_lif(filepath,par_obj, mainWin)
