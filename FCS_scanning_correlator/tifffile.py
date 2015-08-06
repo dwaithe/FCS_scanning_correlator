@@ -3683,6 +3683,7 @@ TIFF_COMPESSIONS = {
     32909: 'pixarlog',
     32946: 'deflate',
     32947: 'dcs',
+    33003: 'svs',
     34661: 'jbig',
     34676: 'sgilog',
     34677: 'sgilog24',
@@ -3696,6 +3697,7 @@ TIFF_DECOMPESSORS = {
     'deflate': zlib.decompress,
     'packbits': decodepackbits,
     'lzw': decodelzw,
+    'svs':decodepackbits,
     # 'jpeg': decodejpg
 }
 

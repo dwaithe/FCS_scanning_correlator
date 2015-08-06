@@ -11,6 +11,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.font_manager import FontProperties
 from matplotlib.widgets import Slider
 from scorrelation_objects import scanObject, autocorrelate
+
 class bleachCorr2(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj):
         QtGui.QMainWindow.__init__(self)
@@ -19,6 +20,7 @@ class bleachCorr2(QtGui.QMainWindow):
         self.par_obj = par_obj
         self.win_obj = win_obj
         self.corrFn = False
+        self.duration_combo_idx = 0
         
         
 
@@ -77,6 +79,7 @@ class bleachCorr2(QtGui.QMainWindow):
 
         self.carp_pix_sel = QtGui.QSpinBox()
         self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[0]);
+
         
         self.sel_channel = QtGui.QComboBox()
         self.sel_channel.addItem('CH0')
@@ -104,7 +107,7 @@ class bleachCorr2(QtGui.QMainWindow):
         
         
         
-        
+        self.duration_combo.setCurrentIndex(self.duration_combo_idx)
         
         
         
@@ -149,6 +152,7 @@ class bleachCorr2(QtGui.QMainWindow):
         """To make sure """
         self.objId.bleachCorr1_checked = False
         self.objId.bleachCorr2_checked = False
+
         if self.sel_channel.currentIndex() == 1:
             self.win_obj.CH1AutoFn()
         else:
@@ -197,12 +201,17 @@ class bleachCorr2(QtGui.QMainWindow):
         self.plt2.set_title('Preview Different Window Sizes')
         self.plt2.set_ylabel('Correlation')
         self.plt2.set_xlabel('Time (ms)')
+        label_array = []
         for bit in self.duration_array:
             num_of_lines  = int(np.ceil((bit)/(self.objId.deltat/1000)))
+            
             
             if num_of_lines%2 == 1:
                 num_of_lines -= 1
 
+            if num_of_lines< 2*self.objId.m:
+                    continue;
+            
             column_number = self.carp_pix_sel.value()
             if self.sel_channel.currentIndex() == 1:
                 FT = self.objId.CH1[:,column_number]
@@ -210,26 +219,33 @@ class bleachCorr2(QtGui.QMainWindow):
                 FT = self.objId.CH0[:,column_number]
 
             
+
             k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
+
             lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
 
-            out_all = np.zeros((np.int(np.floor(self.par_obj.m + k*self.par_obj.m/2)),1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
+            out_all = np.zeros((lenG,1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
             c = 0
-              
+            
             for stx in range(start_x,FT.__len__()-num_of_lines+1,num_of_lines):
-               
-                out = autocorrelate(FT[stx:stx+num_of_lines].astype(np.float64),m=self.objId.m, deltat=self.objId.deltat, normalize=True,copy=True, dtype=None)
                 
+                
+
+                out = autocorrelate(FT[stx:stx+num_of_lines].astype(np.float64),m=self.objId.m, deltat=self.objId.deltat, normalize=True,copy=True, dtype=None)
+                #if out.shape[0] != out_all.shape[0]:
+                #    out_all =  np.zeros((out.shape[0],1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
                 out_all[:,c] = out[:,1]
                 c += 1
 
             
             self.plt2.semilogx(out[:,0],np.average(out_all,1))
+            label_array.append(bit)
+            
         
         fontP = FontProperties()
         fontP.set_size('small')
 
-        self.plt2.legend(np.round(self.duration_array,3), loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
+        self.plt2.legend(np.round(label_array,3), loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
         self.canvas1.draw()
 
 
@@ -239,59 +255,76 @@ class bleachCorr2(QtGui.QMainWindow):
     def outputData(self):
         start_x = 0
         
-        
-        num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
-        
-        if num_of_lines%2 == 1:
-            num_of_lines -= 1
-
-        k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
-        lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
-
-        mar = int((self.objId.spatialBin-1)/2)
-        AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
-        if self.objId.numOfCH==2:
-            AC_all_CH1  = np.zeros((AC_all_CH0.shape))
-            CC_all_CH01 = np.zeros((AC_all_CH0.shape))
-        
-        c = 0
-        for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
-            #Function which calculates the correlation carpet.
-            if self.objId.numOfCH==1:
-                self.objId.corrArrScale_pc, AC_carCH0, ap, aq = self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
-                AC_all_CH0[:,:,c] = AC_carCH0
-
-
-            elif self.objId.numOfCH==2:
-                self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
-                AC_all_CH0[:,:,c]  = AC_carCH0
-                AC_all_CH1[:,:,c]  = AC_carCH1
-                CC_all_CH01[:,:,c] = CC_carCH01
+        self.duration_combo_idx = self.duration_combo.currentIndex()
+        if  self.duration_combo_idx >0:
+            num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
             
-            c = c + 1
+            if num_of_lines%2 == 1:
+                num_of_lines -= 1
+
+            k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
+            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+
+            mar = int((self.objId.spatialBin-1)/2)
+            AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
+            if self.objId.numOfCH==2:
+                AC_all_CH1  = np.zeros((AC_all_CH0.shape))
+                CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+            
+            c = 0
+            for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
+                #Function which calculates the correlation carpet.
+                if self.objId.numOfCH==1:
+                    self.objId.corrArrScale_pc, AC_carCH0, ap, aq = self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
+                    AC_all_CH0[:,:,c] = AC_carCH0
+
+
+                elif self.objId.numOfCH==2:
+                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
+                    AC_all_CH0[:,:,c]  = AC_carCH0
+                    AC_all_CH1[:,:,c]  = AC_carCH1
+                    CC_all_CH01[:,:,c] = CC_carCH01
+                
+                c = c + 1
+
+            
+            #Calculate average carpet for output.
+            self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
+            
+            
+            if self.objId.numOfCH == 2:
+                self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
+                self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+        else:
+            #If full is selected, just defualt to normal carpet.
+            self.objId.AutoCorr_carpetCH0_pc = self.objId.AutoCorr_carpetCH0
+            self.objId.corrArrScale_pc =  self.objId.corrArrScale
+            if self.objId.numOfCH == 2:
+                self.objId.AutoCorr_carpetCH1_pc = self.objId.AutoCorr_carpetCH1
+                self.objId.CrossCorr_carpet01_pc = self.objId.CrossCorr_carpet01
+
 
         
-        self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
-        if self.objId.numOfCH == 2:
-            self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
-            self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
-
-        
-        
+        #Applies to data and forgets old settings.
         self.objId.bleachCorr1 = False
         self.objId.bleachCorr2 = True
         self.win_obj.bleachCorr1_checked = False
         self.win_obj.bleachCorr2_checked = False
+        
+        #Lets the user change channel.
         if self.sel_channel.currentIndex() == 1:
             self.win_obj.carpetDisplay = 1
         else:
             self.win_obj.carpetDisplay = 0
         self.win_obj.bleachCorr2fn()
+        
+        #Updates buttons on main gui.
         self.win_obj.bleachCorr1_on_off.setText('OFF')
         self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: red");
         self.win_obj.bleachCorr2_on_off.setText('ON')
         self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
 
+        #Plots the carpet internally.
         self.plt3.clear()
         self.plt3.set_title('Correlation Carpet Preview')
         self.plt3.set_xlabel('Time (ms)', fontsize=12)
@@ -308,20 +341,24 @@ class bleachCorr2(QtGui.QMainWindow):
         start_x = 0
         #Calculate the total integral
         num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+
         if self.sel_channel.currentIndex() ==1:
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
         else:
             totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
         #Plot 1 in 10 pixels from the Gasussian.
-        c = 0
-        for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
-            c =c+1
-            if c%2==1:
-                color = 'blue'
-            else:
-                color = 'black'
-            self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color)
-            
+        if self.duration_combo_idx >0:
+            c = 0
+            for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
+                c =c+1
+                if c%2==1:
+                    color = 'blue'
+                else:
+                    color = 'black'
+                self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color)
+        else:
+            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[::10],color='blue')
+        
         #If plotting with correction:
         self.plt1.set_title('Intensity Time Trace')
         self.plt1.set_ylabel('Intensity count')
@@ -598,7 +635,7 @@ class bleachCorr(QtGui.QMainWindow):
         residuals = data-A
         return residuals
     def outputData(self):
-        print 'The output data'
+        
         #Find the object ref link
         
         

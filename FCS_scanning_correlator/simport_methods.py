@@ -5,6 +5,7 @@ import platform
 import warnings
 import numpy as np
 import tifffile as tif_fn
+import zlib
 
 from scorrelation_objects import scanObject
 def Import_tiff(filename,par_obj,win_obj):
@@ -22,7 +23,7 @@ def Import_tiff(filename,par_obj,win_obj):
         win_obj.bleachCorr2 = False
         win_obj.label.generateList()
         win_obj.GateScanFileListObj.generateList()
-        #par_obj.objectRef[-1].cb.setChecked(True)
+        
 def Import_lsm(filename,par_obj,win_obj):
     lsm = tif_fn.TiffFile(str(filename))
     name = str(filename).split('/')[-1]
@@ -41,6 +42,262 @@ def Import_lsm(filename,par_obj,win_obj):
         win_obj.bleachCorr2 = False
         win_obj.label.generateList()
         win_obj.GateScanFileListObj.generateList()
+class Import_msr():
+    def __init__(self, fname, par_obj,win_obj):
+         #filename = 'Scanning_FCS_TopfluorPE_Atto647N.lif'
+        self.par_obj = par_obj
+        self.win_obj = win_obj
+        self.fname = fname
+
+        filename_not_path = self.fname.split("/")[-1]
+        
+        
+
+        f = open(fname, 'rb')
+        str_lnk = ""
+        for i in range(0,10):
+            str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+        
+        struct.unpack('I', f.read(4))[0]
+        start_x = struct.unpack('Q', f.read(8))[0]
+        
+        struct.unpack('I', f.read(4))[0]
+        z = 0
+        self.stack_holder = {}
+
+        while(start_x != 0):
+            stack_details = {}
+            stack_details['title'] = filename_not_path
+
+
+            f.seek(start_x)
+            str_lnk = ""
+            for i in range(0,16):
+                str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+            
+            file_version = struct.unpack('I', f.read(4))[0]
+            rank = struct.unpack('I', f.read(4))[0] -1
+            
+            img_size = [0]*rank
+            for i in range(0,15):
+
+                if i <rank:
+                    img_size[i] = struct.unpack('<I', f.read(4))[0]
+                    #print 'The number of pixels along the axes',img_size[i]
+                    
+                else:
+                    struct.unpack('<I', f.read(4))[0]
+            stack_details['size'] = img_size
+            
+            for i in range(0,15):
+                if i <rank:
+                    struct.unpack('<d', f.read(8))
+                else:
+                    struct.unpack('<d', f.read(8))[0]
+            
+            for i in range(0,15):
+                if i <rank:
+                    #print 'The offset: ',
+                    struct.unpack('<d', f.read(8))
+                else:
+                    struct.unpack('<d', f.read(8))[0]
+            dtype = struct.unpack('I', f.read(4))[0]
+            exit_state = False
+            if dtype != 8:
+                #print "I don\'t know what to do with this bit-depth."
+                exit_state = True
+            
+            #print 'dtype: ',dtype
+            compression_type = struct.unpack('I', f.read(4))[0]
+            compression_level = struct.unpack('I', f.read(4))[0]
+            stack_details['compression_type'] = compression_type
+            stack_details['compression_level'] = compression_level
+            #print 'compression? ', compression_type
+            #print 'compression level', compression_level
+            len_of_name = struct.unpack('I', f.read(4))[0]
+            #print 'name_of_len',len_of_name
+            len_of_desc = struct.unpack('I', f.read(4))[0]
+            #print 'descr_len',len_of_desc
+
+            reserved = struct.unpack('l', f.read(8))[0]
+            data_len_disk = struct.unpack('l', f.read(8))[0]
+            start_x = struct.unpack('l', f.read(8))[0]
+            
+            #print 'next_stack_pos',start_x
+            if exit_state == True:
+                continue
+            str_lnk = ""
+            for i in range(0,len_of_name):
+                str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+            stack_details['name'] = str_lnk
+            #print 'name of file:',str_lnk
+            #print 'length of description',len_of_desc
+            desc = f.read(len_of_desc)
+            
+            stack_details['desc'] = desc
+            root = ET.XML(desc)
+            if dtype ==8:
+                bit_length = 2
+            image = []
+            if compression_type == True:
+                imagedec = zlib.decompress(f.read(data_len_disk))
+            else:
+                #print 'nocompression'
+                imagedec = f.read(data_len_disk)
+            
+            #Unpack either original or decompressed data.
+            for i in range(0,img_size[0]*img_size[1]*bit_length,bit_length):
+                image.append(struct.unpack('h',imagedec[i:i+bit_length])[0])
+               
+            stack_details['image'] = np.array(image).reshape(stack_details['size'][1],stack_details['size'][0]).T
+            str_lnk =[]
+            
+            
+            #Footer stuff
+            footer = f.tell()
+            size_of_foot = struct.unpack('I', f.read(4))[0]
+            
+            for b in range(0, 15):
+                #print 'st: ',
+                struct.unpack('I', f.read(4))[0]
+            for b in range(0, 15):
+                #print 'nn: ',
+                struct.unpack('I', f.read(4))[0]
+            
+            
+            metadata_len = struct.unpack('I', f.read(4))[0]
+            #print 'metadata_len',metadata_len
+            
+            
+            f.seek(footer+size_of_foot)
+            #print 'where is this',f.tell()
+
+            for b in range(0,rank+1):
+                length = struct.unpack('<I', f.read(4))[0]
+
+                str_lnk = ""
+                for i in range(0,length):
+                    str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+               
+
+
+            start_e = f.tell()
+            stack_details['meta'] =f.read(metadata_len)
+            
+            self.stack_holder[z] = stack_details
+            z = z+1
+            if start_x == 0:
+                #print 'end'
+                left_over = f.read()
+
+        #Establish whether the imagefile is a time-series. 
+        for subindex in self.stack_holder:
+            meta_info =  ET.XML(self.stack_holder[subindex]['meta'])
+            self.stack_holder[subindex]['timeseries'] = False
+            for d in meta_info.findall(".//item"):
+                if d.text == 'ExpControl T':
+                    self.stack_holder[subindex]['timeseries'] = True
+                    
+                
+                    
+        if self.par_obj.gui == 'show':
+            self.win_obj.testWin = self.AppForm(self)
+            self.win_obj.testWin.show()
+    def import_msr_sing(self, selList):
+        
+        s = []
+        for subindex in selList:
+            self.imDataDesc = {}
+            text_1, ok_1 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the line sampling (Hz):')
+            text_2, ok_2 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the pixel dwell time (us):')
+            self.imDataDesc[7] = self.stack_holder[subindex]['name']
+            self.imDataDesc[6] = float(text_2)
+            self.imDataDesc[3] = self.stack_holder[subindex]['size']
+            self.imDataDesc[4] = [1.0/float(text_1)]
+            self.imDataDesc[2] = ['Red']
+        
+        
+        
+                
+            s.append(scanObject(self.fname,self.par_obj,self.imDataDesc,self.stack_holder[subindex]['image'].astype(np.float64),0,0));
+        
+        
+        if self.par_obj.gui == 'show':
+            self.win_obj.bleachCorr1 = False
+            self.win_obj.bleachCorr2 = False
+            #self.win_obj.bleachCorr1_checked = False
+            #self.win_obj.bleachCorr2_checked = False
+            self.win_obj.label.generateList()
+            self.win_obj.GateScanFileListObj.generateList()
+            
+
+        
+            self.par_obj.objectRef[-1].cb.setChecked(True)
+            self.par_obj.objectRef[-1].plotOn = True
+
+    class AppForm(QtGui.QMainWindow):
+            def __init__(self, parent):
+                QtGui.QMainWindow.__init__(self)
+                self.parent = parent
+                self.create_main_frame()
+                
+                
+
+            def create_main_frame(self):        
+                page = QtGui.QWidget()        
+
+                
+                self.setWindowTitle("Select Images to Import")
+                vbox0 = QtGui.QVBoxLayout()
+                hbox1 = QtGui.QHBoxLayout()
+                hbox2 = QtGui.QHBoxLayout()
+                vbox1 = QtGui.QVBoxLayout()
+                
+                c =0 
+                for subindex in self.parent.stack_holder:
+                    
+                    if self.parent.stack_holder[subindex]['timeseries'] == True and self.parent.stack_holder[subindex]['size'][1] > 500:
+                        
+                        c = c+1
+                        exec("subhbox"+str(c)+" = QtGui.QHBoxLayout()");
+                        exec("self.check"+str(c)+" = QtGui.QCheckBox()");
+                        
+                        exec("self.label"+str(c)+" = QtGui.QLabel()");
+                        exec("self.label"+str(c)+".setText(\""+str(self.parent.stack_holder[subindex]['name'])+"\")")
+                        
+                        exec("subhbox"+str(c)+".addWidget(self.check"+str(c)+")");
+                        exec("subhbox"+str(c)+".addWidget(self.label"+str(c)+")");
+                        exec("subhbox"+str(c)+".addStretch(1)");
+                        exec("vbox1.addLayout(subhbox"+str(c)+")");
+                    
+                    
+                self.button = QtGui.QPushButton('load Images')
+                hbox1.addLayout(vbox1)
+                hbox2.addWidget(self.button)
+                vbox0.addLayout(hbox1)
+                vbox0.addLayout(hbox2)
+                
+                page.setLayout(vbox0)
+                self.setCentralWidget(page)
+
+                self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
+
+            def clicked(self):
+                
+                c=0
+                selList =[];
+                for subindex in self.parent.stack_holder:
+                    
+                    if self.parent.stack_holder[subindex]['timeseries'] == True and self.parent.stack_holder[subindex]['size'][1] > 500:
+                        c = c+1
+                        exec("boolV = self.check"+str(c)+".isChecked()");
+                        if boolV == True:
+                            selList.append(subindex)
+                
+                self.parent.import_msr_sing(selList)
+                self.close()
+
+
 class Import_lif():
     def __init__(self, fname, parObj,win_obj):
     
@@ -256,7 +513,7 @@ class Import_lif():
                 exec("boolV = self.check"+str(c)+".isChecked()");
                 if boolV == True:
                     selList.append(name)
-            print selList.__len__()
+           
             self.parObj.import_lif_sing(selList)
             self.close()
 

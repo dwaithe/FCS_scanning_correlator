@@ -124,7 +124,11 @@ class scanObject():
 
                 #Calculate the brightness and number using the moments.
                 self.brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
-                self.numberNandBCH0.append(raw_count**2/(var_count-raw_count))
+                
+                if (var_count-raw_count) == 0:
+                    self.numberNandBCH0.append(0)
+                else:
+                    self.numberNandBCH0.append(raw_count**2/(var_count-raw_count))
                 
                 
                 corrArrCH0.append(AC0)
@@ -150,13 +154,13 @@ class scanObject():
                     self.kcountCH1.append(kcount)#average count per window. Need to convert to second.
                 
             #Create ouput image.
-            AutoCorr_carpetCH0 = np.zeros((lenG,corrArrCH0.__len__()))
+            AutoCorr_carpetCH0 = np.zeros((corrArrCH0[0][:,1].shape[0],corrArrCH0.__len__()))
             AutoCorr_carpetCH1 = None
             CrossCorr_carpet01 = None
             
             if self.numOfCH ==2:
-                AutoCorr_carpetCH1 = np.zeros((lenG,corrArrCH1.__len__()))
-                CrossCorr_carpet01 = np.zeros((lenG,corrArrCC.__len__()))
+                AutoCorr_carpetCH1 = np.zeros((corrArrCH0[0][:,1].shape[0],corrArrCH1.__len__()))
+                CrossCorr_carpet01 = np.zeros((corrArrCH0[0][:,1].shape[0],corrArrCC.__len__()))
             
                     
             
@@ -185,11 +189,11 @@ class scanObject():
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
             
-            self.CH0 = np.array(self.imDataStore).astype(np.float64)
+            self.CH0 = np.array(self.imDataStore).astype(np.int8)
             if self.end_pt != 0:
                 self.CH0 = np.array(self.imDataStore[self.start_pt:self.end_pt,:]).astype(np.float64)
             self.CH0_pc = np.zeros((self.CH0.shape))
-            self.numOfCH =1
+            self.numOfCH = 1
         elif self.ext == 'lsm':
             #For lsm files the dimensions can vary.
             if self.imDataStore.shape.__len__() > 2:
@@ -220,19 +224,46 @@ class scanObject():
                     self.CH1 = np.array(self.imDataStore[1,self.start_pt:self.end_pt,:]).astype(np.float64)
                 self.CH1_pc = np.zeros((self.CH1.shape))
 
-           
-        elif self.ext == 'lif':
+        elif self.ext == 'msr':
     
             self.name = self.imDataDesc[7]
             self.dwell_time = float(self.imDataDesc[6])
             
-            self.memSize = int(self.imDataDesc[1])
+            #self.memSize = int(self.imDataDesc[1])
             self.LUTName = self.imDataDesc[2]
             self.dimSize = [int(self.imDataDesc[3][0]),int(self.imDataDesc[3][1]),int(self.imDataDesc[3][2])]
             #For display we divide image into sections or panes.
             
             #Convert to ms, default is seconds.
             self.deltat  = float(self.imDataDesc[4][0])*1000
+
+            tempList0 =[];
+            tempList1 =[];
+
+            self.numOfCH = self.LUTName.__len__();
+
+            #Single channel is simple to reshape from pages.
+            if self.numOfCH == 1:
+                    
+                    self.CH0 = np.array(self.imDataStore.T)
+                    
+                    #This is for the crop function
+                    if self.end_pt != 0:
+                        self.CH0 = self.CH0[self.start_pt:self.end_pt,:]
+                    self.CH0_pc = np.zeros((self.CH0.shape))
+        elif self.ext == 'lif' :
+    
+            self.name = self.imDataDesc[7]
+            self.dwell_time = float(self.imDataDesc[6])
+            
+            #self.memSize = int(self.imDataDesc[1])
+            self.LUTName = self.imDataDesc[2]
+            self.dimSize = [int(self.imDataDesc[3][0]),int(self.imDataDesc[3][1]),int(self.imDataDesc[3][2])]
+            #For display we divide image into sections or panes.
+            
+            #Convert to ms, default is seconds.
+            self.deltat  = float(self.imDataDesc[4][0])*1000
+            
             tempList0 =[];
             tempList1 =[];
 
@@ -258,6 +289,7 @@ class scanObject():
                         tempList1.extend(self.imDataStore[int(unit*(i+1)):int(unit*(i+2))])
 
                     self.CH0 = np.array(tempList0).reshape(self.dimSize[1]*self.dimSize[2],self.dimSize[0])
+                    
                     #This is for the crop function
                     if self.end_pt != 0:
                         self.CH0 = self.CH0[self.start_pt:self.end_pt,:]
@@ -344,7 +376,7 @@ class scanObject():
 
        
         
-class corrObject():
+class corr10Object():
     def __init__(self,filepath,parentFn):
         #the container for the object.
         self.parentFn = parentFn
@@ -553,6 +585,8 @@ class corrObject():
             self.ch_type = 0
             self.datalen= len(tdata)
             self.objId.prepare_for_fit()
+            self.param = copy.deepcopy(self.parentFn.def_param)
+            self.parentFn.fill_series_list()
 
         
 

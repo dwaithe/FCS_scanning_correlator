@@ -18,13 +18,14 @@ from matplotlib.widgets import  SpanSelector
 import matplotlib.cm as cm
 
 sys.path.append('../../FCS_point/FCS_point_correlator')
-from simport_methods import Import_lif, Import_tiff, Import_lsm
+from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
 from splugin_methods import bleachCorr, ImpAdvWin, bleachCorr2
-from scorrelation_objects import corrObject, scanObject
+from scorrelation_objects import scanObject
+from correlation_objects import corrObject
 
 from fitting_gui import Form
 import os.path
-
+import warnings
 import pickle
 import errno
 import tifffile as tif_fn
@@ -94,13 +95,17 @@ class FileDialog(QtGui.QMainWindow):
 			self.loadpath = os.path.expanduser('~')+'/FCS_Analysis/'
 
 		#Create loop which opens dialog box and allows selection of files.
-		for filename in fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif files (*.lif);;All Files (*.*)'):
+		for filename in fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)'):
 			nameAndExt = os.path.basename(str(filename)).split('.')
 			fileExt = nameAndExt[-1]
 			if fileExt == 'lif':
 				imLif = Import_lif(filename,self.par_obj,self.win_obj)
+
+			if fileExt == 'msr':
+				imMsr = Import_msr(filename,self.par_obj,self.win_obj)
 			if fileExt == 'tif' or fileExt == 'tiff':
 				imTif = Import_tiff(filename,self.par_obj,self.win_obj)
+				self.par_obj.objectRef[-1].cb.setChecked(True)
 			if fileExt == 'lsm':
 				imTif = Import_lsm(filename,self.par_obj,self.win_obj)
 
@@ -199,17 +204,17 @@ class Window(QtGui.QWidget):
 		#The table which shows the details of each correlated file. 
 		self.modelTab2 = QtGui.QTableWidget()
 		self.modelTab2.setRowCount(0)
-		self.modelTab2.setColumnCount(7)
+		self.modelTab2.setColumnCount(6)
 		self.modelTab2.setColumnWidth(0,80);
 		self.modelTab2.setColumnWidth(1,140);
 		self.modelTab2.setColumnWidth(2,30);
-		self.modelTab2.setColumnWidth(3,100);
-		self.modelTab2.setColumnWidth(4,100);
-		self.modelTab2.setColumnWidth(5,30);
-		self.modelTab2.setColumnWidth(6,100);
+		self.modelTab2.setColumnWidth(3,140);
+		#self.modelTab2.setColumnWidth(4,100);
+		self.modelTab2.setColumnWidth(4,30);
+		self.modelTab2.setColumnWidth(5,100);
 		self.modelTab2.horizontalHeader().setStretchLastSection(True)
 		self.modelTab2.resize(800,400)
-		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,,file name").split(","))
+		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file name").split(","))
 
 		
 		correlationBtns =  QtGui.QVBoxLayout()
@@ -397,7 +402,7 @@ class Window(QtGui.QWidget):
 
 		self.save_log_corr_carpet_btn = QtGui.QPushButton('Log Norm. Carpet')
 		#self.save_log_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
-		self.save_log_corr_carpet_btn.clicked.connect(self.save_carpets)
+		self.save_log_corr_carpet_btn.clicked.connect(self.save_log_carpets)
 
 		self.save_figure_btn = QtGui.QPushButton('Figure')
 		#self.save_figure_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
@@ -545,6 +550,18 @@ class Window(QtGui.QWidget):
 					self.CH0Auto_btn.setStyleSheet(" color: black")
 					self.CH1Auto_btn.setStyleSheet(" color: black")
 					self.CH01Cross_btn.setStyleSheet(" color: green")
+	def save_log_carpets(self):
+		"""Saves the carpet raw data to an image file"""
+		for objId in self.par_obj.objectRef:
+			if(objId.cb.isChecked() == True):
+				
+
+				metadata = dict(microscope='george', shape=self.carpet_img.shape, dtype=self.carpet_img.dtype.str)
+				#print(data.shape, data.dtype, metadata['microscope'])
+
+				metadata = json.dumps(metadata)
+
+				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'.tif', self.carpet_img.astype(np.float32), description=metadata)
 
 	def save_carpets(self):
 		"""Saves the carpet raw data to an image file"""
@@ -704,11 +721,11 @@ class Window(QtGui.QWidget):
 
 		#This is for the raw intensity trace of the data (XT carpet).
 		if objId.numOfCH == 1:
-			XTcarpet=objId.CH0[yLimMn:yLimMx,:].T
+			XTcarpet=np.flipud(objId.CH0[yLimMn:yLimMx,:].T)
 		elif objId.numOfCH == 2:
 			XTcarpet = np.zeros((objId.CH0.shape[1],int(yLimMx-yLimMn),3))
-			XTcarpet[:,:,0]=objId.CH0[yLimMn:yLimMx,:].T
-			XTcarpet[:,:,1]=objId.CH1[yLimMn:yLimMx,:].T
+			XTcarpet[:,:,0]=np.flipud(objId.CH0[yLimMn:yLimMx,:].T)
+			XTcarpet[:,:,1]=np.flipud(objId.CH1[yLimMn:yLimMx,:].T)
 		
 		self.plt5.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,objId.CH0.shape[1]])
 	   
@@ -1126,11 +1143,11 @@ class scanFileList():
 
 			
 			#Adds save button to the file.
-			sb = pushButtonSp2('save file')
-			sb.par_obj = self.par_obj
-			sb.win_obj = self.win_obj
-			sb.objId = self.par_obj.objectRef[i]
-			self.win_obj.modelTab2.setCellWidget(i, 4, sb)
+			#sb = pushButtonSp2('save file')
+			#sb.par_obj = self.par_obj
+			#sb.win_obj = self.win_obj
+			#sb.objId = self.par_obj.objectRef[i]
+			#self.win_obj.modelTab2.setCellWidget(i, 4, sb)
 
 			#Adds save button to the file.
 			xb = pushButtonSp3('X')
@@ -1139,13 +1156,13 @@ class scanFileList():
 			xb.id = i
 			xb.type = 'remove_file'
 			xb.parent_id = self
-			self.win_obj.modelTab2.setCellWidget(i, 5, xb)
+			self.win_obj.modelTab2.setCellWidget(i, 4, xb)
 
 
 			#The filename
 			b = baseList()
 			b.setText('<HTML><p style="margin-top:0">'+self.par_obj.objectRef[i].ext+' file :'+str(self.par_obj.data[i])+' </p></HTML>')
-			self.win_obj.modelTab2.setCellWidget(i, 6, b)
+			self.win_obj.modelTab2.setCellWidget(i, 5, b)
 			
 			
 			#self.par_obj.label.objCheck.append(cb)
@@ -1251,25 +1268,17 @@ class pushButtonSp2(QtGui.QPushButton):
 		self.win_obj = [];
 	def __clicked(self):
 		
-		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH1_Auto_Corr.csv', 'w')
-		f.write('# Time (ns)\tCH1 Auto-Correlation\n')
-		for x in range(0,self.objId.autotime.shape[0]):
-			f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,0,0])+ '\n')
+		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
+		if self.objId.numOfCH == 1:
+			f.write('# Time (ns), CH0 Auto-Correlation\n')
+			for x in range(0,self.objId.autotime.shape[0]):
+				f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+ '\n')
+		if self.objId.numOfCH == 2:
+			f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
+			f.write('# Time (ns),CH0 Auto-Correlation, CH1 Auto-Correlation, CC01 Auto-Correlation, CC10 Auto-Correlation\n')
+			for x in range(0,self.objId.autotime.shape[0]):
+				f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+','+str(self.objId.autoNorm[x,1,1])+','+str(self.objId.autoNorm[x,0,1])+','+str(self.objId.autoNorm[x,1,0])+ '\n')
 
-		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH2_Auto_Corr.csv', 'w')
-		f.write('# Time (ns)\tCH2 Auto-Correlation\n')
-		for x in range(0,self.objId.autotime.shape[0]):
-			f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,1,1])+ '\n')
-		
-		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH1_Cross_Corr.csv', 'w')
-		f.write('# Time (ns)\tCH1 Cross-Correlation\n')
-		for x in range(0,self.objId.autotime.shape[0]):
-			f.write(str(int(self.obj.autotime[x][0]))+','+str(self.objId.autoNorm[x,0,1])+ '\n')
-		
-		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_CH2_Cross_Corr.csv', 'w')
-		f.write('# Time (ns)\tCH2 Cross-Correlation\n')
-		for x in range(0,self.objId.autotime.shape[0]):
-			f.write(str(int(self.objId.autotime[x][0]))+','+str(self.objId.autoNorm[x,1,0])+ '\n')
 		print 'file Saved'
 class folderOutput(QtGui.QMainWindow):
 	
@@ -1361,27 +1370,29 @@ if __name__ == '__main__':
 	
 
 	
-	path = '/Users/dwaithe/Documents/collaborators/EggelingC/data/Scanning FCS data/from Jorge/'
-	filename = '20140902_ScanFCCS_Jcam Glass LCksnap STAR Sri.lif'
-	par_obj.gui  ='show'
-	filepath = path+filename
-	scanlist = Import_lif(filepath,par_obj, mainWin)
-	c=0
-	selList =[];
-	for name in scanlist.store:
-		c = c+1
+	#path = '/Users/dwaithe/Documents/collaborators/EggelingC/data/Scanning FCS data/from Jorge/'
+	#filename = '20140902_ScanFCCS_Jcam Glass LCksnap STAR Sri.lif'
+	#par_obj.gui  ='show'
+	#filepath = path+filename
+	#scanlist = Import_lif(filepath,par_obj, mainWin)
+	#c=0
+	#selList =[];
+	#for name in scanlist.store:
+#		c = c+1
 
 		#exec("boolV = self.check"+str(c)+".isChecked()");
-		if c == 3:
-			selList.append(name)
-	print selList.__len__()
-	scanlist.import_lif_sing(selList)
-	mainWin.testWin.close()
-	mainWin.plotDataQueueFn()
+#		if c == 3:
+#			selList.append(name)
+#	print selList.__len__()
+#	scanlist.import_lif_sing(selList)
+#	mainWin.testWin.close()
+#	mainWin.plotDataQueueFn()
 	
 	
 	
-	
+
+	warnings.filterwarnings('ignore', '.*mages are not supported on non-linear axes.*',)
+	warnings.filterwarnings('ignore', '.*aspect is not supported for*',)
 	
 	
 

@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 """ 
     A multiple-tau algorithm for Python 2.7 and 3.x.
@@ -144,11 +145,12 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
     
     k = int(np.floor(np.log2(N/m)))
 
+
     # In the base2 multiple-tau scheme, the length of the correlation
     # array is (only taking into account values that are computed from
     # traces that are just larger than m):  
     lenG = np.int(np.floor(m + k*m/2))
-        
+
     G = np.zeros((lenG, 2), dtype=dtype)
 
     normstat = np.zeros(lenG, dtype=dtype)
@@ -176,6 +178,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
     # Add up every second element
     trace = (trace[:N:2]+trace[1:N+1:2])/2
     N /= 2
+    ldx =10000
     ## Start iteration for each m/2 values
     for step in range(1,k+1):
         ## Get the next m/2 values via correlation of the trace
@@ -196,14 +199,22 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
                 #   maxval = min(maxval1, maxval2)
                 # However, we then would also need to find out which 
                 # element in G is the last element...
-                G = G[:idx-1]
-                normstat = normstat[:idx-1]
-                normnump = normnump[:idx-1]
+                
+                #I modified here because I want the sequence to be predictable in size before it is written.
+                #G = G[:idx-1]
+                #Finds the first value of idx in this part of loop.
+                if ldx >= idx:
+                    ldx = idx
+                #Keeps indexing.
+                G[idx,0] = deltat * (n+m/2) * 2**step
+                #Freezes the normalisation.
+                normstat = normstat[:ldx-1]
+                normnump = normnump[:ldx-1]
                 # Note that this break only breaks out of the current
                 # for loop. However, we are already in the last loop
                 # of the step-for-loop. That is because we calculated
                 # k in advance.
-                break
+                
             else:
                 G[idx,0] = deltat * (n+m/2) * 2**step
                 # This is the computationally intensive step
@@ -219,7 +230,8 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
         N /= 2
 
     if normalize:
-        G[:,1] /= traceavg**2 * normstat
+        #Added ldx-1 to insure only normalises valid sequences.
+        G[:ldx-1,1] /= traceavg**2 * normstat[:ldx-1]
     else:
         G[:,1] *= N0/normnump 
     
