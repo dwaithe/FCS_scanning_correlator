@@ -9,12 +9,12 @@ import numpy as np
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
 from matplotlib.patches import Rectangle
 from matplotlib.font_manager import FontProperties
-from matplotlib.widgets import Slider
-from scorrelation_objects import scanObject, autocorrelate
+from matplotlib.widgets import Slider, SpanSelector
+from scorrelation_objects import scanObject, autocorrelate, correlate
 
 class bleachCorr2(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self)
+        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -148,6 +148,7 @@ class bleachCorr2(QtGui.QMainWindow):
         self.show()
         self.plotData()
         self.redraw_carpet()
+        self.duration_activated(self.duration_combo.currentText())
     def redraw_carpet(self):
         """To make sure """
         self.objId.bleachCorr1_checked = False
@@ -374,19 +375,28 @@ class bleachCorr2(QtGui.QMainWindow):
 
 
 class ImpAdvWin(QtGui.QMainWindow):
-    def __init__(self,par_obj,win_obj,obj_id_num):
-        QtGui.QMainWindow.__init__(self)
+    def __init__(self,par_obj,win_obj):
+        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
         self.par_obj = par_obj;
         self.win_obj = win_obj;
-        self.objId = self.par_obj.objectRef[obj_id_num]
         
-        self.num_of_lines = self.objId.num_of_lines;
-        self.start_pt = 0;
-        self.end_pt = self.objId.num_of_lines;
-        self.interval_pt = 1;
 
     def create_main_frame(self):
-        page = QtGui.QWidget() 
+        page = QtGui.QWidget()
+
+        for objId in self.par_obj.objectRef:
+            if(objId.cb.isChecked() == True):
+                self.objId=objId
+                break;
+
+        if self.objId.end_pt != 0:
+            print "The object has already been cropped."
+            return
+        
+        #self.num_of_lines = np.round(self.objId.num_of_lines*self.objId.deltat,0);
+        self.start_pt = 0;
+        self.end_pt = np.round(self.objId.num_of_lines*self.objId.deltat,0)
+        self.interval_pt = 1;
 
         
 
@@ -402,8 +412,14 @@ class ImpAdvWin(QtGui.QMainWindow):
         #Crop settings.
         crop_panel = QtGui.QGroupBox('Import Crop Settings')
 
-        self.start_pt_txt = QtGui.QLabel('Start point: ');
-        self.end_pt_txt = QtGui.QLabel('End point: ');
+        self.start_col_txt = QtGui.QLabel('Start column: ');
+        self.end_col_txt = QtGui.QLabel('End column: ');
+        self.start_col_sp = QtGui.QSpinBox()
+        self.end_col_sp = QtGui.QSpinBox()
+       
+
+        self.start_pt_txt = QtGui.QLabel('Start time (ms) pt: ');
+        self.end_pt_txt = QtGui.QLabel('End time (ms) pt: ');
         self.interval_pt_txt = QtGui.QLabel('Num of Intervals ');
         self.start_pt_sp = QtGui.QSpinBox()
         self.end_pt_sp = QtGui.QSpinBox()
@@ -413,18 +429,34 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         #Set limits on the spinboxes
         self.start_pt_sp.setMinimum(0)
-        self.start_pt_sp.setMaximum(self.num_of_lines)
+        self.start_pt_sp.setMaximum(np.round(self.objId.num_of_lines*self.objId.deltat,0))
         self.end_pt_sp.setMinimum(0)
-        self.end_pt_sp.setMaximum(self.num_of_lines)
+        self.end_pt_sp.setMaximum(np.round(self.objId.num_of_lines*self.objId.deltat,0))
         self.interval_pt_sp.setMinimum(1)
         self.interval_pt_sp.setMaximum(20)
+
+        self.start_col_sp.setMinimum(0)
+        self.start_col_sp.setMaximum(self.objId.CH0.shape[1])
+        self.end_col_sp.setMinimum(0)
+        self.end_col_sp.setMaximum(self.objId.CH0.shape[1])
         
         self.start_pt_sp.setValue(self.start_pt)
         self.end_pt_sp.setValue(self.end_pt)
         self.interval_pt_sp.setValue(1)
+
+        self.start_col_sp.setValue(0)
+        self.end_col_sp.setValue(self.objId.CH0.shape[1])
+
+        self.vmin = self.start_col_sp.value()
+        self.vmax = self.end_col_sp.value()
+
+
         self.start_pt_sp.valueChanged[int].connect(self.plotData)
         self.end_pt_sp.valueChanged[int].connect(self.plotData)
         self.interval_pt_sp.valueChanged[int].connect(self.plotData)
+        self.start_col_sp.valueChanged[int].connect(self.plotData)
+        self.end_col_sp.valueChanged[int].connect(self.plotData)
+        
 
 
         reprocess_btn = QtGui.QPushButton('Reprocess Data')
@@ -434,17 +466,26 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         left_grid = QtGui.QGridLayout()
         crop_panel.setLayout(left_grid)
-        left_grid.addWidget(self.start_pt_txt,1,0)
-        left_grid.addWidget(self.end_pt_txt,2,0)
-        left_grid.addWidget(self.interval_pt_txt,3,0)
-        left_grid.addWidget(self.start_pt_sp,1,1)
-        left_grid.addWidget(self.end_pt_sp,2,1)
-        left_grid.addWidget(self.interval_pt_sp,3,1)
+
+        left_grid.addWidget(self.start_col_txt,1,0)
+        left_grid.addWidget(self.end_col_txt,2,0)
+        
+        left_grid.addWidget(self.start_col_sp,1,1)
+        left_grid.addWidget(self.end_col_sp,2,1)
+        
+
+        left_grid.addWidget(self.start_pt_txt,4,0)
+        left_grid.addWidget(self.end_pt_txt,5,0)
+        left_grid.addWidget(self.interval_pt_txt,6,0)
+        left_grid.addWidget(self.start_pt_sp,4,1)
+        left_grid.addWidget(self.end_pt_sp,5,1)
+        left_grid.addWidget(self.interval_pt_sp,6,1)
 
         reprocess_btn.clicked.connect(self.reprocess_and_create)
         
         vbox1.addWidget(crop_panel)
         vbox1.addWidget(reprocess_btn)
+        vbox1.addStretch()
         #vbox1.addWidget(apply_to_imports)
         #vbox1.addWidget(store_profile)
         #vbox1.addWidget(import_profile)
@@ -452,15 +493,17 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         
 
-        self.figure1 = Figure(figsize=(32,2), dpi=100)
+        self.figure1 = Figure(figsize=(32,8), dpi=100)
 
         self.canvas1 = FigureCanvas(self.figure1)
         self.figure1.patch.set_facecolor('white')
-        self.plt1 = self.figure1.add_subplot(1, 1, 1)
+        self.plt1 = self.figure1.add_subplot(2, 1, 2)
+
+        self.plt2 = self.figure1.add_subplot(2, 1, 1)
         
 
         #Makes sure it spans the whole figure.
-        #self.figure1.subplots_adjust(left=0.001, right=0.999, top=0.999, bottom=0.001)
+        self.figure1.subplots_adjust(left=0.1, right=0.9, top=0.95, bottom=0.1, wspace=0.5,hspace=0.5)
         vbox2.addWidget(self.canvas1)
         page.setLayout(hbox_main)
         self.setCentralWidget(page)
@@ -474,18 +517,71 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.par_obj.start_pt = self.start_pt
         self.par_obj.end_pt = self.end_pt
         self.par_obj.interval_pt = self.interval_pt
+
+        self.start_col = self.start_col_sp.value()
+        self.end_col = self.end_col_sp.value()
         
+
+        self.plt2.cla()
+
+        #The span function which changes the carpet visualisation.
+       
+        yLimMn = (float(self.objId.pane))*(float(self.objId.CH0.shape[1])/64)*150
+        yLimMx = (float(self.objId.pane+1))*(float(self.objId.CH0.shape[1])/64)*150
+        print 'objid.pane',self.objId.pane,'self.objId.shape',self.objId.CH0.shape[1], 'yLimMn',yLimMn
+        print 'objid.pane',self.objId.pane+1,'self.objId.shape',self.objId.CH0.shape[1], 'yLimMn',yLimMn
+
+        #This is for the raw intensity trace of the data (XT carpet).
+        if self.objId.numOfCH == 1:
+            XTcarpet=np.flipud(self.objId.CH0[yLimMn:yLimMx,:].T)
+        elif self.objId.numOfCH == 2:
+            XTcarpet = np.zeros((self.objId.CH0.shape[1],int(yLimMx-yLimMn),3))
+            XTcarpet[:,:,0]=np.flipud(self.objId.CH0[yLimMn:yLimMx,:].T)
+            XTcarpet[:,:,1]=np.flipud(self.objId.CH1[yLimMn:yLimMx,:].T)
+        
+
+        self.span1 = SpanSelector(self.plt2, self.set_column_pixels, 'vertical', useblit=True, span_stays=True,minspan =0, rectprops=dict(edgecolor='white',alpha=1.0, facecolor='None') )        
+        
+
+        self.plt2.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,self.objId.CH0.shape[1]])
+       
+        
+        try:
+                self.line.remove()
+        except:
+            pass
+        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="white",fill=False, alpha=1.0)
+        self.canvas1.draw()
+
+        self.plt2.set_title('XT Carpet',fontsize=10)
+        self.plt2.set_xlabel('Scan line ('+str(np.round(self.objId.deltat,2))+') ms', fontsize=10)
+        self.plt2.set_ylabel('Column pixels', fontsize=10)
+        self.plt2.tick_params(axis='both', which='major', labelsize=8)
+        self.plt2.autoscale(False)
+        self.plt2.set_ylim(0,XTcarpet.shape[0])
+        
+        
+
+
+
+
+
+
+
+
         self.plt1.cla()
         #Calculate the total integral
         totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
         #Plot 1 in 10 pixels from the Gasussian.
-        self.plt1.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],'blue')
+        self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[0::10],color=self.objId.color)
         #If plotting with correction:
-        self.plt1.set_xlim(0,self.num_of_lines)
+        self.plt1.set_title('Intensity Time Trace',fontsize=10)
+        self.plt1.set_ylabel('Intensity count',fontsize=10)
+        self.plt1.set_xlabel('Time (ms)',fontsize=10)
         
         if self.objId.numOfCH == 2:
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
-            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[0::10],'red')
+            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[0::10],'grey')
             
         
         for i in range(0,self.interval_pt):
@@ -499,7 +595,19 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.plt1.figure.canvas.draw()
         #ted.remove()
         #self.draw_region()
-        
+    def set_column_pixels(self,vmin,vmax):
+        self.vmin = vmin
+        self.vmax = vmax
+        #The start of the drawing
+        self.start_col_sp.setValue(int(np.round(vmin,0)))
+        #The end of the drawing.
+        self.end_col_sp.setValue(int(np.round(vmax,0)))
+        try:
+                self.line.remove()
+        except:
+            pass
+        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="white",fill=False, alpha=1.0)
+        self.canvas1.draw()
     def draw_region(self):
         self.rect = []
         
@@ -513,20 +621,21 @@ class ImpAdvWin(QtGui.QMainWindow):
         s =[]
         for i in range(0,self.par_obj.interval_pt):
             interval = (self.par_obj.end_pt-self.par_obj.start_pt)/self.par_obj.interval_pt
-            st = np.round(self.par_obj.start_pt + (interval*i),0)
-            en = np.round(self.par_obj.start_pt + ((interval)*(i+1)), 0)
-            s.append(scanObject(self.objId.filepath,self.par_obj,self.objId.imDataDesc,self.objId.imDataStore,st,en));
+            st = np.round((self.par_obj.start_pt + (interval*i))/self.objId.deltat,0)
+            en = np.round((self.par_obj.start_pt + ((interval)*(i+1)))/self.objId.deltat,0)
+           
+            s.append(scanObject(self.objId.filepath,self.par_obj,self.objId.imDataDesc,self.objId.imDataStore,st,en,int(np.round(self.vmin,0)),int(np.round(self.vmax,0))));
             s[-1].type = self.objId.type+' sub '+str(s[-1].unqID)
             s[-1].name = s[-1].name+ '_sub_'+str(s[-1].unqID)+'_'
         #self.win_obj.canvas1.draw()
         self.win_obj.label.generateList()
-        self.win_obj.GateScanFileListObj.generateList()
+        #self.win_obj.GateScanFileListObj.generateList()
         
 
 
 class bleachCorr(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self)
+        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -539,6 +648,7 @@ class bleachCorr(QtGui.QMainWindow):
             if(objId.cb.isChecked() == True):
                 self.objId=objId
                 break;
+
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
@@ -550,9 +660,7 @@ class bleachCorr(QtGui.QMainWindow):
         self.figure1 = plt.figure(figsize=(10,4))
         self.figure1.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.90, wspace=0.3, hspace=0.2)
         
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
-        #self.canvas1 = FigureCanvas(self.figure1)
+        
         
         self.figure1.patch.set_facecolor('white')
         self.canvas1 = FigureCanvas(self.figure1)
@@ -570,6 +678,35 @@ class bleachCorr(QtGui.QMainWindow):
         self.export_trace_btn.setEnabled(False)
         self.vbox2 = QtGui.QHBoxLayout()
         self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
+
+        self.equation_label = QtGui.QLabel('GDiff = f0*np.exp(-x/tb)')
+        
+
+        self.equation_ch1_box = QtGui.QHBoxLayout()
+        self.equation_ch2_box = QtGui.QHBoxLayout()
+        self.equation_f01_txt = QtGui.QLabel('CH0 f0:')
+        self.equation_f01 = QtGui.QLineEdit()
+        self.equation_tb1_txt = QtGui.QLabel('CH0 (1/tb):')
+        self.equation_tb1 = QtGui.QLineEdit()
+        self.equation_ch1_box.addWidget(self.equation_f01_txt)
+        self.equation_ch1_box.addWidget(self.equation_f01)
+        self.equation_ch2_box.addWidget(self.equation_tb1_txt)
+        self.equation_ch2_box.addWidget(self.equation_tb1)
+        self.equation_f01.setReadOnly(True)
+        self.equation_tb1.setReadOnly(True)
+
+        self.equation_ch3_box = QtGui.QHBoxLayout()
+        self.equation_ch4_box = QtGui.QHBoxLayout()
+        self.equation_f02_txt = QtGui.QLabel('CH1 f0:')
+        self.equation_f02 = QtGui.QLineEdit()
+        self.equation_tb2_txt = QtGui.QLabel('CH1 (1/tb):')
+        self.equation_tb2 = QtGui.QLineEdit()
+        self.equation_ch3_box.addWidget(self.equation_f02_txt)
+        self.equation_ch3_box.addWidget(self.equation_f02)
+        self.equation_ch4_box.addWidget(self.equation_tb2_txt)
+        self.equation_ch4_box.addWidget(self.equation_tb2)
+        self.equation_f02.setReadOnly(True)
+        self.equation_tb2.setReadOnly(True)
         
         
         self.export_trace_btn.clicked.connect(self.outputData)
@@ -583,6 +720,13 @@ class bleachCorr(QtGui.QMainWindow):
         vbox0.addLayout(self.vbox2)
         vbox0.addWidget(self.apply_corr_btn)
         vbox0.addWidget(self.export_trace_btn)
+        vbox0.addWidget(self.equation_label)
+        vbox0.addLayout(self.equation_ch1_box)
+        vbox0.addLayout(self.equation_ch2_box)
+        if self.objId.numOfCH ==2:
+            vbox0.addLayout(self.equation_ch3_box)
+            vbox0.addLayout(self.equation_ch4_box)
+
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
         
@@ -614,8 +758,9 @@ class bleachCorr(QtGui.QMainWindow):
         res = minimize(self.residual, def_param, args=(np.arange(0,totalFn.__len__()),np.array(totalFn).astype(np.float64)))
         
         x= np.arange(0,totalFn.__len__())
+
         #The useful parameters
-        return self.equation_(def_param,x), def_param['f0'].value
+        return self.equation_(def_param,x), def_param['f0'].value, def_param['tb'].value
     def apply_corr_fn(self,inFn,ratio):
         """Applys the correction to the file."""
         wei = self.weightings/ratio
@@ -685,7 +830,9 @@ class bleachCorr(QtGui.QMainWindow):
         if self.corrFn == True:
             
             #Learns the fit.
-            self.weightings,  self.learn_f0 = self.learn_corr_fn(totalFn)
+            self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+            self.equation_f01.setText(str(np.round(self.learn_f0,1)))
+            self.equation_tb1.setText(str(np.round(1/self.learn_tb,5)))
             out_total_fn = self.apply_corr_fn(totalFn,1)
             
             self.plt1.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')
@@ -708,7 +855,245 @@ class bleachCorr(QtGui.QMainWindow):
             if self.corrFn == True:
                 
                 #Learns the fit.
-                self.weightings,  self.learn_f0 = self.learn_corr_fn(totalFn)
+                self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+                self.equation_f02.setText(str(np.round(self.learn_f0,1)))
+                self.equation_tb2.setText(str(1/np.round(self.learn_tb,5)))
+                out_total_fn = self.apply_corr_fn(totalFn,1)
+                
+                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')
+                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red')
+                
+                
+                self.plt2.set_ylim(bottom=0)
+
+        self.canvas1.draw()
+class SpotSizeCalculation(QtGui.QMainWindow):
+    def __init__(self,par_obj,win_obj):
+        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        #self.fileArray = fileArray
+        #self.create_main_frame()
+        self.par_obj = par_obj
+        self.win_obj = win_obj
+        self.corrFn = False
+        
+
+    def create_main_frame(self):
+        for objId in self.par_obj.objectRef:
+            if(objId.cb.isChecked() == True):
+                self.objId=objId
+                break;
+
+        self.corrFn = False      
+        #self.trace_idx = self.par_obj.clickedS1
+
+        page = QtGui.QWidget()        
+        hbox_main = QtGui.QHBoxLayout()
+        vbox1 = QtGui.QVBoxLayout()
+        vbox0 = QtGui.QVBoxLayout()
+        self.setWindowTitle("Bleach correction")
+        self.figure1 = plt.figure(figsize=(10,4))
+        self.figure1.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.90, wspace=0.3, hspace=0.2)
+        
+        
+        
+        self.figure1.patch.set_facecolor('white')
+        self.canvas1 = FigureCanvas(self.figure1)
+
+        
+        self.plt1 = self.figure1.add_subplot(1,2,1)
+        self.plt2 = self.figure1.add_subplot(1,2,2)
+    
+    
+        
+        self.export_trace_btn = QtGui.QPushButton('Apply to Data')
+        self.export_trace_btn.setEnabled(False)
+        self.vbox2 = QtGui.QHBoxLayout()
+        self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
+
+        self.equation_label = QtGui.QLabel('y = (1/N)*(np.exp(-(2*x**2)/((d**2)/(2*np.log(2)))))')
+        
+
+        self.equation_ch1_box = QtGui.QHBoxLayout()
+        self.equation_ch2_box = QtGui.QHBoxLayout()
+        self.equation_ch3_box = QtGui.QHBoxLayout()
+        self.equation_N_txt = QtGui.QLabel('CH0 N:')
+        self.equation_N = QtGui.QLineEdit()
+        self.equation_d_txt = QtGui.QLabel('CH0 d:')
+        self.equation_d = QtGui.QLineEdit()
+        self.pixel_size_txt = QtGui.QLabel('pixel size: (nm)')
+        self.pixel_size = QtGui.QLineEdit()
+        self.equation_ch1_box.addWidget(self.equation_N_txt)
+        self.equation_ch1_box.addWidget(self.equation_N)
+        self.equation_ch2_box.addWidget(self.equation_d_txt)
+        self.equation_ch2_box.addWidget(self.equation_d)
+        self.equation_ch3_box.addWidget(self.pixel_size_txt)
+        self.equation_ch3_box.addWidget(self.pixel_size)
+        self.equation_N.setReadOnly(True)
+        self.equation_d.setReadOnly(True)
+
+        
+        
+        
+        
+        self.apply_corr_btn.clicked.connect(self.calculate_spatial_carpet)
+        
+        hbox_main.addLayout(vbox0)
+        hbox_main.addLayout(vbox1)
+        
+        
+        
+        vbox0.addLayout(self.vbox2)
+        vbox0.addWidget(self.apply_corr_btn)
+        vbox0.addWidget(self.export_trace_btn)
+        vbox0.addWidget(self.equation_label)
+        vbox0.addLayout(self.equation_ch1_box)
+        vbox0.addLayout(self.equation_ch2_box)
+        vbox0.addLayout(self.equation_ch3_box)
+        
+
+        vbox0.addStretch();
+        vbox1.addWidget(self.canvas1)
+        
+        page.setLayout(hbox_main)
+        self.setCentralWidget(page)
+        self.show()
+        
+        #self.
+        #self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
+    def export_traceFn(self):
+        corrObj= corrObject(self.objId.filepath,form);
+        form.objIdArr.append(corrObj.objId)
+        corrObj.name = self.objId.name+'_CH0_Auto_Corr'
+        corrObj.updateFitList()
+        corrObj.autoNorm = np.array(self.corltd_corr[:,1]).reshape(-1)
+        corrObj.autotime = np.array(self.corltd_corr[:,0]).reshape(-1)
+        corrObj.param = form.def_param
+        form.fill_series_list(form.objIdArr)
+    
+    def plot_corrFn(self):
+        self.export_trace_btn.setEnabled(True)
+        self.corrFn = True
+        self.plotData()
+    def learn_corr_fn(self,totalFn):
+        """Calculates the correction and generates output."""
+        def_param = Parameters()
+        def_param.add('N', value=1/np.max(totalFn), vary=True)
+        def_param.add('d', value=250, vary=True  )
+        sp = float(self.pixel_size.text())
+        res = minimize(self.residual, def_param, args=(np.arange(-totalFn.shape[0]/2,totalFn.shape[0]/2)*sp,np.array(totalFn).astype(np.float64)))
+        
+        x=np.arange(-totalFn.shape[0]/2,totalFn.shape[0]/2)*sp
+
+        #The useful parameters
+        return self.equation_(def_param,x), def_param['N'].value, def_param['d'].value
+    def apply_corr_fn(self,inFn,ratio):
+        """Applys the correction to the file."""
+        wei = self.weightings/ratio
+        l_f0 = self.learn_f0/ratio
+        outFn = (inFn[:]/np.sqrt(wei[:]/l_f0))+ (l_f0*(1-np.sqrt(wei[:]/l_f0)))
+        return outFn
+    def residual(self,param, x, data):
+        """Calculates the difference between the data and the predicted model"""
+        A = self.equation_(param, x)
+        residuals = data-A
+        return residuals
+    def equation_(self,param, x):
+            """The equation used for photobleach correction"""
+            N = float(param['N'].value);  d = float(param['d'].value);
+            #For one diffusing species
+            y = (1/N)*(np.exp(-(2*x**2)/((d**2)/(2*np.log(2)))))
+            
+            return y
+
+    def calculate_spatial_carpet(self):
+        
+        #Find the object ref link
+        
+        img1 = self.objId.CH0
+
+        self.num_of_lines  = self.objId.CH0.shape[0]
+        if self.num_of_lines%2 == 1:
+            self.num_of_lines -= 1
+
+
+        #Find the length of the generated correlation function.
+        k = int(np.floor(np.log2(self.num_of_lines/self.objId.m)))
+        self.lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+        mar = int((self.objId.spatialBin-1)/2)
+
+        #self.lenG = 104
+        s_img1 = img1[:,np.floor(img1.shape[1]/2)]
+        out = np.zeros((self.lenG,self.objId.CH0.shape[1]-(2*mar)))
+        for i in range(mar,out.shape[1]-mar):
+            s_img2 = img1[:,i]
+            e = correlate(s_img1.astype(np.float64),s_img2.astype(np.float64),m=self.objId.m,deltat=self.objId.deltat,normalize=True)
+            out[:,i] = e[:,1]
+
+        self.plt1.imshow(out)
+        self.plt2.plot(out[0,:])
+        
+        print 'sp',self.objId.dwell_time
+        print 'line',self.objId.deltat
+
+        equation, N_value, d_value = self.learn_corr_fn(out[0,:])
+        self.plt2.plot(equation)
+        print 'N_value', N_value
+        print 'd_value',d_value
+
+        self.equation_N.setText(str(N_value))
+        self.equation_d.setText(str(d_value))
+        self.canvas1.draw()
+
+
+
+
+        
+        
+
+        
+
+    def plotData(self):
+        self.plt1.cla()
+        self.plt1.set_title('Intensity Time Trace CH0')
+        self.plt1.set_ylabel('Intensity Counts')
+        self.plt1.set_xlabel('Time (ms)')
+        
+        #Calculate the total integral
+        totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
+        #Plot 1 in 10 pixels from the Gasussian.
+        self.plt1.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],'blue')
+        #If plotting with correction:
+        if self.corrFn == True:
+            
+            #Learns the fit.
+            self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+            self.equation_f01.setText(str(np.round(self.learn_f0,1)))
+            self.equation_tb1.setText(str(np.round(1/self.learn_tb,5)))
+            out_total_fn = self.apply_corr_fn(totalFn,1)
+            
+            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')
+            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red')
+            
+            
+            self.plt1.set_ylim(bottom=0)
+
+        
+        if self.objId.numOfCH == 2:
+            self.plt2.cla()
+            self.plt2.set_title('Intensity Time Trace CH1')
+            self.plt2.set_ylabel('Intensity Counts')
+            self.plt2.set_xlabel('Time (ms)')
+            #Calculate the total integral
+            totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
+            #Plot 1 in 10 pixels from the Gasussian.
+            self.plt2.plot(range(0,totalFn.shape[0],10) ,totalFn[0::10],'grey')
+            #If plotting with correction:
+            if self.corrFn == True:
+                
+                #Learns the fit.
+                self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+                self.equation_f02.setText(str(np.round(self.learn_f0,1)))
+                self.equation_tb2.setText(str(1/np.round(self.learn_tb,5)))
                 out_total_fn = self.apply_corr_fn(totalFn,1)
                 
                 self.plt2.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')

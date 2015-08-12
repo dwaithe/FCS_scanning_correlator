@@ -18,11 +18,11 @@ def Import_tiff(filename,par_obj,win_obj):
         deltat= 1000/float(text_1)
         #pickle.dump(tif.asarray(), open('extra.p',"wb"))
 
-        scanObject(filename,par_obj,[deltat,float(text_2)],tif.asarray(),0,0);
+        scanObject(filename,par_obj,[deltat,float(text_2)/1000000],tif.asarray(),0,0);
         win_obj.bleachCorr1 = False
         win_obj.bleachCorr2 = False
         win_obj.label.generateList()
-        win_obj.GateScanFileListObj.generateList()
+        #win_obj.GateScanFileListObj.generateList()
         
 def Import_lsm(filename,par_obj,win_obj):
     lsm = tif_fn.TiffFile(str(filename))
@@ -34,14 +34,14 @@ def Import_lsm(filename,par_obj,win_obj):
         deltat= 1000/float(text_1)
         #pickle.dump(tif.asarray(), open('extra.p',"wb"))
         
-        scanObject(filename,par_obj,[deltat,float(text_2)],lsm.asarray(),0,0);
+        scanObject(filename,par_obj,[deltat,float(text_2)/1000000],lsm.asarray(),0,0);
         #par_obj.objectRef[-1].cb.setChecked(True)
         win_obj.DeltatEdit.setText(str(deltat));
         
         win_obj.bleachCorr1 = False
         win_obj.bleachCorr2 = False
         win_obj.label.generateList()
-        win_obj.GateScanFileListObj.generateList()
+        #win_obj.GateScanFileListObj.generateList()
 class Import_msr():
     def __init__(self, fname, par_obj,win_obj):
          #filename = 'Scanning_FCS_TopfluorPE_Atto647N.lif'
@@ -202,7 +202,9 @@ class Import_msr():
                     
         if self.par_obj.gui == 'show':
             self.win_obj.testWin = self.AppForm(self)
-            self.win_obj.testWin.show()
+            #self.win_obj.testWin.setWindowModality(QtCore.Qt.ApplicationModal)
+            self.win_obj.testWin.exec_()
+        
     def import_msr_sing(self, selList):
         
         s = []
@@ -211,7 +213,7 @@ class Import_msr():
             text_1, ok_1 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the line sampling (Hz):')
             text_2, ok_2 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the pixel dwell time (us):')
             self.imDataDesc[7] = self.stack_holder[subindex]['name']
-            self.imDataDesc[6] = float(text_2)
+            self.imDataDesc[6] = float(text_2)/1000000
             self.imDataDesc[3] = self.stack_holder[subindex]['size']
             self.imDataDesc[4] = [1.0/float(text_1)]
             self.imDataDesc[2] = ['Red']
@@ -228,16 +230,16 @@ class Import_msr():
             #self.win_obj.bleachCorr1_checked = False
             #self.win_obj.bleachCorr2_checked = False
             self.win_obj.label.generateList()
-            self.win_obj.GateScanFileListObj.generateList()
+            #self.win_obj.GateScanFileListObj.generateList()
             
 
         
             self.par_obj.objectRef[-1].cb.setChecked(True)
             self.par_obj.objectRef[-1].plotOn = True
 
-    class AppForm(QtGui.QMainWindow):
+    class AppForm(QtGui.QDialog):
             def __init__(self, parent):
-                QtGui.QMainWindow.__init__(self)
+                QtGui.QDialog.__init__(self)
                 self.parent = parent
                 self.create_main_frame()
                 
@@ -277,8 +279,8 @@ class Import_msr():
                 vbox0.addLayout(hbox1)
                 vbox0.addLayout(hbox2)
                 
-                page.setLayout(vbox0)
-                self.setCentralWidget(page)
+                #page.setLayout(vbox0)
+                self.setLayout(vbox0)
 
                 self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
 
@@ -368,7 +370,7 @@ class Import_lif():
                         pass
         if self.parObj.gui == 'show':
             self.win_obj.testWin = self.AppForm(self.store,self)
-            self.win_obj.testWin.show()
+            self.win_obj.testWin.exec_()
     def import_lif_sing(self,selList):
         self.imDataStore =[];
         self.imDataDesc=[];
@@ -452,16 +454,16 @@ class Import_lif():
             #self.win_obj.bleachCorr1_checked = False
             #self.win_obj.bleachCorr2_checked = False
             self.win_obj.label.generateList()
-            self.win_obj.GateScanFileListObj.generateList()
+            #self.win_obj.GateScanFileListObj.generateList()
             
 
         
             self.parObj.objectRef[-1].cb.setChecked(True)
             self.parObj.objectRef[-1].plotOn = True
         #self.parObj.plotDataQueueFn()
-    class AppForm(QtGui.QMainWindow):
+    class AppForm(QtGui.QDialog):
         def __init__(self, fileArray=None,parObj=None):
-            QtGui.QMainWindow.__init__(self)
+            QtGui.QDialog.__init__(self)
             self.fileArray = fileArray
             self.create_main_frame()
             self.parObj = parObj
@@ -498,8 +500,8 @@ class Import_lif():
             vbox0.addLayout(hbox1)
             vbox0.addLayout(hbox2)
             hbox2.addWidget(self.button)
-            page.setLayout(vbox0)
-            self.setCentralWidget(page)
+            
+            self.setLayout(vbox0)
 
             self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
 

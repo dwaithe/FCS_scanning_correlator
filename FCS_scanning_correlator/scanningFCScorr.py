@@ -19,7 +19,7 @@ import matplotlib.cm as cm
 
 sys.path.append('../../FCS_point/FCS_point_correlator')
 from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
-from splugin_methods import bleachCorr, ImpAdvWin, bleachCorr2
+from splugin_methods import bleachCorr, ImpAdvWin, bleachCorr2, SpotSizeCalculation
 from scorrelation_objects import scanObject
 from correlation_objects import corrObject
 
@@ -185,20 +185,21 @@ class Window(QtGui.QWidget):
 		self.canvas3 = FigureCanvas(self.figure3)
 		
 		self.label = scanFileList(self,self.par_obj)
-		self.GateScanFileListObj = GateScanFileList(self, self.par_obj)
+		#self.GateScanFileListObj = GateScanFileList(self, self.par_obj)
 
 		#The table which shows the details of the time-gating.
 		self.modelTab = QtGui.QTableWidget(self)
 		self.modelTab.setRowCount(0)
-		self.modelTab.setColumnCount(6)
+		self.modelTab.setColumnCount(7)
 		self.modelTab.setColumnWidth(0,20);
-		self.modelTab.setColumnWidth(1,40);
+		self.modelTab.setColumnWidth(1,30);
 		self.modelTab.setColumnWidth(2,20);
-		self.modelTab.setColumnWidth(3,40);
-		self.modelTab.setColumnWidth(4,95);
-		self.modelTab.setColumnWidth(5,60);
+		self.modelTab.setColumnWidth(3,30);
+		self.modelTab.setColumnWidth(4,90);
+		self.modelTab.setColumnWidth(5,100);
+		self.modelTab.setColumnWidth(6,20);
 		self.modelTab.horizontalHeader().setStretchLastSection(True)
-		self.modelTab.setMinimumSize(300,200)
+		self.modelTab.setMinimumSize(340,200)
 		self.modelTab.setHorizontalHeaderLabels(QtCore.QString(",From: , ,To: ,, , , , ").split(","))
 
 		#The table which shows the details of each correlated file. 
@@ -279,7 +280,8 @@ class Window(QtGui.QWidget):
 		self.spacer = QtGui.QLabel()
 		main_layout = QtGui.QHBoxLayout()
 		self.import_adv_btn = QtGui.QPushButton('Crop image')
-		self.import_adv_btn.clicked.connect(self.import_adv_fn)
+		self.imp_adv_win = ImpAdvWin(self.par_obj,self)
+		self.import_adv_btn.clicked.connect(self.imp_adv_win.create_main_frame)
 		self.reprocess_btn = QtGui.QPushButton('reprocess data')
 		self.reprocess_btn.clicked.connect(self.reprocessDataFn)
 		
@@ -408,6 +410,11 @@ class Window(QtGui.QWidget):
 		#self.save_figure_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_figure_btn.clicked.connect(self.save_figure)
 
+		self.spot_size_calc = QtGui.QPushButton('Calc. Spot Size')
+
+		self.spot_size_calc_plugin = SpotSizeCalculation(self.par_obj,self)
+		self.spot_size_calc.clicked.connect(self.spot_size_calc_plugin.create_main_frame)
+
 		
 
 		self.corrBotRow.setSpacing(0)
@@ -416,6 +423,7 @@ class Window(QtGui.QWidget):
 		self.corrBotRow.addWidget(self.save_corr_carpet_btn)
 		self.corrBotRow.addWidget(self.save_log_corr_carpet_btn)
 		self.corrBotRow.addWidget(self.save_figure_btn)
+		self.corrBotRow.addWidget(self.spot_size_calc)
 		self.corrBotRow.addStretch()
 		
 		
@@ -503,17 +511,7 @@ class Window(QtGui.QWidget):
 
 						
 					
-					
-					
-
 		
-	def import_adv_fn(self):
-		
-		
-		for b in range(0,self.par_obj.objectRef.__len__()):
-			if self.par_obj.objectRef[b].plotOn == True:
-				self.imp_adv_win = ImpAdvWin(self.par_obj,self,b)
-				self.imp_adv_win.create_main_frame()
 
 
 	def update_correlation_parameters(self):
@@ -730,7 +728,7 @@ class Window(QtGui.QWidget):
 		self.plt5.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,objId.CH0.shape[1]])
 	   
 		self.figure5.subplots_adjust(bottom =0.2,left=0.1,right=0.95)
-		self.plt5.set_xlabel('Time (ms)', fontsize=8)
+		self.plt5.set_xlabel('Scan line', fontsize=8)
 		self.plt5.set_ylabel('Column pixels', fontsize=12)
 		self.plt5.tick_params(axis='both', which='major', labelsize=8)
 		self.plt5.autoscale(False)
@@ -860,6 +858,11 @@ class Window(QtGui.QWidget):
 				self.x1b =self.x0;
 				self.x0=self.x1;
 				self.x0=self.x1b
+			#Corner case fix. If a line is inherited beyond the dimensions of the present carpet.
+			if self.x1 > self.carpet_img.shape[0]:
+				self.x1 = int(np.floor(self.carpet_img.shape[0]/2)+0.5)
+				self.x0 = int(np.floor(self.carpet_img.shape[0]/2)-0.5)
+
 			self.clickedS1 = int(np.floor(self.x0))
 			self.clickedS2 = int(np.ceil(self.x1))
 			try:
@@ -896,8 +899,8 @@ class Window(QtGui.QWidget):
 									if self.carpetDisplay == 2:
 										self.plt1.plot(objId.corrArrScale ,objId.CrossCorr_carpet01[:,int(b)],objId.color)
 								
-								a,b = self.plt1.get_ylim()
-								self.plt1.set_ylim(bottom=0,top=b)
+								a,c = self.plt1.get_ylim()
+								self.plt1.set_ylim(bottom=0,top=c)
 							self.canvas1.draw()
 				#self.draw_line()
 	def export_track_to_fit(self):
@@ -905,6 +908,77 @@ class Window(QtGui.QWidget):
 		xmin = int(self.clickedS1)
 		xmax = int(self.clickedS2)-1
 		self.export_track_fn(xmin,xmax)
+	def save_as_csv(self,xmin,xmax):
+		#xmin = int(self.clickedS1)
+		#xmax = int(self.clickedS2)-1
+		#Checks if the plot is on or not.
+		for objId in self.par_obj.objectRef:
+			
+			if(objId.cb.isChecked() == True):
+				print 'xmin',xmin,'xmax',xmax
+				for i in range(xmin, xmax+1):
+					f = open(self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv', 'w')
+					f.write('version,'+str(2)+'\n')
+					f.write('numOfCH,'+str(objId.numOfCH)+'\n')
+					f.write('type, scan\n')
+					
+					if objId.numOfCH == 1:
+						f.write('ch_type,'+str(0)+'\n')
+						f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
+						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
+						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
+						f.write('carpet pos,'+str(i)+'\n')
+						if self.bleachCorr1_checked == True:
+							f.write('pc, 1\n');
+						if self.bleachCorr2_checked == True:
+							f.write('pc, 2\n');
+						
+						
+						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+							f.write('Time (ns), CH0 Auto-Correlation\n')
+							for x in range(0,objId.corrArrScale_pc.shape[0]):
+								f.write(str(int(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
+						else:
+							f.write('pc, 0\n');
+							f.write('Time (ns), CH0 Auto-Correlation\n')
+							for x in range(0,objId.corrArrScale.shape[0]):
+								f.write(str(int(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
+						f.write('end\n')
+					if objId.numOfCH == 2:
+						f.write('ch_type, 0 ,1, 2\n')
+						f.write('kcount,'+str(objId.kcountCH0[i])+','+str(objId.kcountCH1[i])+'\n')
+						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+','+str(objId.numberNandBCH1[i])+'\n')
+						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
+						
+						if self.bleachCorr1_checked == True:
+							f.write('pc, 1\n');
+						if self.bleachCorr2_checked == True:
+							f.write('pc, 2\n');
+						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
+							for x in range(0,objId.corrArrScale_pc.shape[0]):
+								f.write(str(int(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
+						else:
+							f.write('pc, 0\n');
+							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
+							for x in range(0,objId.corrArrScale.shape[0]):
+								f.write(str(int(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
+						f.write('end\n')
+						
+
+
+
+
+
+
+		
+		# if self.objId.numOfCH == 2:
+		# 	f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
+		# 	f.write('# Time (ns),CH0 Auto-Correlation, CH1 Auto-Correlation, CC01 Auto-Correlation, CC10 Auto-Correlation\n')
+		# 	for x in range(0,self.objId.autotime.shape[0]):
+		# 		f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+','+str(self.objId.autoNorm[x,1,1])+','+str(self.objId.autoNorm[x,0,1])+','+str(self.objId.autoNorm[x,1,0])+ '\n')
+
+		# print 'file Saved'
 	def export_track_fn(self,xmin,xmax):
 
 		#Checks if the plot is on or not.
@@ -996,7 +1070,7 @@ class lineEditSp(QtGui.QLineEdit):
 		self.TGid =[]
 	def __handleEditingFinished(self):
 		self.par_obj.m = float(self.text())
-		print 'activated go go.'
+		
 		if(self.type == 'tgt0' ):
 			
 			self.win_obj.multiSelect.x1[self.TGid] = float(self.text())
@@ -1184,7 +1258,7 @@ class GateScanFileList():
 
 	def generateList(self):
 		c = 0
-		
+		print 'x1',self.x1
 		for i in self.par_obj.TGnumOfRgn:
 				self.win_obj.modelTab.setRowCount(c+1)
 				
@@ -1195,7 +1269,7 @@ class GateScanFileList():
 
 				lb1 = lineEditSp(str(self.x1[i]),self.win_obj,self.par_obj)
 				lb1.setMaxLength(5)
-				lb1.setFixedWidth(40)
+				lb1.setFixedWidth(30)
 				lb1.setText(str(self.x1[i]))
 				lb1.type = 'tgt0'
 				lb1.TGid = i
@@ -1210,7 +1284,7 @@ class GateScanFileList():
 				lb2 = lineEditSp(str(self.x0[i]),self.win_obj,self.par_obj)
 				
 				lb2.setMaxLength(5)
-				lb2.setFixedWidth(40)
+				lb2.setFixedWidth(30)
 			   
 				lb2.type = 'tgt1'
 				lb2.TGid = i
@@ -1220,13 +1294,21 @@ class GateScanFileList():
 				cbtn = pushButtonSp('Export to fit',self.win_obj,self.par_obj)
 			
 				cbtn.TGid = i
-				cbtn.xmin = int(self.x0[i])
-				cbtn.xmax = int(self.x1[i])
 				self.win_obj.modelTab.setCellWidget(c, 4, cbtn)
 				#Make sure the btn knows which list it is connected to.
 
+				#self.par_obj.modelTab.setCellWidget(i, 4, photoCrr_btn)
+				sbtn = pushButtonSp3('SaveAs .csv')
+			
+				sbtn.TGid = i
+				sbtn.par_obj = self.par_obj
+				sbtn.win_obj = self.win_obj
+				sbtn.type = 'sbtn'
+				self.win_obj.modelTab.setCellWidget(c, 5, sbtn)
+				#Make sure the btn knows which list it is connected to.
+
 				xbtn = pushButtonSp3('X')
-				self.win_obj.modelTab.setCellWidget(c, 5, xbtn)
+				self.win_obj.modelTab.setCellWidget(c, 6, xbtn)
 				xbtn.id = c
 				xbtn.par_obj = self.par_obj
 				xbtn.win_obj = self.win_obj
@@ -1244,9 +1326,20 @@ class pushButtonSp3(QtGui.QPushButton):
 		self.par_obj = [];
 		self.win_obj = [];
 		self.parent_id = []
+		self.xmin = None
+		self.xmax = None
 		self.id = []
 	def __clicked(self):
-		if self.type =='xbtn':
+		if self.type == 'sbtn':
+			self.xmin = int(self.win_obj.multiSelect.x0[self.TGid])
+			self.xmax = int(self.win_obj.multiSelect.x1[self.TGid])
+			if self.xmin >self.xmax:
+				xtemp = self.xmax
+				self.xmax = self.xmin
+				self.xmin = xtemp
+				self.win_obj.save_as_csv(self.xmin,self.xmax-1)
+
+		if self.type == 'xbtn':
 			self.par_obj.TGnumOfRgn.pop(self.id)
 			self.win_obj.modelTab.setRowCount(0)
 			#self.win_obj.modelTab.setRowCount(self.par_obj.TGnumOfRgn.__len__())
@@ -1259,27 +1352,9 @@ class pushButtonSp3(QtGui.QPushButton):
 			self.parent_id.generateList()
 
 
-class pushButtonSp2(QtGui.QPushButton):
-	def __init__(self, parent=None):
-		QtGui.QPushButton.__init__(self,parent)
-		self.clicked.connect(self.__clicked)
-		self.objId = [];
-		self.par_obj = [];
-		self.win_obj = [];
-	def __clicked(self):
-		
-		f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
-		if self.objId.numOfCH == 1:
-			f.write('# Time (ns), CH0 Auto-Correlation\n')
-			for x in range(0,self.objId.autotime.shape[0]):
-				f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+ '\n')
-		if self.objId.numOfCH == 2:
-			f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
-			f.write('# Time (ns),CH0 Auto-Correlation, CH1 Auto-Correlation, CC01 Auto-Correlation, CC10 Auto-Correlation\n')
-			for x in range(0,self.objId.autotime.shape[0]):
-				f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+','+str(self.objId.autoNorm[x,1,1])+','+str(self.objId.autoNorm[x,0,1])+','+str(self.objId.autoNorm[x,1,0])+ '\n')
 
-		print 'file Saved'
+		
+
 class folderOutput(QtGui.QMainWindow):
 	
 	def __init__(self,parent):
@@ -1337,7 +1412,7 @@ class baseList(QtGui.QLabel):
 		super(baseList, self).__init__()
 		self.listId=0
 	def mousePressEvent(self,ev):
-		print self.listId
+		pass
 class ParameterClass():
 	def __init__(self):
 		
@@ -1351,7 +1426,7 @@ class ParameterClass():
 		self.start_pt = 0
 		self.end_pt = 0
 		self.interval_pt = 1
-		self.colors = ['blue','green','red','cyan','magenta','yellow','black']
+		self.colors = ['blue','green','red','cyan','magenta','midnightblue','black']
 		self.gui  ='show'
 	
 if __name__ == '__main__':
