@@ -121,18 +121,18 @@ class Import_msr():
 			#Windows does this a bit differently to other OS :-) always nice.
 			if platform.system() == 'Darwin':
 
-				reserved =  struct.unpack('l', self.f.read(8))[0]
+				reserved =  struct.unpack('l', f.read(8))[0]
 				data_len_disk = struct.unpack('l', f.read(8))[0]
 				start_x = struct.unpack('l', f.read(8))[0]
 			elif platform.system() == 'Windows':
-				reserved =  struct.unpack('l', self.f.read(4))[0]
-				null =  struct.unpack('l', self.f.read(4))[0]
-				data_len_disk =  struct.unpack('l', self.f.read(4))[0]
-				null =  struct.unpack('l', self.f.read(4))[0]
-				start_x =  struct.unpack('l', self.f.read(4))[0]
-				null =  struct.unpack('l', self.f.read(4))[0]
+				reserved =  struct.unpack('l', f.read(4))[0]
+				null =  struct.unpack('l', f.read(4))[0]
+				data_len_disk =  struct.unpack('l', f.read(4))[0]
+				null =  struct.unpack('l', f.read(4))[0]
+				start_x =  struct.unpack('l', f.read(4))[0]
+				null =  struct.unpack('l', f.read(4))[0]
 			else:
-				reserved =  struct.unpack('l', self.f.read(8))[0]
+				reserved =  struct.unpack('l', f.read(8))[0]
 				data_len_disk = struct.unpack('l', f.read(8))[0]
 				start_x = struct.unpack('l', f.read(8))[0]
 
