@@ -652,6 +652,7 @@ class ImpAdvWin(QtGui.QMainWindow):
             s[-1].name = s[-1].name+ '_sub_'+str(s[-1].unqID)+'_'
         #self.win_obj.canvas1.draw()
         self.win_obj.label.generateList()
+        self.close()
         #self.win_obj.GateScanFileListObj.generateList()
         
 
