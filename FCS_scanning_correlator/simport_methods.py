@@ -399,6 +399,7 @@ class Import_lif():
 		count_loaded = 0
 		#Memory reading happens once.
 		while True:
+				
 				#Unpacks header for pixel encoding memory.
 				try:
 					struct.unpack('i', self.f.read(4))[0]
@@ -441,6 +442,8 @@ class Import_lif():
 					   loadImBool = True
 					   bytesInc = self.store[b]['bytesinc']
 					   count_loaded +=1
+					   self.win_obj.image_status_text.showMessage("Loading carpet: "+str(count_loaded)+' of '+str(selList.__len__())+' selected.')
+					   self.win_obj.fit_obj.app.processEvents()
 					   break
 
 				
@@ -457,11 +460,13 @@ class Import_lif():
 								imData[iv] = byteData
 						if bytesInc == 2:
 							imData=[0]*(imBinData.__len__()/2)
+							
 							cc = 0
 							for iv in range(0,imBinData.__len__(),2):
 								byteData = struct.unpack('H',imBinData[iv:iv+2])[0]
-								imData[iv] =byteData
+								imData[cc] =byteData
 								cc = cc+1
+							
 						
 							
 						self.imDataStore.append(imData)
@@ -469,7 +474,7 @@ class Import_lif():
 						
 						
 				else:
-					print memSize
+					
 					if count_loaded == selList.__len__():
 						break;
 					footer = self.f.tell()
@@ -478,7 +483,8 @@ class Import_lif():
 		s =[]
 		self.win_obj.update_correlation_parameters()
 		for i in range(self.imDataDesc.__len__()):
-				
+			self.win_obj.image_status_text.showMessage("Correlating carpet: "+str(i+1)+' of '+str(self.imDataDesc.__len__())+' selected.')
+			self.win_obj.fit_obj.app.processEvents()
 			s.append(scanObject(self.fname,self.parObj,self.imDataDesc[i],self.imDataStore[i],0,0));
 		
 		
@@ -494,6 +500,7 @@ class Import_lif():
 		
 			self.parObj.objectRef[-1].cb.setChecked(True)
 			self.parObj.objectRef[-1].plotOn = True
+		self.win_obj.image_status_text.showMessage("Data plotted.")
 		#self.parObj.plotDataQueueFn()
 	class AppForm(QtGui.QDialog):
 		def __init__(self, meta_array=None,parObj=None):

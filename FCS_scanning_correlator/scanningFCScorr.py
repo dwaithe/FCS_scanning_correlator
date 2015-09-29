@@ -439,7 +439,10 @@ class Window(QtGui.QWidget):
 		self.corr_window_layout.setSpacing(0)
 		self.corr_window_layout.addStretch()
 		
-
+		self.image_status_text = QtGui.QStatusBar()
+		
+		self.image_status_text.showMessage("Please load a data file. ")
+		self.image_status_text.setStyleSheet("QLabel {  color : green }")
 		
 		
 		self.setLayout(main_layout)
@@ -454,7 +457,7 @@ class Window(QtGui.QWidget):
 		
 		
 
-
+		self.left_panel.addWidget(self.image_status_text)
 		#Advanced grid structure for the plot windows.
 		gs = gridspec.GridSpec(2, 3, height_ratios=[1, 0.98],width_ratios=[0.02, 0.96,0.02]) 
 		#Main correlation window
@@ -478,10 +481,12 @@ class Window(QtGui.QWidget):
 
 		self.update_correlation_parameters()
 	def export_all_data_fn(self):
+		counter = 0;
 		for objId in self.par_obj.objectRef:
 			self.export_the_track(objId)
-			
-			print 'exporting',objId.name
+			counter = counter+1
+			self.image_status_text.showMessage("Exporting carpet: "+str(counter)+' of '+str(self.par_obj.objectRef.__len__())+' selected.')
+			self.fit_obj.app.processEvents()
 			
 	
 	def bleachCorr1fn(self):
@@ -920,9 +925,8 @@ class Window(QtGui.QWidget):
 				#self.draw_line()
 	def export_track_to_fit(self):
 
-		xmin = int(self.clickedS1)
-		xmax = int(self.clickedS2)-1
-		self.export_track_fn(xmin,xmax)
+		
+		self.export_track_fn()
 	def save_as_csv(self,xmin,xmax):
 		#xmin = int(self.clickedS1)
 		#xmax = int(self.clickedS2)-1
@@ -997,15 +1001,24 @@ class Window(QtGui.QWidget):
 		# 		f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+','+str(self.objId.autoNorm[x,1,1])+','+str(self.objId.autoNorm[x,0,1])+','+str(self.objId.autoNorm[x,1,0])+ '\n')
 
 		# print 'file Saved'
-	def export_track_fn(self,xmin,xmax):
+	def export_track_fn(self):
 
 		#Checks if the plot is on or not.
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				self.export_the_track(objId)	
 	def export_the_track(self,objId):
-				xmin = int(self.clickedS1)
-				xmax = int(self.clickedS2)-1
+				
+				if self.clickedS1== None:
+					xmin = 0
+					xmax = objId.kcountCH0.__len__()-1
+				else:
+					xmin = int(self.clickedS1)
+					xmax = int(self.clickedS2)-1
+				if xmin >xmax:
+					xtemp = xmax
+					xmax = xmin
+					xmin = xtemp
 				
 				for i in range(xmin, xmax+1):
 					
@@ -1019,7 +1032,7 @@ class Window(QtGui.QWidget):
 					corrObj1.kcount = objId.kcountCH0[i]
 					corrObj1.numberNandB = objId.numberNandBCH0[i]
 					corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
-					corrObj1.CV = objId.CV[i]
+					
 					corrObj1.type = "scan"
 					corrObj1.siblings = None
 
@@ -1044,6 +1057,7 @@ class Window(QtGui.QWidget):
 						corrObj2.kcount = objId.kcountCH1[i]
 						corrObj2.numberNandB = objId.numberNandBCH1[i]
 						corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
+						corrObj1.CV = objId.CV[i]
 						corrObj2.CV = objId.CV[i]
 						corrObj2.type = "scan"
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
@@ -1141,7 +1155,7 @@ class pushButtonSp(QtGui.QPushButton):
 			xtemp = self.xmax
 			self.xmax = self.xmin
 			self.xmin = xtemp
-		self.win_obj.export_track_fn(self.xmin,self.xmax)
+		self.win_obj.export_track_fn()
 		
 
 						

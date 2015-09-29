@@ -257,9 +257,14 @@ class bleachCorr2(QtGui.QMainWindow):
         
                     
     def apply_to_all_data_fn(self):
+        counter = 0
         for objId in self.par_obj.objectRef:
             self.objId = objId
             self.outputData()
+            counter = counter + 1
+            self.win_obj.image_status_text.showMessage("Applying to carpet: "+str(counter)+' of '+str(self.par_obj.objectRef.__len__())+' selected.')
+            self.win_obj.fit_obj.app.processEvents()
+        self.close()
 
     def outputData(self):
         start_x = 0
@@ -758,10 +763,15 @@ class bleachCorr(QtGui.QMainWindow):
         self.show()
         self.plotData()
     def apply_to_all_data_fn(self):
+        counter = 0
         for objId in self.par_obj.objectRef:
             self.objId = objId
             self.plot_corrFn()
             self.outputData()
+            counter = counter + 1
+            self.win_obj.image_status_text.showMessage("Applying to carpet: "+str(counter)+' of '+str(self.par_obj.objectRef.__len__())+' selected.')
+            self.win_obj.fit_obj.app.processEvents()
+        self.close()
             
         #self.
         #self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
