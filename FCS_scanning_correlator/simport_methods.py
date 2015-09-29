@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import tifffile as tif_fn
 import zlib
+import time
 
 from scorrelation_objects import scanObject
 def Import_tiff(filename,par_obj,win_obj):
@@ -334,10 +335,11 @@ class Import_lif():
 		#Test value *
 		self.f.read(1)
 		#Number of characters in file, have to mutiply by 2 to get bytes
-		c = int(struct.unpack('i', self.f.read(4))[0])
+		len_meta = int(struct.unpack('i', self.f.read(4))[0])
 		xml='';
-		for i in range(0,c*2):
-			xml = xml + struct.unpack('c', self.f.read(1))[0]
+		meta_raw = self.f.read(len_meta*2)
+		for i in range(0,meta_raw.__len__()):
+			xml = xml + struct.unpack('c', meta_raw[i])[0]
 		root = ET.XML(xml)
 
 
@@ -347,7 +349,7 @@ class Import_lif():
 		LUTName =[];
 		dimInfo =[];
 		
-		
+		count = 0
 		for neighbor1 in root.findall(".//Element"):
 		   for nun in neighbor1.findall("./Memory"):
 				if int(nun.attrib['Size']) >0 :
@@ -374,14 +376,17 @@ class Import_lif():
 							ele =  neighbor1.find('.//ATLConfocalSettingDefinition');
 							lineTime = ele.attrib['LineTime']
 							
-							self.store[name] =[memId,size]
-							self.store[name].append(LUTName)
-							self.store[name].append(dimInfo)
-							self.store[name].append([lineTime])
-							self.store[name].append(int(bytesInc[0]))
-							self.store[name].append(dwell_time)
-							self.store[name].append(name)
-
+							self.store[count] = {'memid':memId,'lutname':LUTName,'diminfo':dimInfo,'linetime':[lineTime],'bytesinc':int(bytesInc[0]),'dwelltime':dwell_time,'name':name}
+							
+							
+							#self.store[count] =[memId,size]
+							#self.store[count].append(LUTName)
+							#self.store[count].append(dimInfo)
+							#self.store[count].append([lineTime])
+							#self.store[count].append(int(bytesInc[0]))
+							#self.store[count].append(dwell_time)
+							#self.store[count].append(name)
+							count = count+1
 					except:
 						pass
 		if self.parObj.gui == 'show':
@@ -391,7 +396,7 @@ class Import_lif():
 		self.imDataStore =[];
 		self.imDataDesc=[];
 		#temp = store[selList[0]]
-
+		count_loaded = 0
 		#Memory reading happens once.
 		while True:
 				#Unpacks header for pixel encoding memory.
@@ -430,33 +435,46 @@ class Import_lif():
 
 				#Catch data if it happens to be in array
 				for b in range(0, selList.__len__()):
-					temp = self.store[selList[b]]
+					
 					#print memDesc+' '+temp[0]
-					if temp[0] == memDesc:
+					if self.store[b]['memid'] == memDesc:
 					   loadImBool = True
-					   bytesInc = self.store[selList[b]][5]
+					   bytesInc = self.store[b]['bytesinc']
+					   count_loaded +=1
 					   break
 
 				
 				#If memDesc and temp are in list.
 				if memSize >0 and loadImBool == True:
 						
-						imData=[]
-						for c in range(0,memSize,bytesInc):
-							if bytesInc == 1:
-								imBinData = self.f.read(1)
-								byteData = struct.unpack('B',imBinData)[0]
-							elif bytesInc ==2:
-								imBinData = self.f.read(2)
-								byteData = struct.unpack('H',imBinData)[0]
-
-							imData.append(byteData)
+						#This is where the actual data is read in.
+						
+						imBinData = self.f.read(memSize)
+						if bytesInc == 1:
+							imData=[0]*imBinData.__len__()
+							for iv in range(0,imBinData.__len__(),1):
+								byteData = struct.unpack('B',imBinData[iv:iv+1])[0]
+								imData[iv] = byteData
+						if bytesInc == 2:
+							imData=[0]*(imBinData.__len__()/2)
+							cc = 0
+							for iv in range(0,imBinData.__len__(),2):
+								byteData = struct.unpack('H',imBinData[iv:iv+2])[0]
+								imData[iv] =byteData
+								cc = cc+1
+						
+							
 						self.imDataStore.append(imData)
-						self.imDataDesc.append(temp)
-						#print temp
-						#outChannel = np.array(imDataS
+						self.imDataDesc.append(self.store[b])
+						
+						
 				else:
-					self.f.read(memSize)
+					print memSize
+					if count_loaded == selList.__len__():
+						break;
+					footer = self.f.tell()
+					self.f.seek(footer+memSize)
+		
 		s =[]
 		self.win_obj.update_correlation_parameters()
 		for i in range(self.imDataDesc.__len__()):
@@ -478,9 +496,9 @@ class Import_lif():
 			self.parObj.objectRef[-1].plotOn = True
 		#self.parObj.plotDataQueueFn()
 	class AppForm(QtGui.QDialog):
-		def __init__(self, fileArray=None,parObj=None):
+		def __init__(self, meta_array=None,parObj=None):
 			QtGui.QDialog.__init__(self)
-			self.fileArray = fileArray
+			self.meta_array = meta_array
 			self.create_main_frame()
 			self.parObj = parObj
 			
@@ -494,46 +512,68 @@ class Import_lif():
 			hbox1 = QtGui.QHBoxLayout()
 			hbox2 = QtGui.QHBoxLayout()
 			vbox1 = QtGui.QVBoxLayout()
+
+			self.series_list_view = QtGui.QTreeView()
+			self.series_list_view.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+			self.series_list_model = QtGui.QStandardItemModel()
+			self.series_list_view.setModel(self.series_list_model)
+			self.series_list_view.setHeaderHidden(True)
+			self.item_list = []
+		
 			
 			c =0 
-			for name in self.fileArray:
-				c = c+1
-				exec("subhbox"+str(c)+" = QtGui.QHBoxLayout()");
-				exec("self.check"+str(c)+" = QtGui.QCheckBox()");
+			
+			for idx in self.meta_array:
+				name = self.meta_array[idx]['name']
+				item = QtGui.QStandardItem(name)
+				item.setCheckable(True)
+				item.setCheckState(QtCore.Qt.Unchecked)
+				self.series_list_model.appendRow(item)
+				self.item_list.append(item)
+
+				linetime = float(self.meta_array[idx]['linetime'][0])*1000
+				item.setChild(0,QtGui.QStandardItem("line time: "+str(np.round(linetime,3))+" ms"))
+				item.setChild(1,QtGui.QStandardItem("line time: "+str( np.round(1/linetime*1000,1))+" Hz"))
+				item.setChild(2,QtGui.QStandardItem("dwell time: "+str( float(self.meta_array[idx]['dwelltime'])*1000000)+" us"))
+				item.setChild(3,QtGui.QStandardItem("dimensions: "+str( self.meta_array[idx]['diminfo'])))
+				item.setChild(4,QtGui.QStandardItem("number of channels: "+str( self.meta_array[idx]['lutname'].__len__())))
 				
-				exec("self.label"+str(c)+" = QtGui.QLabel()");
-				exec("self.label"+str(c)+".setText(\""+str(name)+"\")")
 				
-				exec("subhbox"+str(c)+".addWidget(self.check"+str(c)+")");
-				exec("subhbox"+str(c)+".addWidget(self.label"+str(c)+")");
-				exec("subhbox"+str(c)+".addStretch(1)");
-				exec("vbox1.addLayout(subhbox"+str(c)+")");
-				
-				
-			self.button = QtGui.QPushButton('load Images')
+			self.load_data_btn = QtGui.QPushButton('load Images')
+			self.check_all_btn = QtGui.QPushButton('Check All')
 			hbox1.addLayout(vbox1)
 			
-			vbox0.addLayout(hbox1)
+			vbox0.addWidget(self.series_list_view)
 			vbox0.addLayout(hbox2)
-			hbox2.addWidget(self.button)
+			hbox2.addWidget(self.check_all_btn)
+			hbox2.addWidget(self.load_data_btn)
+			
 			
 			self.setLayout(vbox0)
+			self.resize(300,500)
+			self.load_data_btn.clicked.connect(self.load_data_fn)
+			self.check_all_btn.clicked.connect(self.check_all_fn)
+		def check_all_fn(self):
+			for item in self.item_list:
+				item.setCheckState(QtCore.Qt.Checked)
 
-			self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
 
-		def clicked(self):
-			
+
+		def load_data_fn(self):
+			self.close()
 			c=0
 			selList =[];
-			for name in self.fileArray:
-				c = c+1
+			for idx in self.meta_array:
+				model_index = self.series_list_model.index(idx, 0)
+				checked = self.series_list_model.data(model_index, QtCore.Qt.CheckStateRole) == QtCore.QVariant(QtCore.Qt.Checked)
+				#c = c+1
 			   
-				exec("boolV = self.check"+str(c)+".isChecked()");
-				if boolV == True:
-					selList.append(name)
+				#exec("boolV = self.check"+str(c)+".isChecked()");
+				if checked == True:
+					selList.append(self.meta_array[idx]['name'])
 		   
 			self.parObj.import_lif_sing(selList)
-			self.close()
+			
 
 		#QtGui.QMessageBox.about(self, "My message box", "Text1 = %s, Text2 = %s" % (self.edit1.text(), self.edit2.text()))
 	

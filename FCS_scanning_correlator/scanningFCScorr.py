@@ -162,7 +162,7 @@ class Window(QtGui.QWidget):
 		self.canvas1 = FigureCanvas(self.figure1)
 		self.figure1.patch.set_facecolor('white')
 		self.canvas1.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
-		#self.toolbar1 = NavigationToolbar(self.canvas1, self)
+		self.toolbar1 = NavigationToolbar(self.canvas1, self)
 		jar = QtGui.QVBoxLayout()
 		jar.addWidget(self.canvas1)
 
@@ -386,6 +386,7 @@ class Window(QtGui.QWidget):
 		corrTopRow.addWidget(self.export_region_btn)
 
 
+
 		self.folderOutput = folderOutput(self)
 		self.folderOutput.type = 'output_corr_dir'
 
@@ -425,8 +426,15 @@ class Window(QtGui.QWidget):
 		self.corrBotRow.addWidget(self.save_figure_btn)
 		self.corrBotRow.addWidget(self.spot_size_calc)
 		self.corrBotRow.addStretch()
+		self.corrBotRow.addWidget(self.toolbar1)
 		
 		
+		panel_third_row_btns = QtGui.QHBoxLayout()
+
+		export_all_data_btn = QtGui.QPushButton('Export All Data to Fit')
+		export_all_data_btn.clicked.connect(self.export_all_data_fn)
+		panel_third_row_btns.addWidget(export_all_data_btn)
+		panel_third_row_btns.addStretch()
 		
 		self.corr_window_layout.setSpacing(0)
 		self.corr_window_layout.addStretch()
@@ -439,6 +447,7 @@ class Window(QtGui.QWidget):
 		
 		correlationBtns.addLayout(corrTopRow)
 		correlationBtns.addLayout(self.corrBotRow)
+		correlationBtns.addLayout(panel_third_row_btns)
 		correlationBtns.setSpacing(0)
 		main_layout.addLayout(self.right_panel)
 		
@@ -468,6 +477,12 @@ class Window(QtGui.QWidget):
 		self.multiSelect = GateScanFileList(self,self.par_obj)
 
 		self.update_correlation_parameters()
+	def export_all_data_fn(self):
+		for objId in self.par_obj.objectRef:
+			self.export_the_track(objId)
+			
+			print 'exporting',objId.name
+			
 	
 	def bleachCorr1fn(self):
 		for objId in self.par_obj.objectRef:
@@ -915,7 +930,7 @@ class Window(QtGui.QWidget):
 		for objId in self.par_obj.objectRef:
 			
 			if(objId.cb.isChecked() == True):
-				print 'xmin',xmin,'xmax',xmax
+				
 				for i in range(xmin, xmax+1):
 					f = open(self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv', 'w')
 					f.write('version,'+str(2)+'\n')
@@ -927,6 +942,7 @@ class Window(QtGui.QWidget):
 						f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
 						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
 						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
+						f.write('CV,'+str(objId.CV[i])+'\n')
 						f.write('carpet pos,'+str(i)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
@@ -944,12 +960,14 @@ class Window(QtGui.QWidget):
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(int(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
 						f.write('end\n')
+						
 					if objId.numOfCH == 2:
 						f.write('ch_type, 0 ,1, 2\n')
 						f.write('kcount,'+str(objId.kcountCH0[i])+','+str(objId.kcountCH1[i])+'\n')
 						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+','+str(objId.numberNandBCH1[i])+'\n')
 						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
-						
+						f.write('CV,'+str(objId.CV[i])+','+str(objId.CV[i])+','+str(objId.CV[i])+'\n')
+						f.write('carpet pos,'+str(i)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
 						if self.bleachCorr2_checked == True:
@@ -983,8 +1001,11 @@ class Window(QtGui.QWidget):
 
 		#Checks if the plot is on or not.
 		for objId in self.par_obj.objectRef:
-			
 			if(objId.cb.isChecked() == True):
+				self.export_the_track(objId)	
+	def export_the_track(self,objId):
+				xmin = int(self.clickedS1)
+				xmax = int(self.clickedS2)-1
 				
 				for i in range(xmin, xmax+1):
 					
@@ -998,6 +1019,7 @@ class Window(QtGui.QWidget):
 					corrObj1.kcount = objId.kcountCH0[i]
 					corrObj1.numberNandB = objId.numberNandBCH0[i]
 					corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
+					corrObj1.CV = objId.CV[i]
 					corrObj1.type = "scan"
 					corrObj1.siblings = None
 
@@ -1022,6 +1044,7 @@ class Window(QtGui.QWidget):
 						corrObj2.kcount = objId.kcountCH1[i]
 						corrObj2.numberNandB = objId.numberNandBCH1[i]
 						corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
+						corrObj2.CV = objId.CV[i]
 						corrObj2.type = "scan"
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
@@ -1038,6 +1061,7 @@ class Window(QtGui.QWidget):
 						
 						corrObj3.ch_type = 2
 						corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
+						corrObj3.CV = objId.CV[i]
 						corrObj3.prepare_for_fit()
 						corrObj3.autotime = objId.corrArrScale[:]
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
@@ -1053,7 +1077,7 @@ class Window(QtGui.QWidget):
 						corrObj2.siblings = [corrObj1,corrObj3]
 						corrObj3.siblings = [corrObj1,corrObj2]
 
-					self.fit_obj.fill_series_list()
+				self.fit_obj.fill_series_list()
 
 
 		
@@ -1431,6 +1455,7 @@ class ParameterClass():
 	
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
+	#app.setStyle(QtGui.QStyleFactory.create("GTK+"))
 
 	win_tab = QtGui.QTabWidget()
 	par_obj = ParameterClass()

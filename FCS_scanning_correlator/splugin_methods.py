@@ -122,10 +122,13 @@ class bleachCorr2(QtGui.QMainWindow):
 
         sel_time_window_size = QtGui.QLabel("Select time interval length")
 
-        self.export_trace_btn = QtGui.QPushButton('Apply to Data')
+        self.export_trace_btn = QtGui.QPushButton('Apply to data')
+
+        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all open data')
         self.vbox2 = QtGui.QHBoxLayout()
         
         self.export_trace_btn.clicked.connect(self.outputData)
+        self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
         
         self.carp_pix_sel.valueChanged[int].connect(self.line_redraw)
 
@@ -139,6 +142,7 @@ class bleachCorr2(QtGui.QMainWindow):
         vbox0.addWidget(sel_time_window_size)
         vbox0.addWidget(self.duration_combo)
         vbox0.addWidget(self.export_trace_btn)
+        vbox0.addWidget(self.apply_to_all_data_btn)
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
         
@@ -252,6 +256,10 @@ class bleachCorr2(QtGui.QMainWindow):
 
         
                     
+    def apply_to_all_data_fn(self):
+        for objId in self.par_obj.objectRef:
+            self.objId = objId
+            self.outputData()
 
     def outputData(self):
         start_x = 0
@@ -409,7 +417,11 @@ class ImpAdvWin(QtGui.QMainWindow):
         hbox_main.addLayout(vbox1)
         hbox_main.addLayout(vbox2)
 
+        #hbox_top = QtGui.QHBoxLayout()
+        #pixel_range = QtGui.QLabel(str(self.win_obj.clickedS1)+ ":"+str(self.win_obj.clickedS2))
+        #hbox_top.addWidget(pixel_range)
         #Crop settings.
+
         crop_panel = QtGui.QGroupBox('Import Crop Settings')
 
         self.start_col_txt = QtGui.QLabel('Start column: ');
@@ -443,9 +455,12 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.start_pt_sp.setValue(self.start_pt)
         self.end_pt_sp.setValue(self.end_pt)
         self.interval_pt_sp.setValue(1)
-
-        self.start_col_sp.setValue(0)
-        self.end_col_sp.setValue(self.objId.CH0.shape[1])
+        if self.win_obj.clickedS1 != None and self.win_obj.clickedS2 != None:
+            self.start_col_sp.setValue(self.win_obj.clickedS1)
+            self.end_col_sp.setValue(self.win_obj.clickedS2)
+        else:
+            self.start_col_sp.setValue(0)
+            self.end_col_sp.setValue(self.objId.CH0.shape[0])
 
         self.vmin = self.start_col_sp.value()
         self.vmax = self.end_col_sp.value()
@@ -482,7 +497,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         left_grid.addWidget(self.interval_pt_sp,6,1)
 
         reprocess_btn.clicked.connect(self.reprocess_and_create)
-        
+        #vbox1.addLayout(hbox_top)
         vbox1.addWidget(crop_panel)
         vbox1.addWidget(reprocess_btn)
         vbox1.addStretch()
@@ -511,6 +526,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.plotData()
         self.show()
     def plotData(self):
+
         self.start_pt = self.start_pt_sp.value()
         self.end_pt = self.end_pt_sp.value()
         self.interval_pt = self.interval_pt_sp.value()
@@ -520,7 +536,9 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         self.start_col = self.start_col_sp.value()
         self.end_col = self.end_col_sp.value()
-        
+        self.set_column_pixels(self.start_col,self.end_col)
+        print 'self.start_col',self.start_col
+        print 'self.end_col',self.end_col
 
         self.plt2.cla()
 
@@ -641,6 +659,7 @@ class bleachCorr(QtGui.QMainWindow):
         self.par_obj = par_obj
         self.win_obj = win_obj
         self.corrFn = False
+
         
 
     def create_main_frame(self):
@@ -707,6 +726,9 @@ class bleachCorr(QtGui.QMainWindow):
         self.equation_ch4_box.addWidget(self.equation_tb2)
         self.equation_f02.setReadOnly(True)
         self.equation_tb2.setReadOnly(True)
+
+        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to All Data');
+        self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
         
         
         self.export_trace_btn.clicked.connect(self.outputData)
@@ -727,6 +749,7 @@ class bleachCorr(QtGui.QMainWindow):
             vbox0.addLayout(self.equation_ch3_box)
             vbox0.addLayout(self.equation_ch4_box)
 
+        vbox0.addWidget(self.apply_to_all_data_btn)
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
         
@@ -734,6 +757,12 @@ class bleachCorr(QtGui.QMainWindow):
         self.setCentralWidget(page)
         self.show()
         self.plotData()
+    def apply_to_all_data_fn(self):
+        for objId in self.par_obj.objectRef:
+            self.objId = objId
+            self.plot_corrFn()
+            self.outputData()
+            
         #self.
         #self.connect(self.button, QtCore.SIGNAL("clicked()"), self.clicked)
     def export_traceFn(self):
