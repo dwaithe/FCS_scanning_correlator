@@ -75,7 +75,7 @@ class scanObject():
             self.numberNandBCH1 =[]
             self.brightnessNandBCH0 =[]
             self.brightnessNandBCH1 =[]
-
+            self.CV = []
             
             numOfOps = photonCarpetCH0.shape[1]
 
@@ -123,9 +123,11 @@ class scanObject():
 
                 
 
-
+                #Calculate the number of kcounts / Hz.
                 kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
                 self.kcountCH0.append(kcount/1000)#KHz
+
+
 
                 #Calculate the brightness and number using the moments.
                 self.brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
@@ -135,6 +137,28 @@ class scanObject():
                 else:
                     self.numberNandBCH0.append(raw_count**2/(var_count-raw_count))
                 
+                if self.numOfCH ==2:
+                    #If there are two channels calculate the coincidence.
+                    #This is only tested for lif files.
+                    option = np.bincount((inFnCH0).astype(np.int64))
+                    
+                    scalefactor = np.diff(np.where(option > 0)[0])[0]
+                    N1 = np.bincount((inFnCH0/scalefactor).astype(np.int64))
+                    N2 = np.bincount((inFnCH1/scalefactor).astype(np.int64))
+                    n = max(N1.shape[0],N2.shape[0])
+                    NN1 = np.zeros(n)
+                    NN2 = np.zeros(n)
+                    NN1[:N1.shape[0]] = N1 
+                    NN2[:N2.shape[0]] = N2 
+                    N1 = NN1
+                    N2 = NN2
+                    
+                    self.CV.append((np.sum(N1*N2)/(np.sum(N1)*np.sum(N2)))*n)
+                    
+
+
+
+
                 
                 corrArrCH0.append(AC0)
                 
@@ -278,16 +302,16 @@ class scanObject():
         
         elif self.ext == 'lif' :
     
-            self.name = self.imDataDesc[7]
-            self.dwell_time = float(self.imDataDesc[6])
+            self.name = self.imDataDesc['name']
+            self.dwell_time = float(self.imDataDesc['dwelltime'])
             
             #self.memSize = int(self.imDataDesc[1])
-            self.LUTName = self.imDataDesc[2]
-            self.dimSize = [int(self.imDataDesc[3][0]),int(self.imDataDesc[3][1]),int(self.imDataDesc[3][2])]
+            self.LUTName = self.imDataDesc['lutname']
+            self.dimSize = [int(self.imDataDesc['diminfo'][0]),int(self.imDataDesc['diminfo'][1]),int(self.imDataDesc['diminfo'][2])]
             #For display we divide image into sections or panes.
             
             #Convert to ms, default is seconds.
-            self.deltat  = float(self.imDataDesc[4][0])*1000
+            self.deltat  = float(self.imDataDesc['linetime'][0])*1000
             
             tempList0 =[];
             tempList1 =[];
