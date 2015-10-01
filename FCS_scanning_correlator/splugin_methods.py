@@ -298,6 +298,7 @@ class bleachCorr2(QtGui.QMainWindow):
                     AC_all_CH0[:,:,c]  = AC_carCH0
                     AC_all_CH1[:,:,c]  = AC_carCH1
                     CC_all_CH01[:,:,c] = CC_carCH01
+                    
                 
                 c = c + 1
 
@@ -309,6 +310,7 @@ class bleachCorr2(QtGui.QMainWindow):
             if self.objId.numOfCH == 2:
                 self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
                 self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+                
         else:
             #If full is selected, just defualt to normal carpet.
             self.objId.AutoCorr_carpetCH0_pc = self.objId.AutoCorr_carpetCH0
@@ -316,6 +318,8 @@ class bleachCorr2(QtGui.QMainWindow):
             if self.objId.numOfCH == 2:
                 self.objId.AutoCorr_carpetCH1_pc = self.objId.AutoCorr_carpetCH1
                 self.objId.CrossCorr_carpet01_pc = self.objId.CrossCorr_carpet01
+                
+
 
 
         
@@ -403,7 +407,8 @@ class ImpAdvWin(QtGui.QMainWindow):
                 break;
 
         if self.objId.end_pt != 0:
-            print "The object has already been cropped."
+            self.win_obj.image_status_text.showMessage("File already cropped.")
+            self.win_obj.fit_obj.app.processEvents()
             return
         
         #self.num_of_lines = np.round(self.objId.num_of_lines*self.objId.deltat,0);
@@ -542,8 +547,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.start_col = self.start_col_sp.value()
         self.end_col = self.end_col_sp.value()
         self.set_column_pixels(self.start_col,self.end_col)
-        print 'self.start_col',self.start_col
-        print 'self.end_col',self.end_col
+        
 
         self.plt2.cla()
 
@@ -551,8 +555,7 @@ class ImpAdvWin(QtGui.QMainWindow):
        
         yLimMn = (float(self.objId.pane))*(float(self.objId.CH0.shape[1])/64)*150
         yLimMx = (float(self.objId.pane+1))*(float(self.objId.CH0.shape[1])/64)*150
-        print 'objid.pane',self.objId.pane,'self.objId.shape',self.objId.CH0.shape[1], 'yLimMn',yLimMn
-        print 'objid.pane',self.objId.pane+1,'self.objId.shape',self.objId.CH0.shape[1], 'yLimMn',yLimMn
+        
 
         #This is for the raw intensity trace of the data (XT carpet).
         if self.objId.numOfCH == 1:
@@ -871,6 +874,8 @@ class bleachCorr(QtGui.QMainWindow):
             
             #Learns the fit.
             self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+            self.objId.pbc_f0_ch0 = self.learn_f0
+            self.objId.pbc_tb_ch0 = self.learn_tb
             self.equation_f01.setText(str(np.round(self.learn_f0,1)))
             self.equation_tb1.setText(str(np.round(1/self.learn_tb,5)))
             out_total_fn = self.apply_corr_fn(totalFn,1)
@@ -896,6 +901,8 @@ class bleachCorr(QtGui.QMainWindow):
                 
                 #Learns the fit.
                 self.weightings,  self.learn_f0, self.learn_tb = self.learn_corr_fn(totalFn)
+                self.objId.pbc_f0_ch1 = self.learn_f0
+                self.objId.pbc_tb_ch1 = self.learn_tb
                 self.equation_f02.setText(str(np.round(self.learn_f0,1)))
                 self.equation_tb2.setText(str(1/np.round(self.learn_tb,5)))
                 out_total_fn = self.apply_corr_fn(totalFn,1)
@@ -1072,13 +1079,11 @@ class SpotSizeCalculation(QtGui.QMainWindow):
         self.plt1.imshow(out)
         self.plt2.plot(out[0,:])
         
-        print 'sp',self.objId.dwell_time
-        print 'line',self.objId.deltat
+        
 
         equation, N_value, d_value = self.learn_corr_fn(out[0,:])
         self.plt2.plot(equation)
-        print 'N_value', N_value
-        print 'd_value',d_value
+        
 
         self.equation_N.setText(str(N_value))
         self.equation_d.setText(str(d_value))

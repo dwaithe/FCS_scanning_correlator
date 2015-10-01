@@ -345,7 +345,7 @@ class Import_lif():
 
 		LUTName = [];
 		memId = [];
-		self.store = {};
+		self.meta_array = {};
 		LUTName =[];
 		dimInfo =[];
 		
@@ -376,21 +376,14 @@ class Import_lif():
 							ele =  neighbor1.find('.//ATLConfocalSettingDefinition');
 							lineTime = ele.attrib['LineTime']
 							
-							self.store[count] = {'memid':memId,'lutname':LUTName,'diminfo':dimInfo,'linetime':[lineTime],'bytesinc':int(bytesInc[0]),'dwelltime':dwell_time,'name':name}
+							self.meta_array[count] = {'memid':memId,'lutname':LUTName,'diminfo':dimInfo,'linetime':[lineTime],'bytesinc':int(bytesInc[0]),'dwelltime':dwell_time,'name':name}
 							
 							
-							#self.store[count] =[memId,size]
-							#self.store[count].append(LUTName)
-							#self.store[count].append(dimInfo)
-							#self.store[count].append([lineTime])
-							#self.store[count].append(int(bytesInc[0]))
-							#self.store[count].append(dwell_time)
-							#self.store[count].append(name)
 							count = count+1
 					except:
 						pass
 		if self.parObj.gui == 'show':
-			self.win_obj.testWin = self.AppForm(self.store,self)
+			self.win_obj.testWin = self.AppForm(self.meta_array,self)
 			self.win_obj.testWin.exec_()
 	def import_lif_sing(self,selList):
 		self.imDataStore =[];
@@ -435,12 +428,14 @@ class Import_lif():
 				loadImBool = False
 
 				#Catch data if it happens to be in array
-				for b in range(0, selList.__len__()):
+				for b in selList:
+					
 					
 					#print memDesc+' '+temp[0]
-					if self.store[b]['memid'] == memDesc:
+					if self.meta_array[b]['memid'] == memDesc:
 					   loadImBool = True
-					   bytesInc = self.store[b]['bytesinc']
+					   bytesInc = self.meta_array[b]['bytesinc']
+					   
 					   count_loaded +=1
 					   self.win_obj.image_status_text.showMessage("Loading carpet: "+str(count_loaded)+' of '+str(selList.__len__())+' selected.')
 					   self.win_obj.fit_obj.app.processEvents()
@@ -470,7 +465,7 @@ class Import_lif():
 						
 							
 						self.imDataStore.append(imData)
-						self.imDataDesc.append(self.store[b])
+						self.imDataDesc.append(self.meta_array[b])
 						
 						
 				else:
@@ -485,6 +480,7 @@ class Import_lif():
 		for i in range(self.imDataDesc.__len__()):
 			self.win_obj.image_status_text.showMessage("Correlating carpet: "+str(i+1)+' of '+str(self.imDataDesc.__len__())+' selected.')
 			self.win_obj.fit_obj.app.processEvents()
+			print 'numCh',self.imDataDesc[i]['lutname']
 			s.append(scanObject(self.fname,self.parObj,self.imDataDesc[i],self.imDataStore[i],0,0));
 		
 		
@@ -577,7 +573,9 @@ class Import_lif():
 			   
 				#exec("boolV = self.check"+str(c)+".isChecked()");
 				if checked == True:
-					selList.append(self.meta_array[idx]['name'])
+
+					selList.append(idx)
+
 		   
 			self.parObj.import_lif_sing(selList)
 			

@@ -122,7 +122,7 @@ class FileDialog(QtGui.QMainWindow):
 		
 			
 		except:
-			print 'nofile'
+			pass
 		#Sets the first one to be plotted which triggers plotQueueFn
 		
 		
@@ -946,10 +946,12 @@ class Window(QtGui.QWidget):
 						f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
 						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
 						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
-						f.write('CV,'+str(objId.CV[i])+'\n')
+						#f.write('CV,'+str(objId.CV[i])+'\n')
 						f.write('carpet pos,'+str(i)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
+							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
+							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+'\n');
 						if self.bleachCorr2_checked == True:
 							f.write('pc, 2\n');
 						
@@ -957,12 +959,12 @@ class Window(QtGui.QWidget):
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							f.write('Time (ns), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
-								f.write(str(int(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
+								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
 						else:
 							f.write('pc, 0\n');
 							f.write('Time (ns), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
-								f.write(str(int(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
+								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
 						f.write('end\n')
 						
 					if objId.numOfCH == 2:
@@ -974,17 +976,19 @@ class Window(QtGui.QWidget):
 						f.write('carpet pos,'+str(i)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
+							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
+							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+','+str(objId.pbc_tb_ch1)+'\n');
 						if self.bleachCorr2_checked == True:
 							f.write('pc, 2\n');
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
-								f.write(str(int(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
+								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
 						else:
 							f.write('pc, 0\n');
 							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
-								f.write(str(int(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
+								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
 						f.write('end\n')
 						
 
@@ -1040,6 +1044,10 @@ class Window(QtGui.QWidget):
 						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
 						corrObj1.autotime = objId.corrArrScale_pc[:]
 						corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
+						if self.bleachCorr1_checked == True:
+							#Additional parameters from photobleaching method 1
+							corrObj1.pbc_f0 = objId.pbc_f0_ch0
+							corrObj1.pbc_tb = objId.pbc_tb_ch0
 					else:
 						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
 						corrObj1.autotime = objId.corrArrScale[:]
@@ -1057,12 +1065,18 @@ class Window(QtGui.QWidget):
 						corrObj2.kcount = objId.kcountCH1[i]
 						corrObj2.numberNandB = objId.numberNandBCH1[i]
 						corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
+						
 						corrObj1.CV = objId.CV[i]
 						corrObj2.CV = objId.CV[i]
 						corrObj2.type = "scan"
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
+							corrObj2.autotime =	objId.corrArrScale_pc
 							corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
+							if self.bleachCorr1_checked == True:
+								#Additional parameters from photobleaching method 1
+								corrObj2.pbc_f0 = objId.pbc_f0_ch1
+								corrObj2.pbc_tb = objId.pbc_tb_ch1
 						else:
 							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
 							corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
@@ -1080,8 +1094,8 @@ class Window(QtGui.QWidget):
 						corrObj3.autotime = objId.corrArrScale[:]
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
+							corrObj3.autotime =	objId.corrArrScale_pc
 							corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
-
 						else:
 							corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
 							corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
@@ -1296,7 +1310,7 @@ class GateScanFileList():
 
 	def generateList(self):
 		c = 0
-		print 'x1',self.x1
+		
 		for i in self.par_obj.TGnumOfRgn:
 				self.win_obj.modelTab.setRowCount(c+1)
 				
@@ -1383,7 +1397,7 @@ class pushButtonSp3(QtGui.QPushButton):
 			#self.win_obj.modelTab.setRowCount(self.par_obj.TGnumOfRgn.__len__())
 			self.parent_id.generateList()
 		if self.type =='remove_file':
-			print 'self.par_obj.numOfLoaded',self.par_obj.numOfLoaded
+			
 			self.par_obj.numOfLoaded = self.par_obj.numOfLoaded - 1
 			self.par_obj.objectRef.pop(self.id)
 			self.win_obj.modelTab2.setRowCount(0)

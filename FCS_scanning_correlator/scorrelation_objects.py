@@ -58,8 +58,7 @@ class scanObject():
         #self.parObj.updateCombo()
         #self.parObj.cbx.setCurrentIndex(self.parObj.label.numOfLoaded-1)
         
-    def correctBleach(self):
-        print correctingBleach
+
         
     def calc_carpet(self, photonCarpetCH0,photonCarpetCH1,lenG):
             
@@ -317,6 +316,7 @@ class scanObject():
             tempList1 =[];
 
             self.numOfCH = self.LUTName.__len__();
+            print self.numOfCH
 
             if self.cmin == None:
                 self.cmin = 0
