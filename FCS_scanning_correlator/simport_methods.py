@@ -34,7 +34,7 @@ def Import_lsm(filename,par_obj,win_obj):
 	if ok_1 and ok_2:
 		deltat= 1000/float(text_1)
 		#pickle.dump(tif.asarray(), open('extra.p',"wb"))
-		
+		print 'lsm.asarray()',np.sum(lsm.asarray())
 		scanObject(filename,par_obj,[deltat,float(text_2)/1000000],lsm.asarray(),0,0);
 		#par_obj.objectRef[-1].cb.setChecked(True)
 		win_obj.DeltatEdit.setText(str(deltat));
@@ -382,6 +382,7 @@ class Import_lif():
 							count = count+1
 					except:
 						pass
+
 		if self.parObj.gui == 'show':
 			self.win_obj.testWin = self.AppForm(self.meta_array,self)
 			self.win_obj.testWin.exec_()
@@ -476,6 +477,7 @@ class Import_lif():
 					self.f.seek(footer+memSize)
 		
 		s =[]
+		self.f.close()
 		self.win_obj.update_correlation_parameters()
 		for i in range(self.imDataDesc.__len__()):
 			self.win_obj.image_status_text.showMessage("Correlating carpet: "+str(i+1)+' of '+str(self.imDataDesc.__len__())+' selected.')
@@ -494,8 +496,7 @@ class Import_lif():
 			
 
 		
-			self.parObj.objectRef[-1].cb.setChecked(True)
-			self.parObj.objectRef[-1].plotOn = True
+			
 		self.win_obj.image_status_text.showMessage("Data plotted.")
 		#self.parObj.plotDataQueueFn()
 	class AppForm(QtGui.QDialog):

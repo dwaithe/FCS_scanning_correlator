@@ -140,8 +140,10 @@ class scanObject():
                     #If there are two channels calculate the coincidence.
                     #This is only tested for lif files.
                     option = np.bincount((inFnCH0).astype(np.int64))
-                    
-                    scalefactor = np.diff(np.where(option > 0)[0])[0]
+                    try:
+                        scalefactor = np.diff(np.where(option > 0)[0])[0]
+                    except:
+                        scalefactor = 1
                     N1 = np.bincount((inFnCH0/scalefactor).astype(np.int64))
                     N2 = np.bincount((inFnCH1/scalefactor).astype(np.int64))
                     n = max(N1.shape[0],N2.shape[0])
@@ -235,13 +237,28 @@ class scanObject():
             self.numOfCH = 1
         
         elif self.ext == 'lsm':
+            print 'lsm'
             #For lsm files the dimensions can vary.
+
+
+
             if self.imDataStore.shape.__len__() > 2:
                 self.dimSize = [self.imDataStore.shape[1],self.imDataStore.shape[2]]
                 self.numOfCH = 2
             else:
                 self.dimSize = [self.imDataStore.shape[0],self.imDataStore.shape[1]]
                 self.numOfCH = 1
+            
+            if self.numOfCH == 2:
+                if np.sum(self.imDataStore[0,:,:]) == 0:
+                    self.imDataStore[:,:] = self.imDataStore[1,:,:]
+                    self.numOfCH = 1
+                if np.sum(self.imDataStore[1,:,:]) == 0:
+                    self.imDataStore[:,:] = self.imDataStore[0,:,:]
+                    self.numOfCH = 1
+
+
+
             self.name = str(self.filepath).split('/')[-1]
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
@@ -250,20 +267,23 @@ class scanObject():
             if self.cmax == None:
                 self.cmax = self.dimSize[0]
             
+            
             if self.imDataStore.shape.__len__() > 2:
                 self.CH0 = np.array(self.imDataStore[0,:,:]).astype(np.float64)
                 if self.end_pt != 0:
-                    self.CH0 = np.array(self.imDataStore[0,self.start_pt:self.end_pt,cmin:cmax]).astype(np.float64)
+                    self.CH0 = np.array(self.imDataStore[0,self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
             else:
                 self.CH0 = np.array(self.imDataStore[:,:]).astype(np.float64)
                 if self.end_pt != 0:
-                    self.CH0 = np.array(self.imDataStore[self.start_pt:self.end_pt,cmin:cmax]).astype(np.float64)
+                    self.CH0 = np.array(self.imDataStore[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
             self.CH0_pc = np.zeros((self.CH0.shape))
+
+           
             
             if self.numOfCH ==2:
                 self.CH1 = np.array(self.imDataStore[1,:,:]).astype(np.float64)
                 if self.end_pt != 0:
-                    self.CH1 = np.array(self.imDataStore[1,self.start_pt:self.end_pt,cmin:cmax]).astype(np.float64)
+                    self.CH1 = np.array(self.imDataStore[1,self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
                 self.CH1_pc = np.zeros((self.CH1.shape))
 
         elif self.ext == 'msr':

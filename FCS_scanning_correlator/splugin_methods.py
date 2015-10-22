@@ -30,7 +30,20 @@ class bleachCorr2(QtGui.QMainWindow):
                 self.objId=objId
                 break;
         
-        self.duration_array = [self.objId.num_of_lines*self.objId.deltat/1000, 4.000, 3.000,2.500,2.000, 1.500,1.000,0.5000,0.2500, 0.1250, 0.0625]
+        self.duration_array = [self.objId.num_of_lines*self.objId.deltat/1000]
+
+        potential_array = [18.0,16.0,14.0,12.0,10.0,8.0,7.0,6.0,5.0, 4.000, 3.000,2.500,2.000, 1.500,1.000,0.5000,0.2500, 0.1250, 0.0625]
+        for time in potential_array:
+            if self.duration_array[0]/2 > time:
+
+                self.duration_array.append(time)
+
+
+
+
+
+
+        
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
@@ -94,16 +107,13 @@ class bleachCorr2(QtGui.QMainWindow):
 
         self.duration_combo = QtGui.QComboBox()
         self.duration_combo.addItem("full")
-        self.duration_combo.addItem("4.0 s")
-        self.duration_combo.addItem("3.0 s")
-        self.duration_combo.addItem("2.5 s")
-        self.duration_combo.addItem("2.0 s")
-        self.duration_combo.addItem("1.5 s")
-        self.duration_combo.addItem("1.0 s")
-        self.duration_combo.addItem("0.5 s")
-        self.duration_combo.addItem("0.25 s")
-        self.duration_combo.addItem("0.1250 s")
-        self.duration_combo.addItem("0.0625 s")
+        cc = 0
+        for time in self.duration_array:
+
+            if cc > 0:
+                
+                self.duration_combo.addItem(str(time)+" s")
+            cc =cc+1
         
         
         
@@ -190,11 +200,8 @@ class bleachCorr2(QtGui.QMainWindow):
                 
 
     def duration_activated(self,text):
-            for i in range(0,self.duration_array.__len__()):
-                if text ==  str(self.duration_array[i])+' s':
-                    self.duration = self.duration_array[i]
-                if text == str('full'):
-                    self.duration = self.objId.num_of_lines
+        self.duration = self.duration_array[self.duration_combo.currentIndex()]
+                
             
 
    

@@ -110,7 +110,9 @@ class FileDialog(QtGui.QMainWindow):
 				imTif = Import_lsm(filename,self.par_obj,self.win_obj)
 
 				
-		
+		self.par_obj.objectRef[-1].cb.setChecked(True)
+		self.par_obj.objectRef[-1].plotOn = True
+		self.win_obj.DeltatEdit.setText(str(self.par_obj.objectRef[-1].deltat));
 			
 		try:
 			self.loadpath = str(QtCore.QFileInfo(filename).absolutePath())
@@ -990,6 +992,7 @@ class Window(QtGui.QWidget):
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
 						f.write('end\n')
+					f.close()
 						
 
 
@@ -1013,99 +1016,99 @@ class Window(QtGui.QWidget):
 				self.export_the_track(objId)	
 	def export_the_track(self,objId):
 				
-				if self.clickedS1== None:
-					xmin = 0
-					xmax = objId.kcountCH0.__len__()-1
-				else:
-					xmin = int(self.clickedS1)
-					xmax = int(self.clickedS2)-1
-				if xmin >xmax:
-					xtemp = xmax
-					xmax = xmin
-					xmin = xtemp
+		if self.clickedS1== None:
+			xmin = 0
+			xmax = objId.kcountCH0.__len__()-1
+		else:
+			xmin = int(self.clickedS1)
+			xmax = int(self.clickedS2)-1
+		if xmin >xmax:
+			xtemp = xmax
+			xmax = xmin
+			xmin = xtemp
+		
+		for i in range(xmin, xmax+1):
+			#print i
+			corrObj1 = corrObject(objId.filepath,self.fit_obj);
+			corrObj1.siblings = None
+			self.fit_obj.objIdArr.append(corrObj1.objId)
+			corrObj1.param = copy.deepcopy(self.fit_obj.def_param)
+			corrObj1.ch_type = 0
+			corrObj1.prepare_for_fit()
+			
+			corrObj1.kcount = objId.kcountCH0[i]
+			corrObj1.numberNandB = objId.numberNandBCH0[i]
+			corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
+			
+			corrObj1.type = "scan"
+			corrObj1.siblings = None
+
+			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
+				corrObj1.autotime = objId.corrArrScale_pc[:]
+				corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
+				if self.bleachCorr1_checked == True:
+					#Additional parameters from photobleaching method 1
+					corrObj1.pbc_f0 = objId.pbc_f0_ch0
+					corrObj1.pbc_tb = objId.pbc_tb_ch0
+			else:
+				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
+				corrObj1.autotime = objId.corrArrScale[:]
+				corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
+			
+			
+			if objId.numOfCH == 2:
+				corrObj2 = corrObject(objId.filepath,self.fit_obj);
+				corrObj2.siblings = None
+				self.fit_obj.objIdArr.append(corrObj2.objId)
+				corrObj2.ch_type = 1
+				corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
+				corrObj2.prepare_for_fit()
+				corrObj2.autotime = objId.corrArrScale[:]
+				corrObj2.kcount = objId.kcountCH1[i]
+				corrObj2.numberNandB = objId.numberNandBCH1[i]
+				corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
 				
-				for i in range(xmin, xmax+1):
-					
-					corrObj1 = corrObject(objId.filepath,self.fit_obj);
-					corrObj1.siblings = None
-					self.fit_obj.objIdArr.append(corrObj1.objId)
-					corrObj1.param = copy.deepcopy(self.fit_obj.def_param)
-					corrObj1.ch_type = 0
-					corrObj1.prepare_for_fit()
-					
-					corrObj1.kcount = objId.kcountCH0[i]
-					corrObj1.numberNandB = objId.numberNandBCH0[i]
-					corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
-					
-					corrObj1.type = "scan"
-					corrObj1.siblings = None
+				corrObj1.CV = objId.CV[i]
+				corrObj2.CV = objId.CV[i]
+				corrObj2.type = "scan"
+				if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
+					corrObj2.autotime =	objId.corrArrScale_pc
+					corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
+					if self.bleachCorr1_checked == True:
+						#Additional parameters from photobleaching method 1
+						corrObj2.pbc_f0 = objId.pbc_f0_ch1
+						corrObj2.pbc_tb = objId.pbc_tb_ch1
+				else:
+					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
+					corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
+				
+				
 
-					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
-						corrObj1.autotime = objId.corrArrScale_pc[:]
-						corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
-						if self.bleachCorr1_checked == True:
-							#Additional parameters from photobleaching method 1
-							corrObj1.pbc_f0 = objId.pbc_f0_ch0
-							corrObj1.pbc_tb = objId.pbc_tb_ch0
-					else:
-						corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
-						corrObj1.autotime = objId.corrArrScale[:]
-						corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
-					
-					
-					if objId.numOfCH == 2:
-						corrObj2 = corrObject(objId.filepath,self.fit_obj);
-						corrObj2.siblings = None
-						self.fit_obj.objIdArr.append(corrObj2.objId)
-						corrObj2.ch_type = 1
-						corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
-						corrObj2.prepare_for_fit()
-						corrObj2.autotime = objId.corrArrScale[:]
-						corrObj2.kcount = objId.kcountCH1[i]
-						corrObj2.numberNandB = objId.numberNandBCH1[i]
-						corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
-						
-						corrObj1.CV = objId.CV[i]
-						corrObj2.CV = objId.CV[i]
-						corrObj2.type = "scan"
-						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
-							corrObj2.autotime =	objId.corrArrScale_pc
-							corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
-							if self.bleachCorr1_checked == True:
-								#Additional parameters from photobleaching method 1
-								corrObj2.pbc_f0 = objId.pbc_f0_ch1
-								corrObj2.pbc_tb = objId.pbc_tb_ch1
-						else:
-							corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
-							corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
-						
-						
+				corrObj3 = corrObject(objId.filepath,self.fit_obj);
+				corrObj3.siblings = None
+				self.fit_obj.objIdArr.append(corrObj3.objId)
+				
+				corrObj3.ch_type = 2
+				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
+				corrObj3.CV = objId.CV[i]
+				corrObj3.prepare_for_fit()
+				corrObj3.autotime = objId.corrArrScale[:]
+				if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
+					corrObj3.autotime =	objId.corrArrScale_pc
+					corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
+				else:
+					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
+					corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
+				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 
-						corrObj3 = corrObject(objId.filepath,self.fit_obj);
-						corrObj3.siblings = None
-						self.fit_obj.objIdArr.append(corrObj3.objId)
-						
-						corrObj3.ch_type = 2
-						corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
-						corrObj3.CV = objId.CV[i]
-						corrObj3.prepare_for_fit()
-						corrObj3.autotime = objId.corrArrScale[:]
-						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-							corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
-							corrObj3.autotime =	objId.corrArrScale_pc
-							corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
-						else:
-							corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
-							corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
-						corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
+				corrObj1.siblings = [corrObj2,corrObj3]
+				corrObj2.siblings = [corrObj1,corrObj3]
+				corrObj3.siblings = [corrObj1,corrObj2]
 
-						corrObj1.siblings = [corrObj2,corrObj3]
-						corrObj2.siblings = [corrObj1,corrObj3]
-						corrObj3.siblings = [corrObj1,corrObj2]
-
-				self.fit_obj.fill_series_list()
+		self.fit_obj.fill_series_list()
 
 
 		
@@ -1189,10 +1192,10 @@ class checkBoxSp3(QtGui.QCheckBox):
 				if objId != self.obj:
 					objId.plotOn = False
 					objId.cb.setChecked(False)
-					self.win_obj.DeltatEdit.setText(str(objId.deltat));
+			
 
 		
-		
+			self.win_obj.DeltatEdit.setText(str(self.obj.deltat));
 			self.obj.plotOn = self.isChecked()
 			
 			#The 
