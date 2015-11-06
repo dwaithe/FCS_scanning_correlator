@@ -482,7 +482,6 @@ class Import_lif():
 		for i in range(self.imDataDesc.__len__()):
 			self.win_obj.image_status_text.showMessage("Correlating carpet: "+str(i+1)+' of '+str(self.imDataDesc.__len__())+' selected.')
 			self.win_obj.fit_obj.app.processEvents()
-			print 'numCh',self.imDataDesc[i]['lutname']
 			s.append(scanObject(self.fname,self.parObj,self.imDataDesc[i],self.imDataStore[i],0,0));
 		
 		
@@ -503,15 +502,16 @@ class Import_lif():
 		def __init__(self, meta_array=None,parObj=None):
 			QtGui.QDialog.__init__(self)
 			self.meta_array = meta_array
-			self.create_main_frame()
 			self.parObj = parObj
+			self.create_main_frame()
+			
 			
 
 		def create_main_frame(self):        
 			page = QtGui.QWidget()        
 
 			
-			self.setWindowTitle("Select Images to Import")
+			self.setWindowTitle("Select Images to Import from: "+self.parObj.fname.split("/")[-1])
 			vbox0 = QtGui.QVBoxLayout()
 			hbox1 = QtGui.QHBoxLayout()
 			hbox2 = QtGui.QHBoxLayout()
@@ -554,7 +554,7 @@ class Import_lif():
 			
 			
 			self.setLayout(vbox0)
-			self.resize(300,500)
+			self.resize(500,500)
 			self.load_data_btn.clicked.connect(self.load_data_fn)
 			self.check_all_btn.clicked.connect(self.check_all_fn)
 		def check_all_fn(self):
@@ -566,7 +566,7 @@ class Import_lif():
 		def load_data_fn(self):
 			self.close()
 			c=0
-			selList =[];
+			self.parObj.selList =[];
 			for idx in self.meta_array:
 				model_index = self.series_list_model.index(idx, 0)
 				checked = self.series_list_model.data(model_index, QtCore.Qt.CheckStateRole) == QtCore.QVariant(QtCore.Qt.Checked)
@@ -575,62 +575,11 @@ class Import_lif():
 				#exec("boolV = self.check"+str(c)+".isChecked()");
 				if checked == True:
 
-					selList.append(idx)
+					self.parObj.selList.append(idx)
 
 		   
-			self.parObj.import_lif_sing(selList)
+			
 			
 
 		#QtGui.QMessageBox.about(self, "My message box", "Text1 = %s, Text2 = %s" % (self.edit1.text(), self.edit2.text()))
 	
-
-
-
-"""
-class tiff_handler:
-	def __init__(self,fname):
-		'''fname is the full path '''
-		self.im  = PIL.Image.open(fname)
-
-		self.im.seek(0)
-		# get image dimensions from the meta data the order is flipped
-		# due to row major v col major ordering in tiffs and numpy
-		
-		self.im_sz = [self.im.tag[0x101][0], self.im.tag[0x100][0],self.im.tag[0x102].__len__()]
-		self.cur = self.im.tell()
-		num = 0
-		while True:
-			num = num+1
-			try:
-				self.im.seek(num)
-			except EOFError:
-				return None
-
-			self.maxFrames = num
-
-
-	def get_frame(self,j):
-		'''Extracts the jth frame from the image sequence.
-		if the frame does not exist return None'''
-		try:
-			self.im.seek(j)
-		except EOFError:
-			return None
-
-		self.cur = self.im.tell()
-		return np.reshape(self.im.getdata(),self.im_sz)
-	def __iter__(self):
-		self.im.seek(0)
-		self.old = self.cur
-		self.cur = self.im.tell()
-		return self
-
-	def next(self):
-		try:
-			self.im.seek(self.cur)
-			self.cur = self.im.tell()+1
-		except EOFError:
-			self.im.seek(self.old)
-			self.cur = self.im.tell()
-			raise StopIteration
-		return np.reshape(self.im.getdata(),self.im_sz)"""

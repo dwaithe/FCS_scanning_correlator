@@ -31,6 +31,7 @@ import errno
 import tifffile as tif_fn
 import json
 import copy
+import uuid
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
@@ -95,11 +96,13 @@ class FileDialog(QtGui.QMainWindow):
 			self.loadpath = os.path.expanduser('~')+'/FCS_Analysis/'
 
 		#Create loop which opens dialog box and allows selection of files.
+		imLif_Arr = []
 		for filename in fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)'):
 			nameAndExt = os.path.basename(str(filename)).split('.')
 			fileExt = nameAndExt[-1]
 			if fileExt == 'lif':
 				imLif = Import_lif(filename,self.par_obj,self.win_obj)
+				imLif_Arr.append(imLif)
 
 			if fileExt == 'msr':
 				imMsr = Import_msr(filename,self.par_obj,self.win_obj)
@@ -108,7 +111,10 @@ class FileDialog(QtGui.QMainWindow):
 				self.par_obj.objectRef[-1].cb.setChecked(True)
 			if fileExt == 'lsm':
 				imTif = Import_lsm(filename,self.par_obj,self.win_obj)
-
+		if fileExt == 'lif':
+			#We actually import the image file after the list selection to speed the process of selection with multiple files.
+			for imLif in imLif_Arr:
+				imLif.import_lif_sing(imLif.selList)
 				
 		self.par_obj.objectRef[-1].cb.setChecked(True)
 		self.par_obj.objectRef[-1].plotOn = True
@@ -435,7 +441,11 @@ class Window(QtGui.QWidget):
 
 		export_all_data_btn = QtGui.QPushButton('Export All Data to Fit')
 		export_all_data_btn.clicked.connect(self.export_all_data_fn)
+		export_all_data_to_csv_btn = QtGui.QPushButton('Export All Data to csv')
+		export_all_data_to_csv_btn.clicked.connect(self.save_all_as_csv_fn)
+		
 		panel_third_row_btns.addWidget(export_all_data_btn)
+		panel_third_row_btns.addWidget(export_all_data_to_csv_btn)
 		panel_third_row_btns.addStretch()
 		
 		self.corr_window_layout.setSpacing(0)
@@ -688,16 +698,56 @@ class Window(QtGui.QWidget):
 		self.plt4.clear()
 		self.canvas4.draw()
 
-		#if object.type == 'scanObject':
-		yLimMn = int(((objId.pane)*(objId.CH0.shape[1]/64)*150))
-		yLimMx = int(((objId.pane+1)*(objId.CH0.shape[1]/64)*150))
 		
-		totalFn = np.sum(objId.CH0, 1).astype(np.float64)
-		self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],color=objId.color)
-		if objId.numOfCH == 2:
-			totalFn = np.sum(objId.CH1, 1).astype(np.float64)
-			self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],'grey')
+		if self.clickedS1== None:
+			xmin = 0
+			xmax = objId.kcountCH0.__len__()-1
+		else:
+			xmin = int(self.clickedS1)
+			xmax = int(self.clickedS2)-1
+		if xmin >xmax:
+			xtemp = xmax
+			xmax = xmin
+			xmin = xtemp
+
+		self.int_time_trace_mode = 'global'
 		
+		if self.int_time_trace_mode == 'global':
+			
+			#If just one line is highlighted.
+			if xmin == xmax:
+				totalFn = objId.CH0[:,xmin]
+			else:
+				totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
+			
+			self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],color=objId.color)
+			
+			if objId.numOfCH == 2:
+				#If just one line is highlighted.
+				if xmin == xmax:
+					totalFn = objId.CH1[:,xmin]
+				else:
+					totalFn = np.sum(objId.CH1[:,xmin:xmax], 1).astype(np.float64)
+				
+				self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],'grey')
+		
+		if self.int_time_trace_mode == 'first_pane':
+			yLimMn = int(((objId.pane)*(objId.CH0.shape[1]/64)*150))
+			yLimMx = int(((objId.pane+1)*(objId.CH0.shape[1]/64)*150))
+			
+			#If just one line is highlighted.
+			if xmin == xmax:
+				totalFn = objId.CH0[:,xmin]
+			else:
+				totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
+			self.plt4.plot(np.arange(yLimMn,yLimMx)*objId.deltat ,totalFn[yLimMn:yLimMx],color=objId.color)
+			#If two channels are present
+			if objId.numOfCH == 2:
+				if xmin == xmax:
+					totalFn = objId.CH1[:,xmin]
+				else:
+					totalFn = np.sum(objId.CH1[:,xmin:xmax], 1).astype(np.float64)
+				self.plt4.plot(np.arange(yLimMn,yLimMx)*objId.deltat ,totalFn[yLimMn:yLimMx],color='grey')
 
 
 		self.figure4.subplots_adjust(bottom=0.15,right=0.95)
@@ -893,12 +943,15 @@ class Window(QtGui.QWidget):
 				pass
 			self.line = self.plt2.axhspan(self.x0, self.x1, facecolor=None,fill=False, alpha=1.0)
 			
+			
 			self.draw_single_line()
 	def draw_single_line(self):
 				self.plt1.cla()
 				#self.par_obj.plt1.set_autoscale_on(True)
 				for objId in self.par_obj.objectRef:
+
 					if(objId.cb.isChecked() == True):
+						self.plot_PhotonCount(objId)
 				
 						self.plt1.set_xscale('log');
 						self.plt1.set_ylabel('Correlation', fontsize=12)
@@ -929,13 +982,34 @@ class Window(QtGui.QWidget):
 
 		
 		self.export_track_fn()
-	def save_as_csv(self,xmin,xmax):
-		#xmin = int(self.clickedS1)
-		#xmax = int(self.clickedS2)-1
-		#Checks if the plot is on or not.
+	def save_as_specific_csv(self,xmin,xmax):
 		for objId in self.par_obj.objectRef:
 			
 			if(objId.cb.isChecked() == True):
+				self.save_as_csv(objId,xmin,xmax)
+	def save_all_as_csv_fn(self):
+		objId = self.par_obj.objectRef[0]
+		if self.clickedS1== None:
+			xmin = 0
+			xmax = objId.kcountCH0.__len__()-1
+		else:
+			xmin = int(self.clickedS1)
+			xmax = int(self.clickedS2)-1
+		if xmin >xmax:
+			xtemp = xmax
+			xmax = xmin
+			xmin = xtemp
+		#Checks if the plot is on or not.
+		for objId in self.par_obj.objectRef:
+			
+				self.save_as_csv(objId,xmin,xmax)
+	def save_as_csv(self,objId,xmin,xmax):
+		#xmin = int(self.clickedS1)
+		#xmax = int(self.clickedS2)-1
+		#Checks if the plot is on or not.
+				parent_name = objId.name
+				parent_uqid = uuid.uuid4()
+		
 				
 				for i in range(xmin, xmax+1):
 					f = open(self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv', 'w')
@@ -950,6 +1024,8 @@ class Window(QtGui.QWidget):
 						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
 						#f.write('CV,'+str(objId.CV[i])+'\n')
 						f.write('carpet pos,'+str(i)+'\n')
+						f.write('parent_name,'+str(parent_name)+'\n')
+						f.write('parent_uqid,'+str(parent_uqid)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
 							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
@@ -976,6 +1052,8 @@ class Window(QtGui.QWidget):
 						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
 						f.write('CV,'+str(objId.CV[i])+','+str(objId.CV[i])+','+str(objId.CV[i])+'\n')
 						f.write('carpet pos,'+str(i)+'\n')
+						f.write('parent_name,'+str(parent_name)+'\n')
+						f.write('parent_uqid,'+str(parent_uqid)+'\n')
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
 							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
@@ -1027,10 +1105,19 @@ class Window(QtGui.QWidget):
 			xmax = xmin
 			xmin = xtemp
 		
+
+		parent_name = objId.name
+		parent_uqid = uuid.uuid4()
+
+
+
 		for i in range(xmin, xmax+1):
 			#print i
 			corrObj1 = corrObject(objId.filepath,self.fit_obj);
 			corrObj1.siblings = None
+			corrObj1.parent_name = parent_name
+			corrObj1.parent_uqid = parent_uqid
+
 			self.fit_obj.objIdArr.append(corrObj1.objId)
 			corrObj1.param = copy.deepcopy(self.fit_obj.def_param)
 			corrObj1.ch_type = 0
@@ -1060,6 +1147,8 @@ class Window(QtGui.QWidget):
 			if objId.numOfCH == 2:
 				corrObj2 = corrObject(objId.filepath,self.fit_obj);
 				corrObj2.siblings = None
+				corrObj2.parent_name = parent_name
+				corrObj2.parent_uqid = parent_uqid
 				self.fit_obj.objIdArr.append(corrObj2.objId)
 				corrObj2.ch_type = 1
 				corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
@@ -1088,6 +1177,8 @@ class Window(QtGui.QWidget):
 
 				corrObj3 = corrObject(objId.filepath,self.fit_obj);
 				corrObj3.siblings = None
+				corrObj3.parent_name = parent_name
+				corrObj3.parent_uqid = parent_uqid
 				self.fit_obj.objIdArr.append(corrObj3.objId)
 				
 				corrObj3.ch_type = 2
@@ -1392,7 +1483,7 @@ class pushButtonSp3(QtGui.QPushButton):
 				xtemp = self.xmax
 				self.xmax = self.xmin
 				self.xmin = xtemp
-				self.win_obj.save_as_csv(self.xmin,self.xmax-1)
+			self.win_obj.save_as_specific_csv(self.xmin,self.xmax-1)
 
 		if self.type == 'xbtn':
 			self.par_obj.TGnumOfRgn.pop(self.id)

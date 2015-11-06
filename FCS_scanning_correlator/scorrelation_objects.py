@@ -221,11 +221,24 @@ class scanObject():
         if self.ext == 'tif' or self.ext == 'tiff':
             
             self.dimSize = self.imDataStore.shape
+
             self.name = str(self.filepath).split('/')[-1]
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
 
-            self.CH0 = np.array(self.imDataStore).astype(np.int8)
+            temp = np.array(self.imDataStore).astype(np.uint8)
+            print temp.shape
+            if temp.shape.__len__() ==3:
+                self.CH0 = temp.reshape(temp.shape[0]*temp.shape[1],temp.shape[2])
+            if temp.shape.__len__() ==4:
+                self.CH0 = copy.deepcopy(temp[:,0,:,:])
+                self.CH1 = copy.deepcopy(temp[:,0,:,:])
+                self.CH0 = self.CH0.reshape(self.CH0.shape[0]*self.CH0.shape[1],self.CH0.shape[2])
+                self.CH1 = self.CH1.reshape(self.CH1.shape[0]*self.CH1.shape[1],self.CH1.shape[2])
+                if np.sum(self.CH1) !=0:
+                    self.numOfCH =1
+            
+            print self.CH0.shape
             if self.cmin == None:
                 self.cmin = 0
             if self.cmax == None:

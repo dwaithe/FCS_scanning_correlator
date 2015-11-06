@@ -434,10 +434,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         hbox_main.addLayout(vbox1)
         hbox_main.addLayout(vbox2)
 
-        #hbox_top = QtGui.QHBoxLayout()
-        #pixel_range = QtGui.QLabel(str(self.win_obj.clickedS1)+ ":"+str(self.win_obj.clickedS2))
-        #hbox_top.addWidget(pixel_range)
-        #Crop settings.
+        
 
         crop_panel = QtGui.QGroupBox('Import Crop Settings')
 
@@ -492,6 +489,7 @@ class ImpAdvWin(QtGui.QMainWindow):
 
 
         reprocess_btn = QtGui.QPushButton('Reprocess Data')
+        reprocess_all_btn = QtGui.QPushButton('Reprocess All Data')
         apply_to_imports =  QtGui.QCheckBox('Apply to Subsequent Imports')
         store_profile = QtGui.QPushButton('Store profile')
         import_profile =QtGui.QPushButton('Import profile')
@@ -514,9 +512,11 @@ class ImpAdvWin(QtGui.QMainWindow):
         left_grid.addWidget(self.interval_pt_sp,6,1)
 
         reprocess_btn.clicked.connect(self.reprocess_and_create)
+        reprocess_all_btn.clicked.connect(self.reprocess_and_create_all)
         #vbox1.addLayout(hbox_top)
         vbox1.addWidget(crop_panel)
         vbox1.addWidget(reprocess_btn)
+        vbox1.addWidget(reprocess_all_btn)
         vbox1.addStretch()
         #vbox1.addWidget(apply_to_imports)
         #vbox1.addWidget(store_profile)
@@ -648,6 +648,53 @@ class ImpAdvWin(QtGui.QMainWindow):
         
         self.canvas1.draw()
         plt.show()
+    def reprocess_and_create_all(self):
+        templist = []
+
+        #We make a sublist otherwise can run for infinity as our list lengthens recursively.
+        for objId in self.par_obj.objectRef:
+            templist.append(objId)
+            
+        counter  =0   
+        for objId in templist:
+                s =[]
+                for i in range(0,self.par_obj.interval_pt):
+                    interval = (self.par_obj.end_pt-self.par_obj.start_pt)/self.par_obj.interval_pt
+                    st = np.round((self.par_obj.start_pt + (interval*i))/objId.deltat,0)
+                    en = np.round((self.par_obj.start_pt + ((interval)*(i+1)))/objId.deltat,0)
+                   
+                    s.append(scanObject(objId.filepath,self.par_obj,objId.imDataDesc,objId.imDataStore,st,en,int(np.round(self.vmin,0)),int(np.round(self.vmax,0))));
+                    s[-1].type = objId.type+' sub '+str(s[-1].unqID)
+                    s[-1].name = s[-1].name+ '_sub_'+str(s[-1].unqID)+'_'
+                self.win_obj.image_status_text.showMessage("Applying to carpet: "+str(counter+1)+' of '+str(templist.__len__())+' selected.')
+                self.win_obj.fit_obj.app.processEvents()
+                counter = counter +1
+
+        #We make a sublist otherwise can run for infinity as our list lengthens recursively.
+        id2pop = []
+
+        #Its a bit awkward to delete entries in my list in a batch, next time will use dictionary rather than list for objects.
+        for ooid, objId in enumerate(self.par_obj.objectRef):
+            for oid, old_objId in enumerate(templist):
+                if objId == old_objId:
+                    id2pop.append(ooid)    
+
+        #Once I know which to delete I run backward through indices.
+        for b in range(id2pop.__len__()-1,-1,-1):
+            self.par_obj.numOfLoaded = self.par_obj.numOfLoaded - 1
+            self.par_obj.objectRef.pop(id2pop[b])
+        
+        
+        self.win_obj.modelTab2.setRowCount(0)
+        
+
+        #self.win_obj.canvas1.draw()
+
+        self.win_obj.label.generateList()
+        self.par_obj.objectRef[0].plotOn = True
+        self.par_obj.objectRef[0].cb.setChecked(True)
+
+        self.close()
     def reprocess_and_create(self):
         
         
