@@ -158,8 +158,6 @@ class scanObject():
                     
 
 
-
-
                 
                 corrArrCH0.append(AC0)
                 
