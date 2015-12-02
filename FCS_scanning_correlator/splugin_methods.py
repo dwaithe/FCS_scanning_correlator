@@ -274,10 +274,13 @@ class bleachCorr2(QtGui.QMainWindow):
         self.close()
 
     def outputData(self):
-        start_x = 0
-        
+        start_x = 0 
         self.duration_combo_idx = self.duration_combo.currentIndex()
+        
+        #If a subinterval has been chosen.
         if  self.duration_combo_idx >0:
+
+            #Calculates how many lines there are in the series.
             num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
             
             if num_of_lines%2 == 1:
@@ -287,39 +290,68 @@ class bleachCorr2(QtGui.QMainWindow):
             lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
 
             mar = int((self.objId.spatialBin-1)/2)
+            
+
+            #Constructs arrays to collect the data for each sub-carpet.
             AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
-            if self.objId.numOfCH==2:
-                AC_all_CH1  = np.zeros((AC_all_CH0.shape))
-                CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+            #All the subsequent carpets have the same dimensions.
+            AC_all_CH1  = np.zeros((AC_all_CH0.shape))
+            CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+            kcountCH0_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            numberNandBCH0_arr =  np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            brightnessNandBCH0_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            kcountCH1_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            numberNandBCH1_arr =  np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            brightnessNandBCH1_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            CV_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            
+            
+                
+            
             
             c = 0
+            #For each sub-timeseries calculate the correlation carpet and the paramaters.
             for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
                 #Function which calculates the correlation carpet.
                 if self.objId.numOfCH==1:
-                    self.objId.corrArrScale_pc, AC_carCH0, ap, aq = self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
-                    AC_all_CH0[:,:,c] = AC_carCH0
-
-
+                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
                 elif self.objId.numOfCH==2:
-                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
-                    AC_all_CH0[:,:,c]  = AC_carCH0
-                    AC_all_CH1[:,:,c]  = AC_carCH1
-                    CC_all_CH01[:,:,c] = CC_carCH01
-                    
+                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
                 
+                #Populate matrices of values for carpets and parameters.
+                AC_all_CH0[:,:,c]  = AC_carCH0
+                AC_all_CH1[:,:,c]  = AC_carCH1
+                CC_all_CH01[:,:,c] = CC_carCH01
+                kcountCH0_arr[:,c] = k0
+                numberNandBCH0_arr[:,c] = NB0
+                brightnessNandBCH0_arr[:,c] = bNB0
+                kcountCH1_arr[:,c] = k1
+                numberNandBCH1_arr[:,c] = NB1
+                brightnessNandBCH1_arr[:,c] = bNB1
+                CV_arr[:,c] = CV 
+
+                #The index.
                 c = c + 1
 
             
-            #Calculate average carpet for output.
+            #Calculate average carpet  and the parameters for outputs
             self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
+            self.objId.kcountCH0_pc = np.average(kcountCH0_arr,1)
+            self.objId.numberNandBCH0_pc = np.average(numberNandBCH0_arr,1)
+            self.objId.brightnessNandBCH0_pc = np.average(brightnessNandBCH0_arr,1)
+            self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
+            self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+            self.objId.kcountCH1_pc = np.average(kcountCH1_arr,1)
+            self.objId.numberNandBCH1_pc = np.average(numberNandBCH1_arr,1)
+            self.objId.brightnessNandBCH1_pc = np.average(brightnessNandBCH1_arr,1)
+            self.objId.CV_pc = np.average(CV_arr,1)
             
             
-            if self.objId.numOfCH == 2:
-                self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
-                self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+            
+                
                 
         else:
-            #If full is selected, just defualt to normal carpet.
+            #If full is selected, just default to normal carpet.
             self.objId.AutoCorr_carpetCH0_pc = self.objId.AutoCorr_carpetCH0
             self.objId.corrArrScale_pc =  self.objId.corrArrScale
             if self.objId.numOfCH == 2:
@@ -890,17 +922,25 @@ class bleachCorr(QtGui.QMainWindow):
             
         #Save the data to carpets.
         if self.objId.numOfCH == 1:
-            a,b,c,d = self.objId.calc_carpet(self.objId.CH0_pc,None,self.objId.lenG)
+            a,b,c,d,e,f,g,h,i,j,k = self.objId.calc_carpet(self.objId.CH0_pc,None,self.objId.lenG)
+
         elif self.objId.numOfCH == 2:
             for i in range(0, self.objId.CH1.shape[1]):
                 inFn = self.objId.CH1[:,i]
                 self.objId.CH1_pc[:,i] = self.apply_corr_fn(inFn,corr_ratio)
-            a,b,c,d = self.objId.calc_carpet(self.objId.CH0_pc,self.objId.CH1_pc,self.objId.lenG)
+            a,b,c,d,e,f,g,h,i,j,k = self.objId.calc_carpet(self.objId.CH0_pc,self.objId.CH1_pc,self.objId.lenG)
         
         self.objId.corrArrScale_pc = a
         self.objId.AutoCorr_carpetCH0_pc = b
         self.objId.AutoCorr_carpetCH1_pc = c
         self.objId.CrossCorr_carpet01_pc = d
+        self.objId.kcountCH0_pc = e
+        self.objId.kcountCH1_pc = f
+        self.objId.numberNandBCH0_pc = g
+        self.objId.numberNandBCH1_pc = h
+        self.objId.brightnessNandBCH0_pc = i
+        self.objId.brightnessNandBCH1_pc = j
+        self.objId.CV_pc = k
         
 
         self.objId.bleachCorr1 = True

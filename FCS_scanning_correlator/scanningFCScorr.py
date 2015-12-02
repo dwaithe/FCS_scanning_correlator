@@ -1019,19 +1019,25 @@ class Window(QtGui.QWidget):
 					
 					if objId.numOfCH == 1:
 						f.write('ch_type,'+str(0)+'\n')
-						f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
-						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
-						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
+						
 						#f.write('CV,'+str(objId.CV[i])+'\n')
 						f.write('carpet pos,'+str(i)+'\n')
 						f.write('parent_name,'+str(parent_name)+'\n')
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
+						
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
 							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
 							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+'\n');
+							f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
+							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
+						
 						if self.bleachCorr2_checked == True:
 							f.write('pc, 2\n');
+							f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
+							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
 						
 						
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
@@ -1040,6 +1046,9 @@ class Window(QtGui.QWidget):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
 						else:
 							f.write('pc, 0\n');
+							f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
+							f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
 							f.write('Time (ns), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
@@ -1047,25 +1056,35 @@ class Window(QtGui.QWidget):
 						
 					if objId.numOfCH == 2:
 						f.write('ch_type, 0 ,1, 2\n')
-						f.write('kcount,'+str(objId.kcountCH0[i])+','+str(objId.kcountCH1[i])+'\n')
-						f.write('numberNandB,'+str(objId.numberNandBCH0[i])+','+str(objId.numberNandBCH1[i])+'\n')
-						f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
-						f.write('CV,'+str(objId.CV[i])+','+str(objId.CV[i])+','+str(objId.CV[i])+'\n')
+						
 						f.write('carpet pos,'+str(i)+'\n')
 						f.write('parent_name,'+str(parent_name)+'\n')
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
+
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
 							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
 							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+','+str(objId.pbc_tb_ch1)+'\n');
+							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
+							f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
+
 						if self.bleachCorr2_checked == True:
 							f.write('pc, 2\n');
+							f.write('kcount,'+str(objId.kcountCH0_pc[i])+','+str(objId.kcountCH1_pc[i])+'\n')
+							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
+							f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
 						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
 						else:
 							f.write('pc, 0\n');
+							f.write('kcount,'+str(objId.kcountCH0[i])+','+str(objId.kcountCH1[i])+'\n')
+							f.write('numberNandB,'+str(objId.numberNandBCH0[i])+','+str(objId.numberNandBCH1[i])+'\n')
+							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
+							f.write('CV,'+str(objId.CV[i])+','+str(objId.CV[i])+','+str(objId.CV[i])+'\n')
 							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
@@ -1123,14 +1142,15 @@ class Window(QtGui.QWidget):
 			corrObj1.ch_type = 0
 			corrObj1.prepare_for_fit()
 			
-			corrObj1.kcount = objId.kcountCH0[i]
-			corrObj1.numberNandB = objId.numberNandBCH0[i]
-			corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
+			
 			
 			corrObj1.type = "scan"
 			corrObj1.siblings = None
 
 			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+				corrObj1.kcount = objId.kcountCH0_pc[i]
+				corrObj1.numberNandB = objId.numberNandBCH0_pc[i]
+				corrObj1.brightnessNandB = objId.brightnessNandBCH0_pc[i]
 				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
 				corrObj1.autotime = objId.corrArrScale_pc[:]
 				corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
@@ -1139,6 +1159,9 @@ class Window(QtGui.QWidget):
 					corrObj1.pbc_f0 = objId.pbc_f0_ch0
 					corrObj1.pbc_tb = objId.pbc_tb_ch0
 			else:
+				corrObj1.kcount = objId.kcountCH0[i]
+				corrObj1.numberNandB = objId.numberNandBCH0[i]
+				corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
 				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
 				corrObj1.autotime = objId.corrArrScale[:]
 				corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
@@ -1154,14 +1177,15 @@ class Window(QtGui.QWidget):
 				corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
 				corrObj2.prepare_for_fit()
 				corrObj2.autotime = objId.corrArrScale[:]
-				corrObj2.kcount = objId.kcountCH1[i]
-				corrObj2.numberNandB = objId.numberNandBCH1[i]
-				corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
+				
 				
 				corrObj1.CV = objId.CV[i]
 				corrObj2.CV = objId.CV[i]
 				corrObj2.type = "scan"
 				if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+					corrObj2.kcount = objId.kcountCH1_pc[i]
+					corrObj2.numberNandB = objId.numberNandBCH1_pc[i]
+					corrObj2.brightnessNandB = objId.brightnessNandBCH1_pc[i]
 					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
 					corrObj2.autotime =	objId.corrArrScale_pc
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
@@ -1170,6 +1194,9 @@ class Window(QtGui.QWidget):
 						corrObj2.pbc_f0 = objId.pbc_f0_ch1
 						corrObj2.pbc_tb = objId.pbc_tb_ch1
 				else:
+					corrObj2.kcount = objId.kcountCH1[i]
+					corrObj2.numberNandB = objId.numberNandBCH1[i]
+					corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
 					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
 				

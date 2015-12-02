@@ -68,13 +68,13 @@ class scanObject():
             corrArrCH0 =[]
             corrArrCH1 = []
             corrArrCC=[]
-            self.kcountCH0 = []
-            self.kcountCH1 = []
-            self.numberNandBCH0 =[]
-            self.numberNandBCH1 =[]
-            self.brightnessNandBCH0 =[]
-            self.brightnessNandBCH1 =[]
-            self.CV = []
+            kcountCH0 = []
+            kcountCH1 = []
+            numberNandBCH0 =[]
+            numberNandBCH1 =[]
+            brightnessNandBCH0 =[]
+            brightnessNandBCH1 =[]
+            CV = []
             
             numOfOps = photonCarpetCH0.shape[1]
 
@@ -124,17 +124,17 @@ class scanObject():
 
                 #Calculate the number of kcounts / Hz.
                 kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
-                self.kcountCH0.append(kcount/1000)#KHz
+                kcountCH0.append(kcount/1000)#KHz
 
 
 
                 #Calculate the brightness and number using the moments.
-                self.brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
+                brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
                 
                 if (var_count-raw_count) == 0:
-                    self.numberNandBCH0.append(0)
+                    numberNandBCH0.append(0)
                 else:
-                    self.numberNandBCH0.append(raw_count**2/(var_count-raw_count))
+                    numberNandBCH0.append(raw_count**2/(var_count-raw_count))
                 
                 if self.numOfCH ==2:
                     #If there are two channels calculate the coincidence.
@@ -154,7 +154,7 @@ class scanObject():
                     N1 = NN1
                     N2 = NN2
                     
-                    self.CV.append((np.sum(N1*N2)/(np.sum(N1)*np.sum(N2)))*n)
+                    CV.append((np.sum(N1*N2)/(np.sum(N1)*np.sum(N2)))*n)
                     
 
 
@@ -183,11 +183,11 @@ class scanObject():
                     kcount = raw_count/(int_time*self.dwell_time*self.spatialBin)
                     var_count = np.var(out)
 
-                    self.brightnessNandBCH1.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
-                    self.numberNandBCH1.append(raw_count**2/(var_count-raw_count))
+                    brightnessNandBCH1.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
+                    numberNandBCH1.append(raw_count**2/(var_count-raw_count))
                 
                     
-                    self.kcountCH1.append(kcount)#average count per window. Need to convert to second.
+                    kcountCH1.append(kcount)#average count per window. Need to convert to second.
                 
             #Create ouput image.
             AutoCorr_carpetCH0 = np.zeros((corrArrCH0[0][:,1].shape[0],corrArrCH0.__len__()))
@@ -209,7 +209,7 @@ class scanObject():
                     AutoCorr_carpetCH1[:,b] = corrArrCH1[b][:,1]
                     CrossCorr_carpet01[:,b] = corrArrCC[b][:,1]    
 
-            return corrArrScale, AutoCorr_carpetCH0, AutoCorr_carpetCH1, CrossCorr_carpet01
+            return corrArrScale, AutoCorr_carpetCH0, AutoCorr_carpetCH1, CrossCorr_carpet01,kcountCH0,kcountCH1,numberNandBCH0,numberNandBCH1,brightnessNandBCH0,brightnessNandBCH1,CV
         
 
     def processData(self):
@@ -433,12 +433,12 @@ class scanObject():
         for stx in range(start_x,self.CH0.shape[0]-self.num_of_lines+1,self.num_of_lines):
             #Function which calculates the correlation carpet.
             if self.numOfCH==1:
-                self.corrArrScale, AC_carCH0, ap, aq = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],None,self.lenG)
+                self.corrArrScale, AC_carCH0, ap, aq, self.kcountCH0,cq,self.numberNandBCH0,dq,self.brightnessNandBCH0,vq,cq = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],None,self.lenG)
                 AC_all_CH0[:,:,c] = AC_carCH0
 
 
             elif self.numOfCH==2:
-                self.corrArrScale, AC_carCH0, AC_carCH1, CC_carCH01 = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],self.CH1[stx:stx+self.num_of_lines,:],self.lenG)
+                self.corrArrScale, AC_carCH0, AC_carCH1, CC_carCH01,self.kcountCH0,self.kcountCH1,self.numberNandBCH0,self.numberNandBCH1,self.brightnessNandBCH0,self.brightnessNandBCH1,self.CV = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],self.CH1[stx:stx+self.num_of_lines,:],self.lenG)
                 AC_all_CH0[:,:,c]  = AC_carCH0
                 AC_all_CH1[:,:,c]  = AC_carCH1
                 CC_all_CH01[:,:,c] = CC_carCH01
