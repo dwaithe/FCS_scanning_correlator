@@ -1608,8 +1608,10 @@ if __name__ == '__main__':
 
 	win_tab = QtGui.QTabWidget()
 	par_obj = ParameterClass()
-	fit_obj = Form()
+	fit_obj = Form('scan')
+	
 	fit_obj.app = app
+	
 	
 	mainWin = Window(par_obj,fit_obj)
 	
