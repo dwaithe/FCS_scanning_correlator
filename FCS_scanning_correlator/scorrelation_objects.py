@@ -102,12 +102,11 @@ class scanObject():
 
                     
                     AC0 = autocorrelate(np.array(inFnCH0), m=self.m, deltat=self.deltat, normalize=True,copy=True, dtype=None)
-                    
-
                     corrArrScale = AC0[:,0]
                 else:
 
                     AC0 = np.zeros((lenG,2))
+                    corrArrScale = AC0[:,0]
                     
                 
                 #Calculate number of counts
@@ -225,7 +224,9 @@ class scanObject():
             self.dwell_time = self.imDataDesc[1]
 
             temp = np.array(self.imDataStore).astype(np.uint8)
-            print temp.shape
+            
+            if temp.shape.__len__() ==2:
+                self.CH0 = temp.reshape(temp.shape[0],temp.shape[1])
             if temp.shape.__len__() ==3:
                 self.CH0 = temp.reshape(temp.shape[0]*temp.shape[1],temp.shape[2])
             if temp.shape.__len__() ==4:
@@ -236,14 +237,13 @@ class scanObject():
                 if np.sum(self.CH1) !=0:
                     self.numOfCH =1
             
-            print self.CH0.shape
             if self.cmin == None:
                 self.cmin = 0
             if self.cmax == None:
                 self.cmax = self.CH0.shape[1]
             
             if self.end_pt != 0:
-                self.CH0 = np.array(self.imDataStore[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
             self.CH0_pc = np.zeros((self.CH0.shape))
             self.numOfCH = 1
         
@@ -354,6 +354,8 @@ class scanObject():
             if self.cmax == None:
                 self.cmax = self.dimSize[0]
 
+
+
             #Single channel is simple to reshape from pages.
             if self.numOfCH == 1:
                     
@@ -399,6 +401,8 @@ class scanObject():
         
         self.CH0_arraySum = np.sum(self.CH0[:,:],1).astype(np.float64)
         self.CH0_arrayColSum = np.sum(self.CH0[:,:],0).astype(np.float64)
+
+        
         self.maxCountCH0 = np.max(self.CH0_arraySum)
         
         #CH0auto = autocorrelate(self.CH0_arraySum, m=self.m, deltat=self.deltat, normalize=True, copy=True, dtype=None)

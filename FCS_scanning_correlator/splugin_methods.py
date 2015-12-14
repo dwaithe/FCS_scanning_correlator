@@ -317,18 +317,19 @@ class bleachCorr2(QtGui.QMainWindow):
                     self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
                 elif self.objId.numOfCH==2:
                     self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
-                
+                    AC_all_CH1[:,:,c]  = AC_carCH1
+                    CC_all_CH01[:,:,c] = CC_carCH01
+                    kcountCH1_arr[:,c] = k1
+                    numberNandBCH1_arr[:,c] = NB1
+                    brightnessNandBCH1_arr[:,c] = bNB1
+                    CV_arr[:,c] = CV 
                 #Populate matrices of values for carpets and parameters.
                 AC_all_CH0[:,:,c]  = AC_carCH0
-                AC_all_CH1[:,:,c]  = AC_carCH1
-                CC_all_CH01[:,:,c] = CC_carCH01
                 kcountCH0_arr[:,c] = k0
                 numberNandBCH0_arr[:,c] = NB0
                 brightnessNandBCH0_arr[:,c] = bNB0
-                kcountCH1_arr[:,c] = k1
-                numberNandBCH1_arr[:,c] = NB1
-                brightnessNandBCH1_arr[:,c] = bNB1
-                CV_arr[:,c] = CV 
+                
+                
 
                 #The index.
                 c = c + 1
