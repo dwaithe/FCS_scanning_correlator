@@ -1024,7 +1024,7 @@ class Window(QtGui.QWidget):
 						f.write('carpet pos,'+str(i)+'\n')
 						f.write('parent_name,'+str(parent_name)+'\n')
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
-						f.write('parent_filename'+str(objId.file_name)+'\n')
+						f.write('parent_filename,'+str(objId.file_name)+'\n')
 						
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
@@ -1061,7 +1061,7 @@ class Window(QtGui.QWidget):
 						f.write('carpet pos,'+str(i)+'\n')
 						f.write('parent_name,'+str(parent_name)+'\n')
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
-						f.write('parent_filename'+str(objId.file_name)+'\n')
+						f.write('parent_filename,'+str(objId.file_name)+'\n')
 
 						if self.bleachCorr1_checked == True:
 							f.write('pc, 1\n');
@@ -1175,7 +1175,7 @@ class Window(QtGui.QWidget):
 				corrObj2.siblings = None
 				corrObj2.parent_name = parent_name
 				corrObj2.parent_uqid = parent_uqid
-				corrObj2.file_name = objId.filename
+				corrObj2.file_name = objId.file_name
 				self.fit_obj.objIdArr.append(corrObj2.objId)
 				corrObj2.ch_type = 1
 				corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
@@ -1210,7 +1210,7 @@ class Window(QtGui.QWidget):
 				corrObj3.siblings = None
 				corrObj3.parent_name = parent_name
 				corrObj3.parent_uqid = parent_uqid
-				corrObj3.file_name = objId.filename
+				corrObj3.file_name = objId.file_name
 				self.fit_obj.objIdArr.append(corrObj3.objId)
 				
 				corrObj3.ch_type = 2
