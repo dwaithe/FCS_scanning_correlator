@@ -1012,7 +1012,10 @@ class Window(QtGui.QWidget):
 		
 				
 				for i in range(xmin, xmax+1):
-					f = open(self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv', 'w')
+					path = self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv'
+
+					path.replace('\\', '/')
+					f = open(path, 'w')
 					f.write('version,'+str(2)+'\n')
 					f.write('numOfCH,'+str(objId.numOfCH)+'\n')
 					f.write('type, scan\n')
