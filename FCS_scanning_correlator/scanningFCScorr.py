@@ -88,7 +88,10 @@ class FileDialog(QtGui.QMainWindow):
 		fileInt = QtGui.QFileDialog()
 		try:
 			#Try and read the default location for a file.
-			f = open(os.path.expanduser('~')+'/FCS_Analysis/configLoad', 'r')
+			filename = os.path.expanduser('~')+'/FCS_Analysis/configLoad'
+			filename.replace('\\', '/')
+
+			f = open(filename, 'r')
 			self.loadpath =f.readline()
 			f.close() 
 		except:
@@ -122,7 +125,10 @@ class FileDialog(QtGui.QMainWindow):
 			
 		try:
 			self.loadpath = str(QtCore.QFileInfo(filename).absolutePath())
-			f = open(os.path.expanduser('~')+'/FCS_Analysis/configLoad', 'w')
+			filename = os.path.expanduser('~')+'/FCS_Analysis/configLoad'
+			filename.replace('\\', '/')
+
+			f = open(filename, 'w')
 
 			f.write(self.loadpath)
 			f.close()
@@ -1546,7 +1552,10 @@ class folderOutput(QtGui.QMainWindow):
 		self.parent.config ={}
 		
 		try:
-			self.parent.config = pickle.load(open(os.path.expanduser('~')+'/FCS_Analysis/config.p', "rb" ));
+			filename =	os.path.expanduser('~')+'/FCS_Analysis/config.p'	
+			filename.replace('\\', '/')
+
+			self.parent.config = pickle.load(open(filename, "rb" ));
 			self.filepath = self.parent.config['output_corr_filepath']
 		except:
 			self.filepath = os.path.expanduser('~')+'/FCS_Analysis/output/'
@@ -1585,7 +1594,9 @@ class folderOutput(QtGui.QMainWindow):
 				self.filepath = tfilepath
 			#Save to the config file.
 				self.parent.config['output_corr_filepath'] = str(tfilepath)
-				pickle.dump(self.parent.config, open(str(os.path.expanduser('~')+'/FCS_Analysis/config.p'), "w" ))              
+				filename = str(os.path.expanduser('~')+'/FCS_Analysis/config.p')
+				filename.replace('\\', '/')
+				pickle.dump(self.parent.config, open(filename, "w" ))              
 
 
 class baseList(QtGui.QLabel):
