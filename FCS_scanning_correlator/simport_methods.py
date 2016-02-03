@@ -7,19 +7,24 @@ import numpy as np
 import tifffile as tif_fn
 import zlib
 import time
+import string
 
 from scorrelation_objects import scanObject
 def Import_tiff(filename,par_obj,win_obj):
+	
+	
 	tif = tif_fn.TiffFile(str(filename))
 	name = str(filename).split('/')[-1]
-	text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):')
-	text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
+	print 'filename',filename
+	print 'name',name
+	text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name,'Enter the line sampling (Hz):')
+	text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name,'Enter the pixel dwell time (us):')
 
 	if ok_1 and ok_2:
 		deltat= 1000/float(text_1)
 		#pickle.dump(tif.asarray(), open('extra.p',"wb"))
-
-		scanObject(filename,par_obj,[deltat,float(text_2)/1000000],tif.asarray(),0,0);
+		ab = tif.asarray()
+		scanObject(filename,par_obj,[deltat,float(text_2)/1000000],ab,0,0);
 		win_obj.bleachCorr1 = False
 		win_obj.bleachCorr2 = False
 		win_obj.label.generateList()
@@ -27,6 +32,7 @@ def Import_tiff(filename,par_obj,win_obj):
 		
 def Import_lsm(filename,par_obj,win_obj):
 	lsm = tif_fn.TiffFile(str(filename))
+	filename.replace('\\', '/')
 	name = str(filename).split('/')[-1]
 	text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):')
 	text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
