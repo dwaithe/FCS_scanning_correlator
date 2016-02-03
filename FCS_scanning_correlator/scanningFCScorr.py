@@ -1018,9 +1018,9 @@ class Window(QtGui.QWidget):
 		
 				
 				for i in range(xmin, xmax+1):
-					path = self.folderOutput.filepath+'/'+objId.name+'_'+str(i)+'_correlation.csv'
-					print 'path',path
-					path.replace('\\', '/')
+					
+					path = os.path.join(self.folderOutput.filepath,objId.name+'_'+str(i)+'_correlation.csv')
+
 					f = open(path, 'w')
 					f.write('version,'+str(2)+'\n')
 					f.write('numOfCH,'+str(objId.numOfCH)+'\n')
