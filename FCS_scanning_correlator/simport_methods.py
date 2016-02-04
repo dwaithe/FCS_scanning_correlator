@@ -18,9 +18,11 @@ def Import_tiff(filename,par_obj,win_obj):
 	reply = None
 	if win_obj.yes_to_all == None:
 		text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):')
-		text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
-
-		reply = QtGui.QMessageBox.question(win_obj, 'Message', "Use parameters for remaining images?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+		if ok_1:
+			text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
+		if win_obj.last_in_list == False and ok_1 and ok_2:
+			reply = QtGui.QMessageBox.question(win_obj, 'Message', "Use parameters for remaining images?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+	
 	else: 
 		text_1 = win_obj.text_1
 		text_2 = win_obj.text_2
@@ -45,14 +47,15 @@ def Import_tiff(filename,par_obj,win_obj):
 def Import_lsm(filename,par_obj,win_obj):
 	lsm = tif_fn.TiffFile(str(filename))
 	filename.replace('\\', '/')
-	
+
 	name = str(filename).split('/')[-1]
 	reply = None
 	if win_obj.yes_to_all == None:
 		text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):')
-		text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
-
-		reply = QtGui.QMessageBox.question(win_obj, 'Message', "Use parameters for remaining images?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+		if ok_1:
+			text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
+		if win_obj.last_in_list == False and ok_1 and ok_2:
+			reply = QtGui.QMessageBox.question(win_obj, 'Message', "Use parameters for remaining images?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 	else: 
 		text_1 = win_obj.text_1
 		text_2 = win_obj.text_2

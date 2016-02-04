@@ -101,7 +101,12 @@ class FileDialog(QtGui.QMainWindow):
 		#Create loop which opens dialog box and allows selection of files.
 		imLif_Arr = []
 		self.win_obj.yes_to_all = None
-		for filename in fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)'):
+		self.win_obj.last_in_list = False
+		file_list = fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
+		c = 1
+		for filename in file_list:
+			if file_list.__len__() == c:
+				self.win_obj.last_in_list = True
 			nameAndExt = os.path.basename(str(filename)).split('.')
 			fileExt = nameAndExt[-1]
 			if fileExt == 'lif':
@@ -115,6 +120,7 @@ class FileDialog(QtGui.QMainWindow):
 				self.par_obj.objectRef[-1].cb.setChecked(True)
 			if fileExt == 'lsm':
 				imTif = Import_lsm(filename,self.par_obj,self.win_obj)
+			c +=1 
 		
 		self.win_obj.yes_to_all = None
 		if fileExt == 'lif':
