@@ -45,6 +45,7 @@ def Import_tiff(filename,par_obj,win_obj):
 def Import_lsm(filename,par_obj,win_obj):
 	lsm = tif_fn.TiffFile(str(filename))
 	filename.replace('\\', '/')
+	
 	name = str(filename).split('/')[-1]
 	reply = None
 	if win_obj.yes_to_all == None:
