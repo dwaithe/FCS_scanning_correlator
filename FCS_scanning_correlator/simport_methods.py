@@ -47,11 +47,21 @@ def Import_tiff(filename,par_obj,win_obj):
 def Import_lsm(filename,par_obj,win_obj):
 	lsm = tif_fn.TiffFile(str(filename))
 	filename.replace('\\', '/')
-
+	for page in lsm:
+			print page.tags['cz_lsm_info']
+			value = page.tags['cz_lsm_info'].value[23]#lineTime.
+			break;
+	try:
+		for page in lsm:
+			print page.tags['cz_lsm_info']
+			value = page.tags['cz_lsm_info'].value[23]#lineTime.
+			break;
+	except:
+		value = 0.00
 	name = str(filename).split('/')[-1]
 	reply = None
 	if win_obj.yes_to_all == None:
-		text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):')
+		text_1, ok_1 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the line sampling (Hz):',text=str(1.0/value))
 		if ok_1:
 			text_2, ok_2 = QtGui.QInputDialog.getText(win_obj, 'File: '+name, 'Enter the pixel dwell time (us):')
 		if win_obj.last_in_list == False and ok_1 and ok_2:
@@ -182,12 +192,12 @@ class Import_msr():
 			for i in range(0,len_of_name):
 				str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
 			stack_details['name'] = str_lnk
-			#print 'name of file:',str_lnk
-			#print 'length of description',len_of_desc
-			desc = f.read(len_of_desc)
 			
-			stack_details['desc'] = desc
-			root = ET.XML(desc)
+			
+			if len_of_desc > 0:
+				desc = f.read(len_of_desc)
+				stack_details['desc'] = desc
+				root = ET.XML(desc)
 			if dtype ==8:
 				bit_length = 2
 			image = []
