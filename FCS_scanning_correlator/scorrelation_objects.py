@@ -24,7 +24,7 @@ class scanObject():
         self.filepath = str(filepath)
         self.parObj = parObj
         self.nameAndExt = os.path.basename(self.filepath).split('.')
-        
+        print 'nameAndExt',self.nameAndExt
         self.file_name = self.nameAndExt[0]
         self.ext = self.nameAndExt[-1]
         self.parObj.data.append(filepath);

@@ -268,17 +268,37 @@ class Import_msr():
 			self.win_obj.testWin.exec_()
 		
 	def import_msr_sing(self, selList):
-		
+		print 's1',self.win_obj.yes_to_all
 		s = []
 		for subindex in selList:
+			reply = None
 			self.imDataDesc = {}
-			text_1, ok_1 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the line sampling (Hz):')
-			text_2, ok_2 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the pixel dwell time (us):')
-			self.imDataDesc[7] = self.stack_holder[subindex]['name']
-			self.imDataDesc[6] = float(text_2)/1000000
-			self.imDataDesc[3] = self.stack_holder[subindex]['size']
-			self.imDataDesc[4] = [1.0/float(text_1)]
-			self.imDataDesc[2] = ['Red']
+			if self.win_obj.yes_to_all == None:
+				
+				text_1, ok_1 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the line sampling (Hz):')
+				if ok_1:
+					text_2, ok_2 = QtGui.QInputDialog.getText(self.win_obj, 'File: '+self.stack_holder[subindex]['title']+' '+self.stack_holder[subindex]['name'], 'Enter the pixel dwell time (us):')
+				if self.win_obj.last_in_list == False and ok_1 and ok_2:
+					reply = QtGui.QMessageBox.question(self.win_obj, 'Message', "Use parameters for remaining images?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+			else: 
+				text_1 = self.win_obj.text_1
+				text_2 = self.win_obj.text_2
+				ok_1 = True
+				ok_2 = True
+
+			if reply == QtGui.QMessageBox.Yes:
+				print 's2',self.win_obj.yes_to_all
+				self.win_obj.yes_to_all = True
+				print 's3',self.win_obj.yes_to_all
+				self.win_obj.text_1 = text_1
+				self.win_obj.text_2 = text_2
+			
+			if ok_1 and ok_2:
+				self.imDataDesc[7] = self.stack_holder[subindex]['name']
+				self.imDataDesc[6] = float(text_2)/1000000
+				self.imDataDesc[3] = self.stack_holder[subindex]['size']
+				self.imDataDesc[4] = [1.0/float(text_1)]
+				self.imDataDesc[2] = ['Red']
 		
 		
 		
