@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 # tifffile.py
 
@@ -263,6 +263,7 @@ class TiffWriter(object):
         self._software = software
 
         self._fh = open(filename, 'wb')
+
         self._fh.write({'<': b'II', '>': b'MM'}[byteorder])
 
         if bigtiff:
@@ -769,6 +770,7 @@ class TiffFile(object):
             many pages. If False, the C runtime may run out of resources.
 
         """
+        
         self._fh = FileHandle(arg, name=name, offset=offset, size=size)
         self.offset_size = None
         self.pages = []
@@ -2492,6 +2494,7 @@ class FileHandle(object):
         self._size = size
         self._close = True
         self.is_file = False
+        
         self.open()
 
     def open(self):
@@ -2501,14 +2504,18 @@ class FileHandle(object):
 
         if isinstance(self._arg, basestring):
             # file name
-            self._arg = os.path.abspath(self._arg)
+            
+            #self._arg = os.path.abspath(self._arg)
             self._dir, self._name = os.path.split(self._arg)
+
             self._fh = open(self._arg, self._mode)
+
             self._close = True
             if self._offset is None:
                 self._offset = 0
         elif isinstance(self._arg, FileHandle):
             # FileHandle
+            
             self._fh = self._arg._fh
             if self._offset is None:
                 self._offset = 0
@@ -2543,7 +2550,9 @@ class FileHandle(object):
             self._fh.seek(pos)
 
         try:
+            
             self._fh.fileno()
+
             self.is_file = True
         except Exception:
             self.is_file = False
