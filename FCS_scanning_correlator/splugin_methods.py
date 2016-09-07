@@ -11,6 +11,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.font_manager import FontProperties
 from matplotlib.widgets import Slider, SpanSelector
 from scorrelation_objects import scanObject, autocorrelate, correlate
+import cPickle as pickle
 
 class bleachCorr2(QtGui.QMainWindow):
     def __init__(self,par_obj,win_obj):
@@ -424,6 +425,453 @@ class bleachCorr2(QtGui.QMainWindow):
         self.canvas1.draw()
 
     
+class bleachCorr3(QtGui.QMainWindow):
+    def __init__(self,par_obj,win_obj):
+        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        #self.fileArray = fileArray
+        #self.create_main_frame()
+        self.par_obj = par_obj
+        self.win_obj = win_obj
+        self.corrFn = False
+        self.duration_combo_idx = 0
+        
+        
+
+    def create_main_frame(self):
+        for objId in self.par_obj.objectRef:
+            if(objId.cb.isChecked() == True):
+                self.objId=objId
+                break;
+        
+        self.duration_array = [self.objId.num_of_lines*self.objId.deltat/1000]
+
+        potential_array = [18.0,16.0,14.0,12.0,10.0,8.0,7.0,6.0,5.0, 4.000, 3.000,2.500,2.000, 1.500,1.000,0.5000,0.2500, 0.1250, 0.0625]
+        for time in potential_array:
+            if self.duration_array[0]/2 > time:
+
+                self.duration_array.append(time)
+
+
+
+
+
+
+        
+        self.corrFn = False      
+        #self.trace_idx = self.par_obj.clickedS1
+
+        page = QtGui.QWidget()        
+        hbox_main = QtGui.QHBoxLayout()
+        vbox1 = QtGui.QVBoxLayout()
+        vbox0 = QtGui.QVBoxLayout()
+        self.setWindowTitle("Bleach correction method 2: (local averaging)")
+        self.figure1 = plt.figure(figsize=(10,8))
+        
+        # this is the Canvas Widget that displays the `figure`
+        # it takes the `figure` instance as a parameter to __init__
+        #self.canvas1 = FigureCanvas(self.figure1)
+        
+        self.figure1.patch.set_facecolor('white')
+        self.canvas1 = FigureCanvas(self.figure1)
+
+        
+        
+        
+        self.plt1 = self.figure1.add_subplot(3,1,3)
+        self.plt2 = self.figure1.add_subplot(3,1,2)
+        self.plt3 = self.figure1.add_subplot(3,1,1)
+        
+
+               
+        
+
+        self.plt1.set_title('Intensity Time Trace')
+        self.plt1.set_ylabel('Number of photons', fontsize=12)
+        self.plt1.set_xlabel('Time (ms)', fontsize=12)
+
+        self.plt2.set_title('Preview Different Window Sizes')
+        self.plt2.set_ylabel('Correlation')
+        self.plt2.set_xlabel('Time (ms)')
+
+
+        cid = self.canvas1.mpl_connect('button_press_event', self.onclick)
+
+
+            
+        #line, = self.plt2.plot([0], [0])  # empty line
+        #linebuilder = LineBuilder(line)
+        carp_pix_sel_txt = QtGui.QLabel('Select carpet column pixel: ')
+
+
+        self.carp_pix_sel = QtGui.QSpinBox()
+        self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[0]);
+
+        
+        self.sel_channel = QtGui.QComboBox()
+        self.sel_channel.addItem('CH0')
+        if self.objId.numOfCH == 2:
+            self.sel_channel.addItem('CH1')
+
+        self.sel_channel.currentIndexChanged[int].connect(self.redraw_carpet)
+
+        
+        if self.win_obj.carpetDisplay == 1:
+            self.sel_channel.setCurrentIndex(1)
+
+        self.duration_combo = QtGui.QComboBox()
+        self.duration_combo.addItem("full")
+        cc = 0
+        for time in self.duration_array:
+
+            if cc > 0:
+                
+                self.duration_combo.addItem(str(time)+" s")
+            cc =cc+1
+        
+        
+        
+        self.duration_combo.setCurrentIndex(self.duration_combo_idx)
+        
+        
+        
+        
+        
+        self.duration = self.duration_array[0]
+        self.duration_combo.activated[str].connect(self.duration_activated)
+        
+
+        self.preview_selection_btn = QtGui.QPushButton('Preview different intervals')
+        self.preview_selection_btn.clicked.connect(self.preview_selection_fn)
+
+        sel_time_window_size = QtGui.QLabel("Select time interval length")
+
+        self.export_trace_btn = QtGui.QPushButton('Apply to data')
+
+        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all open data')
+        self.vbox2 = QtGui.QHBoxLayout()
+        
+        self.export_trace_btn.clicked.connect(self.outputData)
+        self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
+        
+        self.carp_pix_sel.valueChanged[int].connect(self.line_redraw)
+
+        hbox_main.addLayout(vbox0)
+        hbox_main.addLayout(vbox1)
+        vbox0.addWidget(self.sel_channel)
+        vbox0.addWidget(carp_pix_sel_txt)
+        vbox0.addWidget(self.carp_pix_sel)
+        vbox0.addLayout(self.vbox2)
+        vbox0.addWidget(self.preview_selection_btn)
+        vbox0.addWidget(sel_time_window_size)
+        vbox0.addWidget(self.duration_combo)
+        vbox0.addWidget(self.export_trace_btn)
+        vbox0.addWidget(self.apply_to_all_data_btn)
+        vbox0.addStretch();
+        vbox1.addWidget(self.canvas1)
+        
+        self.figure1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.95, wspace=0.2, hspace=0.6)
+        page.setLayout(hbox_main)
+        self.setCentralWidget(page)
+        self.show()
+        self.plotData()
+        self.redraw_carpet()
+        self.duration_activated(self.duration_combo.currentText())
+       
+        #pickle.dump(self.objId.CH0, open('/Users/dwaithe/Documents/collaborators/EggelingC/FCS_simulator/model_data.pkl', "w" ))   
+    def redraw_carpet(self):
+        """To make sure """
+        self.objId.bleachCorr1_checked = False
+        self.objId.bleachCorr2_checked = False
+
+        if self.sel_channel.currentIndex() == 1:
+            self.win_obj.CH1AutoFn()
+        else:
+            self.win_obj.CH0AutoFn()
+        self.plt3.set_xlabel('Time (ms)', fontsize=12)
+        self.plt3.set_ylabel('Column pixel',fontsize=12)
+        self.plt3.set_xscale('log')
+        
+        self.plt3.set_title('Correlation Carpet Preview')
+        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest',picker=5)
+        self.canvas1.draw()
+
+    def line_redraw(self,value):
+        try: 
+            self.line.remove()
+        except:
+            pass
+        self.line = self.plt3.axhline(value,color='black')
+        self.canvas1.draw()
+
+    def onclick(self,event):
+            if event.inaxes == self.plt3:
+                try: 
+                    self.line.remove()
+                except:
+                    pass
+                self.line = self.plt3.axhline(event.ydata,color='black')
+                self.canvas1.draw()
+                self.carp_pix_sel.setValue(int(event.ydata))
+                
+
+    def duration_activated(self,text):
+        self.duration = self.duration_array[self.duration_combo.currentIndex()]
+                
+            
+
+   
+    def preview_selection_fn(self):
+        
+        start_x = 0
+        
+        self.plt2.clear()
+        self.plt2.set_title('Preview Different Window Sizes')
+        self.plt2.set_ylabel('Correlation')
+        self.plt2.set_xlabel('Time (ms)')
+        label_array = []
+        for bit in self.duration_array:
+            num_of_lines  = int(np.ceil((bit)/(self.objId.deltat/1000)))
+            
+            
+            if num_of_lines%2 == 1:
+                num_of_lines -= 1
+
+            if num_of_lines< 2*self.objId.m:
+                    continue;
+            
+            column_number = self.carp_pix_sel.value()
+            if self.sel_channel.currentIndex() == 1:
+                FT = self.objId.CH1[:,column_number]
+            else: 
+                FT = self.objId.CH0[:,column_number]
+
+            
+
+            k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
+
+            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+
+            out_all = np.zeros((lenG,1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
+            c = 0
+            
+            for stx in range(start_x,FT.__len__()-num_of_lines+1,num_of_lines):
+                
+                
+
+                out = autocorrelate(FT[stx:stx+num_of_lines].astype(np.float64),m=self.objId.m, deltat=self.objId.deltat, normalize=True,copy=True, dtype=None)
+                #if out.shape[0] != out_all.shape[0]:
+                #    out_all =  np.zeros((out.shape[0],1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
+                out_all[:,c] = out[:,1]
+                c += 1
+
+            
+            self.plt2.semilogx(out[:,0],np.average(out_all,1))
+            label_array.append(bit)
+            
+        
+        fontP = FontProperties()
+        fontP.set_size('small')
+
+        self.plt2.legend(np.round(label_array,3), loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
+        self.canvas1.draw()
+
+
+        
+                    
+    def apply_to_all_data_fn(self):
+        counter = 0
+        for objId in self.par_obj.objectRef:
+            self.objId = objId
+            self.outputData()
+            counter = counter + 1
+            self.win_obj.image_status_text.showMessage("Applying to carpet: "+str(counter)+' of '+str(self.par_obj.objectRef.__len__())+' selected.')
+            self.win_obj.fit_obj.app.processEvents()
+        self.close()
+
+    def outputData(self):
+        start_x = 0 
+        self.duration_combo_idx = self.duration_combo.currentIndex()
+        
+        #If a subinterval has been chosen.
+        if  self.duration_combo_idx >0:
+
+            #Calculates how many lines there are in the series.
+            num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+            
+            if num_of_lines%2 == 1:
+                num_of_lines -= 1
+
+            k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
+            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+
+            mar = int((self.objId.spatialBin-1)/2)
+            
+
+            #Constructs arrays to collect the data for each sub-carpet.
+            AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
+            #All the subsequent carpets have the same dimensions.
+            AC_all_CH1  = np.zeros((AC_all_CH0.shape))
+            CC_all_CH01 = np.zeros((AC_all_CH0.shape))
+            kcountCH0_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            numberNandBCH0_arr =  np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            brightnessNandBCH0_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            kcountCH1_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            numberNandBCH1_arr =  np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            brightnessNandBCH1_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            CV_arr = np.zeros((AC_all_CH0.shape[1],AC_all_CH0.shape[2]))
+            
+            
+                
+            
+            
+            c = 0
+            #For each sub-timeseries calculate the correlation carpet and the paramaters.
+            for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
+                #Function which calculates the correlation carpet.
+                if self.objId.numOfCH==1:
+                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
+                elif self.objId.numOfCH==2:
+                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
+                    AC_all_CH1[:,:,c]  = AC_carCH1
+                    CC_all_CH01[:,:,c] = CC_carCH01
+                    kcountCH1_arr[:,c] = k1
+                    numberNandBCH1_arr[:,c] = NB1
+                    brightnessNandBCH1_arr[:,c] = bNB1
+                    CV_arr[:,c] = CV 
+                #Populate matrices of values for carpets and parameters.
+                AC_all_CH0[:,:,c]  = AC_carCH0
+                kcountCH0_arr[:,c] = k0
+                numberNandBCH0_arr[:,c] = NB0
+                brightnessNandBCH0_arr[:,c] = bNB0
+                
+                
+
+                #The index.
+                c = c + 1
+
+            
+            #Calculate average carpet  and the parameters for outputs
+            self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
+            self.objId.kcountCH0_pc = np.average(kcountCH0_arr,1)
+            self.objId.numberNandBCH0_pc = np.average(numberNandBCH0_arr,1)
+            self.objId.brightnessNandBCH0_pc = np.average(brightnessNandBCH0_arr,1)
+            self.objId.AutoCorr_carpetCH1_pc = np.average(AC_all_CH1,2)
+            self.objId.CrossCorr_carpet01_pc = np.average(CC_all_CH01,2)
+            self.objId.kcountCH1_pc = np.average(kcountCH1_arr,1)
+            self.objId.numberNandBCH1_pc = np.average(numberNandBCH1_arr,1)
+            self.objId.brightnessNandBCH1_pc = np.average(brightnessNandBCH1_arr,1)
+            self.objId.CV_pc = np.average(CV_arr,1)
+            
+            
+            
+                
+                
+        else:
+            #If full is selected, just default to normal carpet.
+            self.objId.AutoCorr_carpetCH0_pc = self.objId.AutoCorr_carpetCH0
+            self.objId.corrArrScale_pc =  self.objId.corrArrScale
+            if self.objId.numOfCH == 2:
+                self.objId.AutoCorr_carpetCH1_pc = self.objId.AutoCorr_carpetCH1
+                self.objId.CrossCorr_carpet01_pc = self.objId.CrossCorr_carpet01
+                
+
+
+
+        
+        #Applies to data and forgets old settings.
+        self.objId.bleachCorr1 = False
+        self.objId.bleachCorr2 = True
+        self.win_obj.bleachCorr1_checked = False
+        self.win_obj.bleachCorr2_checked = False
+        
+        #Lets the user change channel.
+        if self.sel_channel.currentIndex() == 1:
+            self.win_obj.carpetDisplay = 1
+        else:
+            self.win_obj.carpetDisplay = 0
+        self.win_obj.bleachCorr2fn()
+        
+        #Updates buttons on main gui.
+        self.win_obj.bleachCorr1_on_off.setText('OFF')
+        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: red");
+        self.win_obj.bleachCorr2_on_off.setText('ON')
+        self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
+
+        #Plots the carpet internally.
+        self.plt3.clear()
+        self.plt3.set_title('Correlation Carpet Preview')
+        self.plt3.set_xlabel('Time (ms)', fontsize=12)
+        self.plt3.set_ylabel('Column pixel',fontsize=12)
+        self.plt3.set_xscale('log')
+        
+        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest')
+        self.plotData()
+        self.canvas1.draw()
+
+        
+    def plotData(self):
+        self.plt1.clear()
+        start_x = 0
+        #Calculate the total integral
+        num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+
+        if self.sel_channel.currentIndex() ==1:
+            totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
+        else:
+            totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
+        #Plot 1 in 10 pixels from the Gasussian.
+        if self.duration_combo_idx >0:
+            c = 0
+            for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
+                c =c+1
+                if c%2==1:
+                    color = 'blue'
+                else:
+                    color = 'black'
+                a1,b1,c1 = self.learn_corr_fn(list(totalFn[stx:stx+num_of_lines]))
+
+                
+                print 'b1',b1,'c1',c1
+                self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color)
+                self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat,a1[::10],color='red')
+        else:
+            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[::10],color='blue')
+        
+        #If plotting with correction:
+        self.plt1.set_title('Intensity Time Trace')
+        self.plt1.set_ylabel('Intensity count')
+        self.plt1.set_xlabel('Time (ms)')
+        self.canvas1.draw()
+    def learn_corr_fn(self,totalFn):
+            """Calculates the correction and generates output."""
+            def_param = Parameters()
+            def_param.add('f0', value=totalFn[0], vary=True)
+            def_param.add('tb', min =0, value=60000.0, vary=True)
+            
+            res = minimize(self.residual, def_param, args=(np.arange(0,totalFn.__len__()),np.array(totalFn).astype(np.float64)))
+            print res
+            x= np.arange(0,totalFn.__len__())
+
+            #The useful parameters
+            return self.equation_(res.params,x), res.params['f0'].value, res.params['tb'].value
+    def apply_corr_fn(self,inFn,ratio):
+        """Applys the correction to the file."""
+        wei = self.weightings/ratio
+        l_f0 = self.learn_f0/ratio
+        outFn = (inFn[:]/np.sqrt(wei[:]/l_f0))+ (l_f0*(1-np.sqrt(wei[:]/l_f0)))
+        return outFn
+    def equation_(self,param, x):
+        """The equation used for photobleach correction"""
+        f0 = param['f0'].value; tb = param['tb'].value;
+        #For one diffusing species
+        GDiff = f0*np.exp(-x/tb)
+        return GDiff
+
+    def residual(self,param, x, data):
+        """Calculates the difference between the data and the predicted model"""
+        A = self.equation_(param, x)
+        residuals = data-A
+        return residuals
 
 
 
@@ -890,7 +1338,7 @@ class bleachCorr(QtGui.QMainWindow):
         x= np.arange(0,totalFn.__len__())
 
         #The useful parameters
-        return self.equation_(def_param,x), def_param['f0'].value, def_param['tb'].value
+        return self.equation_(res.params,x), res.params['f0'].value, res.params['tb'].value
     def apply_corr_fn(self,inFn,ratio):
         """Applys the correction to the file."""
         wei = self.weightings/ratio

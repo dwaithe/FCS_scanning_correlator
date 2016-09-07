@@ -37,7 +37,8 @@ def Import_tiff(filename,par_obj,win_obj):
 		
 		deltat= 1000/float(text_1)
 		#pickle.dump(tif.asarray(), open('extra.p',"wb"))
-		ab = tif.asarray()
+		ab = tif.asarray().astype(np.float64)
+		
 		scanObject(filename,par_obj,[deltat,float(text_2)/1000000],ab,0,0);
 		win_obj.bleachCorr1 = False
 		win_obj.bleachCorr2 = False

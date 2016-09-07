@@ -223,7 +223,7 @@ class scanObject():
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
 
-            temp = np.array(self.imDataStore).astype(np.uint8)
+            temp = np.array(self.imDataStore).astype(np.float64)
             
             if temp.shape.__len__() ==2:
                 self.CH0 = temp.reshape(temp.shape[0],temp.shape[1])

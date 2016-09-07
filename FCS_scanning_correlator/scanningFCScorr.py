@@ -17,9 +17,9 @@ from matplotlib.widgets import  SpanSelector
 
 import matplotlib.cm as cm
 
-sys.path.append('../../FCS_point/FCS_point_correlator')
+sys.path.append('../../FCS_point/FCS_point_correlator/focuspoint')
 from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
-from splugin_methods import bleachCorr, ImpAdvWin, bleachCorr2, SpotSizeCalculation
+from splugin_methods import bleachCorr, ImpAdvWin, bleachCorr2, bleachCorr3, SpotSizeCalculation
 from scorrelation_objects import scanObject
 from correlation_objects import corrObject
 
@@ -209,6 +209,9 @@ class Window(QtGui.QWidget):
 		self.canvas3 = FigureCanvas(self.figure3)
 		
 		self.label = scanFileList(self,self.par_obj)
+		#self.canvas1.mpl_connect('resize_event',self.figure1.tight_layout())
+		#self.canvas2.mpl_connect('resize_event',self.figure2.tight_layout())
+		#self.canvas3.mpl_connect('resize_event',self.figure3.tight_layout())
 		#self.GateScanFileListObj = GateScanFileList(self, self.par_obj)
 
 		#The table which shows the details of the time-gating.
