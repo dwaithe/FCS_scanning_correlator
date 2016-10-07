@@ -804,15 +804,15 @@ class Window(QtGui.QWidget):
 		#The span function which changes the carpet visualisation.
 		self.span1 = SpanSelector(self.plt1, self.setCarpetExposure, 'horizontal', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )		
 		
-		yLimMn = (objId.pane)*(objId.CH0.shape[1]/64)*150
-		yLimMx = (objId.pane+1)*(objId.CH0.shape[1]/64)*150
+		yLimMn = int((objId.pane)*(objId.CH0.shape[1]/64)*150)
+		yLimMx = int((objId.pane+1)*(objId.CH0.shape[1]/64)*150)
 		
 
 		#This is for the raw intensity trace of the data (XT carpet).
 		if objId.numOfCH == 1:
 			XTcarpet=np.flipud(objId.CH0[yLimMn:yLimMx,:].T)
 		elif objId.numOfCH == 2:
-			XTcarpet = np.zeros((objId.CH0.shape[1],int(yLimMx-yLimMn),3))
+			XTcarpet = np.zeros((objId.CH0.shape[1],yLimMx-yLimMn,3))
 			XTcarpet[:,:,0]=np.flipud(objId.CH0[yLimMn:yLimMx,:].T)
 			XTcarpet[:,:,1]=np.flipud(objId.CH1[yLimMn:yLimMx,:].T)
 		

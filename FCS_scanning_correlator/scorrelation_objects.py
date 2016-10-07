@@ -426,7 +426,7 @@ class scanObject():
         mar = int((self.spatialBin-1)/2)
 
 
-        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),self.CH0.shape[1]-(2*mar),1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines))
+        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),int(self.CH0.shape[1]-(2*mar)),int(1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines)))
         if self.numOfCH==2:
             AC_all_CH1  = np.zeros((AC_all_CH0.shape))
             CC_all_CH01 = np.zeros((AC_all_CH0.shape))
