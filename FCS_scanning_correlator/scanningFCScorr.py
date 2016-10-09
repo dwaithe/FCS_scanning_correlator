@@ -32,6 +32,12 @@ import tifffile as tif_fn
 import json
 import copy
 import uuid
+import datetime
+now = datetime.datetime.now()
+
+if now.year == 2016:
+        print 'trial version expired'
+        exit()
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
