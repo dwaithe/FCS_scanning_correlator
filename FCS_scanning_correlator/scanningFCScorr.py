@@ -35,7 +35,7 @@ import uuid
 import datetime
 now = datetime.datetime.now()
 
-if now.year == 2016:
+if now.year == 2017:
         print 'trial version expired'
         exit()
 
