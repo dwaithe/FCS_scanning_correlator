@@ -402,7 +402,7 @@ def correlate(a, v, m=16, deltat=1, normalize=False,
                 normstat[idx] = N-(n+m/2)
                 normnump[idx] = N
 
-        # Check if len(trace) is even:
+        # Check if len(trace) is evn:
         if N%2 == 1:
             N -= 1
         # Add up every second element

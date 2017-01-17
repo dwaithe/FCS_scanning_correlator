@@ -35,9 +35,9 @@ import uuid
 import datetime
 now = datetime.datetime.now()
 
-if now.year == 2017:
-        print 'trial version expired'
-        exit()
+#if now.year == 2018:
+#        print 'Your version of the software has expired. Please return to source for up-to-date version'
+#        exit()
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
