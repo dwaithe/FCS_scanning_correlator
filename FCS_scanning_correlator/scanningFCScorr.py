@@ -192,7 +192,6 @@ class Window(QtGui.QWidget):
 		self.canvas1 = FigureCanvas(self.figure1)
 		self.figure1.patch.set_facecolor('white')
 		self.canvas1.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
-		self.toolbar1 = NavigationToolbar(self.canvas1, self)
 		jar = QtGui.QVBoxLayout()
 		jar.addWidget(self.canvas1)
 
@@ -213,12 +212,11 @@ class Window(QtGui.QWidget):
 
 		self.figure3 = plt.figure()
 		self.canvas3 = FigureCanvas(self.figure3)
+
+
 		
 		self.label = scanFileList(self,self.par_obj)
-		#self.canvas1.mpl_connect('resize_event',self.figure1.tight_layout())
-		#self.canvas2.mpl_connect('resize_event',self.figure2.tight_layout())
-		#self.canvas3.mpl_connect('resize_event',self.figure3.tight_layout())
-		#self.GateScanFileListObj = GateScanFileList(self, self.par_obj)
+		
 
 		#The table which shows the details of the time-gating.
 		self.modelTab = QtGui.QTableWidget(self)
@@ -257,30 +255,37 @@ class Window(QtGui.QWidget):
 		self.fileDialog = QtGui.QFileDialog()
 		self.centre_panel = QtGui.QVBoxLayout()
 		self.right_panel = QtGui.QVBoxLayout()
-		
+
 
 		#LEFT PANEL
+		self.left_overview = QtGui.QHBoxLayout()
 		self.left_panel = QtGui.QVBoxLayout()
-		
 		self.left_panel_top = QtGui.QVBoxLayout()
 		self.left_panel_top.setSpacing(0)
 		
 		#Plots of the raw data.
 		self.raw_group = QtGui.QGroupBox('Raw data plots')
-		self.figure4 = plt.figure(figsize=(2,7))
+		self.figure4 = plt.figure(figsize=(2,4))
 		self.canvas4 = FigureCanvas(self.figure4)
 		self.figure4.patch.set_facecolor('white')
-		self.figure5 = plt.figure(figsize=(2,7))
+		self.figure5 = plt.figure(figsize=(2,4))
 		self.canvas5 = FigureCanvas(self.figure5)
 		self.figure5.patch.set_facecolor('white')
 		
 		self.left_panel.addWidget(self.raw_group)
+		self.left_panel.addStretch()
+		
 		self.left_panel_top.addWidget(self.canvas4)
 		self.left_panel_top.addWidget(self.canvas5)
 		self.raw_group.setLayout(self.left_panel_top)
 		
+
+		self.toolbar1 = NavigationToolbar(self.canvas1, self)
+		#self.toolbar2 = NavigationToolbar(self.canvas4, self)
+
+
 		#LEFT PANEL btns
-		self.left_panel_mid_btns= QtGui.QHBoxLayout()
+		self.left_panel_mid_btns = QtGui.QHBoxLayout()
 		
 		prevPane = QtGui.QPushButton('Prev pane')
 		nextPane = QtGui.QPushButton('Next pane')
@@ -289,7 +294,7 @@ class Window(QtGui.QWidget):
 		prevPane.clicked.connect(self.prevPaneFn)
 		nextPane.clicked.connect(self.nextPaneFn)
 
-
+		#self.left_panel_mid_btns.addWidget(self.toolbar2)
 		self.left_panel_mid_btns.addWidget(prevPane)
 		self.left_panel_mid_btns.addWidget(nextPane)
 		self.left_panel_mid_btns.addStretch()
@@ -298,14 +303,16 @@ class Window(QtGui.QWidget):
 
 		#LEFT PANEL centre
 		self.left_panel_centre = QtGui.QHBoxLayout()
-		
 		self.left_panel_centre_right = QtGui.QVBoxLayout()
 		self.left_panel.addLayout(self.left_panel_centre)
 		self.left_panel_centre.addWidget(self.modelTab)
 		self.left_panel_centre.addLayout(self.left_panel_centre_right)
+		self.left_panel_centre.addStretch()
 		
 
-
+		self.left_overview.addLayout(self.left_panel)
+		self.left_panel.addStrut(500)
+		self.left_overview.addStretch()
 		#LEFT PANEL centre right
 		self.ex = FileDialog(self, par_obj, fit_obj)
 		self.openFile = QtGui.QPushButton('Open File')
@@ -322,6 +329,7 @@ class Window(QtGui.QWidget):
 		self.mText = QtGui.QLabel('m (quality):')
 		self.mText.resize(50,40)
 		self.mEdit =lineEditSp('30',self, self.par_obj)
+		self.mEdit.setToolTip('This is correlation ')
 		self.mEdit.type ='m'
 		self.DeltatText = QtGui.QLabel('Deltat (ms):')
 		self.DeltatEdit = QtGui.QLabel()
@@ -457,7 +465,7 @@ class Window(QtGui.QWidget):
 		self.corrBotRow.addWidget(self.save_corr_carpet_btn)
 		self.corrBotRow.addWidget(self.save_log_corr_carpet_btn)
 		self.corrBotRow.addWidget(self.save_figure_btn)
-		self.corrBotRow.addWidget(self.spot_size_calc)
+		#self.corrBotRow.addWidget(self.spot_size_calc)
 		self.corrBotRow.addStretch()
 		self.corrBotRow.addWidget(self.toolbar1)
 		
@@ -483,7 +491,7 @@ class Window(QtGui.QWidget):
 		
 		
 		self.setLayout(main_layout)
-		main_layout.addLayout(self.left_panel)
+		main_layout.addLayout(self.left_overview)
 		
 		correlationBtns.addLayout(corrTopRow)
 		correlationBtns.addLayout(self.corrBotRow)
@@ -512,6 +520,13 @@ class Window(QtGui.QWidget):
 		#The XT Trace
 		self.plt5= self.figure5.add_subplot(111)
 		self.figure5.suptitle('XT Carpet', fontsize=12)
+
+		self.plt1.format_coord = lambda x, y: ''
+		self.plt2.format_coord = lambda x, y: ''
+		self.plt3.format_coord = lambda x, y: ''
+		self.plt4.format_coord = lambda x, y: ''
+		self.plt5.format_coord = lambda x, y: ''
+		self.plt6.format_coord = lambda x, y: ''
 
 		
 		self.multiSelect = GateScanFileList(self,self.par_obj)
@@ -881,7 +896,7 @@ class Window(QtGui.QWidget):
 			self.carpet_img[i,:] = self.carpet_img[i,:]/np.max(self.carpet_img[i,:])
 
 
-		self.plt2.set_xlabel('Time (ms)', fontsize=12)
+		self.plt2.set_xlabel('Lag time (ms)', fontsize=12)
 		self.plt2.set_xscale('log')
 		self.corr_carpet = self.plt2.imshow(self.carpet_img, extent=[carp_scale[0],carp_scale[-1],0,img.shape[0]],interpolation ='nearest')
 		

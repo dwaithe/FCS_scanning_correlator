@@ -237,7 +237,7 @@ class bleachCorr2(QtGui.QMainWindow):
 
             lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
 
-            out_all = np.zeros((lenG,1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
+            out_all = np.zeros((lenG,int(1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines))))
             c = 0
             
             for stx in range(start_x,FT.__len__()-num_of_lines+1,num_of_lines):
@@ -294,7 +294,7 @@ class bleachCorr2(QtGui.QMainWindow):
             
 
             #Constructs arrays to collect the data for each sub-carpet.
-            AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines))
+            AC_all_CH0 = np.zeros((lenG,self.objId.CH0.shape[1]-(2*mar),int(1+np.ceil(self.objId.CH0.shape[0]-num_of_lines)/num_of_lines)))
             #All the subsequent carpets have the same dimensions.
             AC_all_CH1  = np.zeros((AC_all_CH0.shape))
             CC_all_CH01 = np.zeros((AC_all_CH0.shape))
@@ -1041,8 +1041,8 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         #The span function which changes the carpet visualisation.
        
-        yLimMn = (float(self.objId.pane))*(float(self.objId.CH0.shape[1])/64)*150
-        yLimMx = (float(self.objId.pane+1))*(float(self.objId.CH0.shape[1])/64)*150
+        yLimMn = int((float(self.objId.pane))*(float(self.objId.CH0.shape[1])/64)*150)
+        yLimMx = int((float(self.objId.pane+1))*(float(self.objId.CH0.shape[1])/64)*150)
         
 
         #This is for the raw intensity trace of the data (XT carpet).
