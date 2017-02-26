@@ -107,7 +107,6 @@ class FileDialog(QtGui.QMainWindow):
 		#Create loop which opens dialog box and allows selection of files.
 		imLif_Arr = []
 		self.win_obj.yes_to_all = None
-		print 's0',self.win_obj.yes_to_all
 		self.win_obj.last_in_list = False
 		file_list = fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
 		c = 1
@@ -239,14 +238,14 @@ class Window(QtGui.QWidget):
 		self.modelTab2.setColumnCount(6)
 		self.modelTab2.setColumnWidth(0,80);
 		self.modelTab2.setColumnWidth(1,140);
-		self.modelTab2.setColumnWidth(2,30);
+		self.modelTab2.setColumnWidth(2,40);
 		self.modelTab2.setColumnWidth(3,140);
 		#self.modelTab2.setColumnWidth(4,100);
 		self.modelTab2.setColumnWidth(4,30);
 		self.modelTab2.setColumnWidth(5,100);
 		self.modelTab2.horizontalHeader().setStretchLastSection(True)
 		self.modelTab2.resize(800,400)
-		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file name").split(","))
+		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file path").split(","))
 
 		
 		correlationBtns =  QtGui.QVBoxLayout()
@@ -288,7 +287,9 @@ class Window(QtGui.QWidget):
 		self.left_panel_mid_btns = QtGui.QHBoxLayout()
 		
 		prevPane = QtGui.QPushButton('Prev pane')
+		prevPane.setToolTip("Go back one pane in the XT carpet view.")
 		nextPane = QtGui.QPushButton('Next pane')
+		nextPane.setToolTip("Go forward one pane in the XT carpet view.")
 		prevPane.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		nextPane.setStyleSheet("padding-left: 5px; padding-right: 3px;padding-top: 1px; padding-bottom: 1px;");
 		prevPane.clicked.connect(self.prevPaneFn)
@@ -316,28 +317,33 @@ class Window(QtGui.QWidget):
 		#LEFT PANEL centre right
 		self.ex = FileDialog(self, par_obj, fit_obj)
 		self.openFile = QtGui.QPushButton('Open File')
+		self.openFile.setToolTip("Import an uncorrelated XT timeseries, for processing.")
 		self.openFile.clicked.connect(self.ex.showDialog)
 		self.spacer = QtGui.QLabel()
 		main_layout = QtGui.QHBoxLayout()
 		self.import_adv_btn = QtGui.QPushButton('Crop image')
+		self.import_adv_btn.setToolTip('For selecting subsets of pixels for correlation.')
 		self.imp_adv_win = ImpAdvWin(self.par_obj,self)
 		self.import_adv_btn.clicked.connect(self.imp_adv_win.create_main_frame)
 		self.reprocess_btn = QtGui.QPushButton('reprocess data')
+		self.reprocess_btn.setToolTip('Reprocesses data. Run if you change m or Spatial Pixel Binning.')
 		self.reprocess_btn.clicked.connect(self.reprocessDataFn)
 		
 		
 		self.mText = QtGui.QLabel('m (quality):')
 		self.mText.resize(50,40)
 		self.mEdit =lineEditSp('30',self, self.par_obj)
-		self.mEdit.setToolTip('This is correlation ')
+		self.mEdit.setToolTip('This is represents the number of points to be calculated for each log-level of tau. ')
 		self.mEdit.type ='m'
 		self.DeltatText = QtGui.QLabel('Deltat (ms):')
+		self.DeltatText.setToolTip('The calculated scanning line time in ms.')
 		self.DeltatEdit = QtGui.QLabel()
 		self.DeltatEdit.par_obj = self
 		self.DeltatEdit.type = 'deltat'
 
 		self.spatialBinText = QtGui.QLabel()
-		self.spatialBinText.setText('Integrated Bin Size: ')
+		self.spatialBinText.setText('Spatial Pixel Binning: ')
+		self.spatialBinText.setToolTip('This represents the number of pixels to integrate spatially before correlation.')
 		self.spatialBinEdit = QtGui.QSpinBox()
 		self.spatialBinEdit.setRange(1,51);
 		self.spatialBinEdit.setSingleStep(2)
@@ -366,17 +372,21 @@ class Window(QtGui.QWidget):
 		self.right_panel.addWidget(self.modelTab2)
 
 		self.bleachCorr1_btn = QtGui.QPushButton('PBC (Fit)')
+		self.bleachCorr1_btn.setToolTip("Photobleaching panel for application of mono-exponential function for photobleaching correction.")
 		#self.bleachCorr1_btn.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
-		self.bleachCorr1_on_off = QtGui.QPushButton('OFF')
+		self.bleachCorr1_on_off = QtGui.QPushButton('  OFF  ')
+		self.bleachCorr1_on_off.setMinimumWidth(80)
 		self.bleachCorr1_on_off.setStyleSheet(" color: red;");
 		self.bleachCorr1_on_off.clicked.connect(self.bleachCorr1fn)
 		
 
 		self.bleachCorr2_btn = QtGui.QPushButton('PBC (LA)')
+		self.bleachCorr2_btn.setToolTip("Photobleaching panel for application of local averaging correction. ")
+
 		#self.bleachCorr2_btn.setStyleSheet("padding-left: 5px; padding-right: 15px;padding-top: 1px; padding-bottom: 0px;");
-		self.bleachCorr2_on_off = QtGui.QPushButton('OFF')
-		self.bleachCorr2_on_off.setStyleSheet(" color: red;");
-		self.bleachCorr2_on_off.clicked.connect(self.bleachCorr2fn)
+		#self.bleachCorr2_on_off = QtGui.QPushButton('OFF')
+		#self.bleachCorr2_on_off.setStyleSheet(" color: red;");
+		#self.bleachCorr2_on_off.clicked.connect(self.bleachCorr2fn)
 		#self.bleachCorr2_on_off.setEnabled(False);
 
 		
@@ -385,26 +395,32 @@ class Window(QtGui.QWidget):
 		self.displayCarpetText.setMaximumHeight(12)
 		#self.displayCarpetText.setStyleSheet("border-radius:0px;padding-left: 10px; padding-right: 5px;padding-top 5px;");
 		self.CH0Auto_btn = QtGui.QPushButton('Auto CH0')
+		self.CH0Auto_btn.setToolTip('Sets software to visualise first channel (CH0)')
 		self.CH0Auto_btn.setStyleSheet("color: green;");
 		self.CH1Auto_btn = QtGui.QPushButton('Auto CH1')
+		self.CH1Auto_btn.setToolTip('Sets software to visualise second channel (CH1), if available.')
 		#self.CH1Auto_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.CH01Cross_btn = QtGui.QPushButton('Cross CH01')
+		self.CH01Cross_btn.setToolTip('Sets software to visualise cross-correlation channel (CH01), if available.')
+
 		self.displayExportText = QtGui.QLabel('Export:')
 		self.displayExportText.setMinimumHeight(12)
 		self.displayExportText.setMaximumHeight(12)
 
 		#self.displayExportText.setStyleSheet("padding-left: 10px; padding-right: 5px;padding-top: 5px; ");
-		self.export_region_btn = QtGui.QPushButton('Export to Fit');
-		#self.CH01Cross_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
 		self.addRegion_btn = QtGui.QPushButton('Store Region');
-		#self.addRegion_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 0px;");
-		self.export_region_btn = QtGui.QPushButton('Export to Fit');
-		#self.export_region_btn.setStyleSheet("padding-left: 10px; padding-right: 10px;padding-top: 1px; padding-bottom: 0px;");
+		self.addRegion_btn.setToolTip('Saves the selected Region to the region list.')
+		clear_region_btn = QtGui.QPushButton('Clear Region');
+		clear_region_btn.setToolTip('Clears a region selection, ensuring all pixels will be exported.')
 		
+		
+		
+		#Correlation buttons, the top row.
 		self.CH0Auto_btn.clicked.connect(self.CH0AutoFn)
 		self.CH1Auto_btn.clicked.connect(self.CH1AutoFn)
 		self.CH01Cross_btn.clicked.connect(self.CH01CrossFn)
-		self.export_region_btn.clicked.connect(self.export_track_to_fit)
+		clear_region_btn.clicked.connect(self.clear_region_btn)
+		
 		self.TGScrollBoxObj = GateScanFileList(self,self.par_obj)
 		self.bleachInt = bleachCorr(self.par_obj,self)
 		self.bleachInt2 = bleachCorr2(self.par_obj,self)
@@ -412,19 +428,18 @@ class Window(QtGui.QWidget):
 		self.bleachCorr2_btn.clicked.connect(self.bleachInt2.create_main_frame)
 		self.addRegion_btn.clicked.connect(self.saveRegion)
 		
-		
 		corrTopRow.setSpacing(0)
 		corrTopRow.addWidget(self.bleachCorr1_btn)
-		corrTopRow.addWidget(self.bleachCorr1_on_off)
 		corrTopRow.addWidget(self.bleachCorr2_btn)
-		corrTopRow.addWidget(self.bleachCorr2_on_off)
+		corrTopRow.addWidget(self.bleachCorr1_on_off)
+		#corrTopRow.addWidget(self.bleachCorr2_on_off)
 		corrTopRow.addWidget(self.displayCarpetText)
 		corrTopRow.addWidget(self.CH0Auto_btn)
 		corrTopRow.addWidget(self.CH1Auto_btn)
 		corrTopRow.addWidget(self.CH01Cross_btn)
 		corrTopRow.addWidget(self.displayExportText)
 		corrTopRow.addWidget(self.addRegion_btn)
-		corrTopRow.addWidget(self.export_region_btn)
+		corrTopRow.addWidget(clear_region_btn)
 
 
 
@@ -432,6 +447,7 @@ class Window(QtGui.QWidget):
 		self.folderOutput.type = 'output_corr_dir'
 
 		self.folderSelect_btn = QtGui.QPushButton('Set Output Folder')
+		self.folderSelect_btn.setToolTip('Sets the folder for exporting files to (e.g. CSV files)')
 		#self.folderSelect_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.folderSelect_btn.clicked.connect(self.folderOutput.showDialog)
 		
@@ -441,16 +457,18 @@ class Window(QtGui.QWidget):
 		self.save_corr_txt.setMinimumHeight(12)
 		self.save_corr_txt.setMaximumHeight(12)
 		self.save_corr_carpet_btn = QtGui.QPushButton('Raw Carpet')
+		self.save_corr_carpet_btn.setToolTip('Exports an image of carpet without logarthmic spacing, suitable for subsequent analysis.')
 		#self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_corr_carpet_btn.clicked.connect(self.save_carpets)
 
 		self.save_log_corr_carpet_btn = QtGui.QPushButton('Log Norm. Carpet')
+		self.save_log_corr_carpet_btn.setToolTip('Exports an image of correlated carpet with logarthmic spacing')
 		#self.save_log_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_log_corr_carpet_btn.clicked.connect(self.save_log_carpets)
 
-		self.save_figure_btn = QtGui.QPushButton('Figure')
+		#self.save_figure_btn = QtGui.QPushButton('Figure')
 		#self.save_figure_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
-		self.save_figure_btn.clicked.connect(self.save_figure)
+		#self.save_figure_btn.clicked.connect(self.save_figure)
 
 		self.spot_size_calc = QtGui.QPushButton('Calc. Spot Size')
 
@@ -464,7 +482,7 @@ class Window(QtGui.QWidget):
 		self.corrBotRow.addWidget(self.save_corr_txt )
 		self.corrBotRow.addWidget(self.save_corr_carpet_btn)
 		self.corrBotRow.addWidget(self.save_log_corr_carpet_btn)
-		self.corrBotRow.addWidget(self.save_figure_btn)
+		#self.corrBotRow.addWidget(self.save_figure_btn)
 		#self.corrBotRow.addWidget(self.spot_size_calc)
 		self.corrBotRow.addStretch()
 		self.corrBotRow.addWidget(self.toolbar1)
@@ -472,11 +490,17 @@ class Window(QtGui.QWidget):
 		
 		panel_third_row_btns = QtGui.QHBoxLayout()
 
-		export_all_data_btn = QtGui.QPushButton('Export All Data to Fit')
+		export_region_btn = QtGui.QPushButton('Export to Fit');
+		export_region_btn.setToolTip('Export current carpet to fit interface.')
+		export_region_btn.clicked.connect(self.export_track_to_fit)
+		export_all_data_btn = QtGui.QPushButton('Export All Carpets to Fit')
+		export_all_data_btn.setToolTip('Exports all carpets in the data viewer to the fitting interface.')
 		export_all_data_btn.clicked.connect(self.export_all_data_fn)
-		export_all_data_to_csv_btn = QtGui.QPushButton('Export All Data to csv')
+		export_all_data_to_csv_btn = QtGui.QPushButton('Export All Carpets to CSV')
+		export_all_data_to_csv_btn.setToolTip('Exports correlated data out of software.')
 		export_all_data_to_csv_btn.clicked.connect(self.save_all_as_csv_fn)
 		
+		panel_third_row_btns.addWidget(export_region_btn)
 		panel_third_row_btns.addWidget(export_all_data_btn)
 		panel_third_row_btns.addWidget(export_all_data_to_csv_btn)
 		panel_third_row_btns.addStretch()
@@ -507,6 +531,7 @@ class Window(QtGui.QWidget):
 		gs = gridspec.GridSpec(2, 3, height_ratios=[1, 0.98],width_ratios=[0.02, 0.96,0.02]) 
 		#Main correlation window
 		self.plt1 = self.figure1.add_subplot(gs[0,:])
+		self.figure1.suptitle('Correlation Function Ouput', fontsize=12)
 		#Place holder for the colorbar.
 		self.plt6 = self.figure1.add_subplot(gs[1,2:3])
 		#The Intensity maxima for each column.
@@ -521,17 +546,37 @@ class Window(QtGui.QWidget):
 		self.plt5= self.figure5.add_subplot(111)
 		self.figure5.suptitle('XT Carpet', fontsize=12)
 
-		self.plt1.format_coord = lambda x, y: ''
-		self.plt2.format_coord = lambda x, y: ''
-		self.plt3.format_coord = lambda x, y: ''
-		self.plt4.format_coord = lambda x, y: ''
-		self.plt5.format_coord = lambda x, y: ''
-		self.plt6.format_coord = lambda x, y: ''
+		self.plt1.format_coord = lambda x, y:''
+		self.plt2.format_coord = lambda x, y:''
+		self.plt3.format_coord = lambda x, y:''
+		self.plt4.format_coord = lambda x, y:''
+		self.plt5.format_coord = lambda x, y:''
+		self.plt6.format_coord = lambda x, y:''
+		self.plt1.get_xaxis().set_visible(False)
+		self.plt1.get_yaxis().set_visible(False)
+		self.plt2.get_xaxis().set_visible(False)
+		self.plt2.get_yaxis().set_visible(False)
+		self.plt3.get_xaxis().set_visible(False)
+		self.plt3.get_yaxis().set_visible(False)
+		self.plt4.get_xaxis().set_visible(False)
+		self.plt4.get_yaxis().set_visible(False)
+		self.plt5.get_xaxis().set_visible(False)
+		self.plt5.get_yaxis().set_visible(False)
+		self.plt6.get_xaxis().set_visible(False)
+		self.plt6.get_yaxis().set_visible(False)
 
 		
 		self.multiSelect = GateScanFileList(self,self.par_obj)
 
 		self.update_correlation_parameters()
+	def clear_region_btn(self):
+		self.clickedS1 = 0 
+		self.clickedS2 = self.carpet_img.shape[0]
+		try:
+			self.line.remove()
+		except:
+			pass
+		self.draw_single_line()
 	def export_all_data_fn(self):
 		counter = 0;
 		for objId in self.par_obj.objectRef:
@@ -544,16 +589,19 @@ class Window(QtGui.QWidget):
 	def bleachCorr1fn(self):
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
-				if objId.bleachCorr1 == True:
+				if objId.bleachCorr1 == True or objId.bleachCorr2 == True:
 					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 						#The bleach correction is on now we turn it off.
-						self.bleachCorr1_on_off.setText('OFF')
+						self.bleachCorr1_on_off.setText('  OFF  ')
 						self.bleachCorr1_on_off.setStyleSheet("color: red");
 						self.bleachCorr1_checked = False
 						self.plotDataQueueFn()
 					else:
 						#The bleach correction is off now we turn it on.
-						self.bleachCorr1_on_off.setText('ON')
+						if objId.bleachCorr1 == True:
+							self.bleachCorr1_on_off.setText('C1 ON')
+						if objId.bleachCorr2 == True:
+							self.bleachCorr1_on_off.setText('C2 ON')
 						self.bleachCorr1_on_off.setStyleSheet("color: green");
 						self.bleachCorr1_checked = True
 						self.plotDataQueueFn()
@@ -562,22 +610,7 @@ class Window(QtGui.QWidget):
 						
 
 		
-	def bleachCorr2fn(self):
-		for objId in self.par_obj.objectRef:
-			if(objId.cb.isChecked() == True):
-				if objId.bleachCorr2 == True:
-					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
-						#The bleach correction is on now we turn it off.
-						self.bleachCorr2_on_off.setText('OFF')
-						self.bleachCorr2_on_off.setStyleSheet("color: red");
-						self.bleachCorr2_checked = False
-						self.plotDataQueueFn()
-					else:
-						#The bleach correction is off now we turn it on.
-						self.bleachCorr2_on_off.setText('ON')
-						self.bleachCorr2_on_off.setStyleSheet("color: green");
-						self.bleachCorr2_checked = True
-						self.plotDataQueueFn()
+	
 				
 						
 
@@ -709,10 +742,10 @@ class Window(QtGui.QWidget):
 
 		self.bleachCorr2_checked = False
 		self.bleachCorr1_checked = False
-		self.bleachCorr1_on_off.setText('OFF')
+		self.bleachCorr1_on_off.setText('  OFF  ')
 		self.bleachCorr1_on_off.setStyleSheet(" color: red");
-		self.bleachCorr2_on_off.setText('OFF')
-		self.bleachCorr2_on_off.setStyleSheet(" color: red");
+		#self.bleachCorr2_on_off.setText('OFF')
+		#self.bleachCorr2_on_off.setStyleSheet(" color: red");
 		self.plotDataQueueFn();
 		self.plot_PhotonCount(objId)
 		
@@ -728,7 +761,9 @@ class Window(QtGui.QWidget):
 			if(objId.cb.isChecked() == True):
 				self.plot(objId)
 				self.plot_PhotonCount(objId)
-		
+
+		self.plt5.get_xaxis().set_visible(True)
+		self.plt5.get_yaxis().set_visible(True)
 		#self.plt1.set_ylim(bottom=0)
 		#self.plt5.ax = plt.gca()
 		#self.plt5.a.freshDraw()
@@ -800,6 +835,10 @@ class Window(QtGui.QWidget):
 		self.plt4.xaxis.grid(True,'major')
 		self.plt4.yaxis.grid(True,'minor')
 		self.plt4.yaxis.grid(True,'major')
+		self.plt4.get_xaxis().set_visible(True)
+		self.plt4.get_yaxis().set_visible(True)
+		
+
 		self.plt4.set_autoscale_on(False)
 		self.canvas4.draw()
 
@@ -838,7 +877,8 @@ class Window(QtGui.QWidget):
 			XTcarpet[:,:,1]=np.flipud(objId.CH1[yLimMn:yLimMx,:].T)
 		
 		self.plt5.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,objId.CH0.shape[1]])
-	   
+	   	self.plt5.get_xaxis().set_visible(True)
+		self.plt5.get_yaxis().set_visible(True)
 		self.figure5.subplots_adjust(bottom =0.2,left=0.1,right=0.95)
 		self.plt5.set_xlabel('Scan line', fontsize=8)
 		self.plt5.set_ylabel('Column pixels', fontsize=12)
@@ -908,6 +948,7 @@ class Window(QtGui.QWidget):
 		self.plt3.set_xlabel('Intensity\nmaxima')
 		self.plt3.set_xticklabels('')
 
+
 		
 		
 		self.canvas1.draw()
@@ -927,6 +968,18 @@ class Window(QtGui.QWidget):
 		
 		self.figure1.subplots_adjust(left=0.1,right=0.90)
 		self.plt2.autoscale(False)
+		
+		self.plt1.get_xaxis().set_visible(True)
+		self.plt1.get_yaxis().set_visible(True)
+		self.plt2.get_xaxis().set_visible(True)
+		self.plt2.get_yaxis().set_visible(True)
+		self.plt3.get_xaxis().set_visible(True)
+		self.plt3.get_yaxis().set_visible(True)
+		self.plt5.get_xaxis().set_visible(True)
+		self.plt5.get_yaxis().set_visible(True)
+		self.plt6.get_xaxis().set_visible(True)
+		self.plt6.get_yaxis().set_visible(True)
+		
 		
 		# refresh canvas
 		self.canvas1.draw()
@@ -1016,7 +1069,10 @@ class Window(QtGui.QWidget):
 								
 								a,c = self.plt1.get_ylim()
 								self.plt1.set_ylim(bottom=0,top=c)
+
 							self.canvas1.draw()
+							self.plt1.format_coord = lambda x, y: ''
+							#self.plt1.format_coord = lambda x, y,z: ''
 				#self.draw_line()
 	def export_track_to_fit(self):
 
@@ -1366,12 +1422,12 @@ class checkBoxSp3(QtGui.QCheckBox):
 			
 			#The 
 			if self.obj.bleachCorr2 == False:
-				self.win_obj.bleachCorr2_on_off.setText('OFF')
-				self.win_obj.bleachCorr2_on_off.setStyleSheet("color: red");
+				self.win_obj.bleachCorr1_on_off.setText('  OFF  ')
+				self.win_obj.bleachCorr1_on_off.setStyleSheet("color: red");
 				self.win_obj.bleachCorr2_checked = False
 
 			if self.obj.bleachCorr1 == False:
-				self.win_obj.bleachCorr1_on_off.setText('OFF')
+				self.win_obj.bleachCorr1_on_off.setText('  OFF  ')
 				self.win_obj.bleachCorr1_on_off.setStyleSheet("color: red");
 				self.win_obj.bleachCorr1_checked = False
 			
@@ -1529,6 +1585,7 @@ class GateScanFileList():
 				#Make sure the btn knows which list it is connected to.
 
 				xbtn = pushButtonSp3('X')
+				xbtn.setToolTip('Remove data file from software.')
 				self.win_obj.modelTab.setCellWidget(c, 6, xbtn)
 				xbtn.id = c
 				xbtn.par_obj = self.par_obj
@@ -1668,8 +1725,10 @@ if __name__ == '__main__':
 	
 	mainWin = Window(par_obj,fit_obj)
 	
-	win_tab.addTab(mainWin, "Load scanning data")
-	win_tab.addTab(fit_obj, "Fit Function")
+	win_tab.addTab(mainWin, "Load And Correlate Data")
+	win_tab.addTab(fit_obj, "FCS Function Fitting")
+	win_tab.setTabToolTip(0,"test1")
+	win_tab.setTabToolTip(1,"test2")
 	win_tab.resize(1200,800)
 	
 

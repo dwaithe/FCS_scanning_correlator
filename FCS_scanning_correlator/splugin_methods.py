@@ -22,6 +22,11 @@ class bleachCorr2(QtGui.QMainWindow):
         self.win_obj = win_obj
         self.corrFn = False
         self.duration_combo_idx = 0
+    #def mouseReleaseEvent(self,event):    
+  
+     #   QtGui.QMessageBox.information(self,
+       #           "Mouse Release Detected!",
+      #            "Detected Mouse Button Release!") 
         
         
 
@@ -71,6 +76,7 @@ class bleachCorr2(QtGui.QMainWindow):
         
 
 
+
         
 
         self.plt1.set_title('Intensity Time Trace')
@@ -79,7 +85,7 @@ class bleachCorr2(QtGui.QMainWindow):
 
         self.plt2.set_title('Preview Different Window Sizes')
         self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Time (ms)')
+        self.plt2.set_xlabel('Lag Time (ms)')
 
 
         cid = self.canvas1.mpl_connect('button_press_event', self.onclick)
@@ -158,12 +164,20 @@ class bleachCorr2(QtGui.QMainWindow):
         vbox1.addWidget(self.canvas1)
         
         self.figure1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.95, wspace=0.2, hspace=0.6)
+        self.figure1.tight_layout(pad=1.5,w_pad=1.7)
+        self.figure1.subplots_adjust(right=0.85)
         page.setLayout(hbox_main)
         self.setCentralWidget(page)
         self.show()
         self.plotData()
         self.redraw_carpet()
-        self.duration_activated(self.duration_combo.currentText())
+        self.setFixedSize(1000,600)
+        
+
+       
+        #pickle.dump(self.objId.CH0, open('/Users/dwaithe/Documents/collaborators/EggelingC/FCS_simulator/model_data.pkl', "w" ))   
+    
+    
     def redraw_carpet(self):
         """To make sure """
         self.objId.bleachCorr1_checked = False
@@ -173,7 +187,7 @@ class bleachCorr2(QtGui.QMainWindow):
             self.win_obj.CH1AutoFn()
         else:
             self.win_obj.CH0AutoFn()
-        self.plt3.set_xlabel('Time (ms)', fontsize=12)
+        self.plt3.set_xlabel('Lag Time (ms)', fontsize=12)
         self.plt3.set_ylabel('Column pixel',fontsize=12)
         self.plt3.set_xscale('log')
         
@@ -213,7 +227,7 @@ class bleachCorr2(QtGui.QMainWindow):
         self.plt2.clear()
         self.plt2.set_title('Preview Different Window Sizes')
         self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Time (ms)')
+        self.plt2.set_xlabel('Lag time (ms)')
         label_array = []
         for bit in self.duration_array:
             num_of_lines  = int(np.ceil((bit)/(self.objId.deltat/1000)))
@@ -258,7 +272,7 @@ class bleachCorr2(QtGui.QMainWindow):
         fontP = FontProperties()
         fontP.set_size('small')
 
-        self.plt2.legend(np.round(label_array,3), loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
+        self.plt2.legend(np.round(label_array,3), loc="upper left", title="Time Interval",prop = fontP,bbox_to_anchor=(1.0,1.0))
         self.canvas1.draw()
 
 
@@ -375,18 +389,18 @@ class bleachCorr2(QtGui.QMainWindow):
             self.win_obj.carpetDisplay = 1
         else:
             self.win_obj.carpetDisplay = 0
-        self.win_obj.bleachCorr2fn()
+        self.win_obj.bleachCorr1fn()
         
         #Updates buttons on main gui.
-        self.win_obj.bleachCorr1_on_off.setText('OFF')
-        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: red");
-        self.win_obj.bleachCorr2_on_off.setText('ON')
-        self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
+        self.win_obj.bleachCorr1_on_off.setText('C2 ON')
+        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: green");
+        #self.win_obj.bleachCorr2_on_off.setText('ON')
+        #self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
 
         #Plots the carpet internally.
         self.plt3.clear()
         self.plt3.set_title('Correlation Carpet Preview')
-        self.plt3.set_xlabel('Time (ms)', fontsize=12)
+        self.plt3.set_xlabel('Lag Time (ms)', fontsize=12)
         self.plt3.set_ylabel('Column pixel',fontsize=12)
         self.plt3.set_xscale('log')
         
@@ -576,8 +590,7 @@ class bleachCorr3(QtGui.QMainWindow):
         self.plotData()
         self.redraw_carpet()
         self.duration_activated(self.duration_combo.currentText())
-       
-        #pickle.dump(self.objId.CH0, open('/Users/dwaithe/Documents/collaborators/EggelingC/FCS_simulator/model_data.pkl', "w" ))   
+        
     def redraw_carpet(self):
         """To make sure """
         self.objId.bleachCorr1_checked = False
@@ -594,6 +607,7 @@ class bleachCorr3(QtGui.QMainWindow):
         self.plt3.set_title('Correlation Carpet Preview')
         self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest',picker=5)
         self.canvas1.draw()
+        
 
     def line_redraw(self,value):
         try: 
@@ -602,6 +616,7 @@ class bleachCorr3(QtGui.QMainWindow):
             pass
         self.line = self.plt3.axhline(value,color='black')
         self.canvas1.draw()
+        
 
     def onclick(self,event):
             if event.inaxes == self.plt3:
@@ -672,8 +687,9 @@ class bleachCorr3(QtGui.QMainWindow):
         fontP = FontProperties()
         fontP.set_size('small')
 
-        self.plt2.legend(np.round(label_array,3), loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
+        self.plt2.legend(np.round(label_array,3), title='Time Interval', loc="upper left", prop = fontP,bbox_to_anchor=(1.0,1.0))
         self.canvas1.draw()
+        
 
 
         
@@ -1301,6 +1317,7 @@ class bleachCorr(QtGui.QMainWindow):
         self.setCentralWidget(page)
         self.show()
         self.plotData()
+        self.setFixedSize(800,300)
     def apply_to_all_data_fn(self):
         counter = 0
         for objId in self.par_obj.objectRef:
@@ -1397,10 +1414,10 @@ class bleachCorr(QtGui.QMainWindow):
         self.win_obj.bleachCorr1_checked = False
         self.win_obj.bleachCorr2_checked = False
         self.win_obj.bleachCorr1fn()
-        self.win_obj.bleachCorr1_on_off.setText('ON')
+        self.win_obj.bleachCorr1_on_off.setText('C1 ON')
         self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: green");
-        self.win_obj.bleachCorr2_on_off.setText('OFF')
-        self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: red");
+        #self.win_obj.bleachCorr2_on_off.setText('OFF')
+        #self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: red");
 
     def plotData(self):
         self.plt1.cla()

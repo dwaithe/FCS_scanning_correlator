@@ -49,12 +49,12 @@ def Import_lsm(filename,par_obj,win_obj):
 	lsm = tif_fn.TiffFile(str(filename))
 	filename.replace('\\', '/')
 	for page in lsm:
-			print page.tags['cz_lsm_info']
+			
 			value = page.tags['cz_lsm_info'].value[23]#lineTime.
 			break;
 	try:
 		for page in lsm:
-			print page.tags['cz_lsm_info']
+			
 			value = page.tags['cz_lsm_info'].value[23]#lineTime.
 			break;
 	except:
@@ -269,7 +269,7 @@ class Import_msr():
 			self.win_obj.testWin.exec_()
 		
 	def import_msr_sing(self, selList):
-		print 's1',self.win_obj.yes_to_all
+
 		s = []
 		for subindex in selList:
 			reply = None
@@ -288,9 +288,8 @@ class Import_msr():
 				ok_2 = True
 
 			if reply == QtGui.QMessageBox.Yes:
-				print 's2',self.win_obj.yes_to_all
+				
 				self.win_obj.yes_to_all = True
-				print 's3',self.win_obj.yes_to_all
 				self.win_obj.text_1 = text_1
 				self.win_obj.text_2 = text_2
 			
