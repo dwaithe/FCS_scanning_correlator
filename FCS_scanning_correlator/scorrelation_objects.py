@@ -13,18 +13,23 @@ class scanObject():
     def __init__(self,filepath,parObj,imDataDesc,imDataStore,start_pt,end_pt, cmin=None,cmax=None):
         #Binning window for decay function
        
-        #Parameters for auto-correlation and cross-correlation.
-        self.start_pt = start_pt
-        self.end_pt = end_pt
-        self.cmin = cmin
-        self.cmax = cmax
+        
+        #These settings are important if a carpet is reprocessed due to cropping.
+        self.start_pt = int(start_pt)
+        self.end_pt = int(end_pt)
+        self.cmin = None
+        self.cmax = None
+        if cmin !=None and cmax !=None:
+            self.cmin = int(cmin)
+            self.cmax = int(cmax)
+        
 
+        #Parameters for auto-correlation and cross-correlation.
         self.parentId = None
         
         self.filepath = str(filepath)
         self.parObj = parObj
         self.nameAndExt = os.path.basename(self.filepath).split('.')
-        print 'nameAndExt',self.nameAndExt
         self.file_name = self.nameAndExt[0]
         self.ext = self.nameAndExt[-1]
         self.parObj.data.append(filepath);

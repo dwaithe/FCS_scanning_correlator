@@ -189,17 +189,22 @@ class Window(QtGui.QWidget):
 		
 
 		self.canvas1 = FigureCanvas(self.figure1)
-		self.figure1.patch.set_facecolor('white')
+		#self.figure1.patch.set_facecolor('white')
 		self.canvas1.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		jar = QtGui.QVBoxLayout()
 		jar.addWidget(self.canvas1)
+
 
 		self.corr_window = QtGui.QGroupBox('Correlation carpet and selected correlation profiles')
 		self.corr_window_layout = QtGui.QVBoxLayout()
 		self.corr_window.setLayout(self.corr_window_layout)
 		
-		self.corr_window_layout.setSpacing(0)
+		
 		self.corr_window_layout.addLayout(jar)
+		self.toolbar1 = NavigationToolbar(self.canvas1, self)
+
+		self.corr_window_layout.addWidget(self.toolbar1)
+
 		
 
 		# this is the Navigation widget
@@ -215,7 +220,20 @@ class Window(QtGui.QWidget):
 
 		
 		self.label = scanFileList(self,self.par_obj)
-		
+		#The table which shows the details of each correlated file. 
+		self.modelTab2 = QtGui.QTableWidget(self)
+		self.modelTab2.setRowCount(0)
+		self.modelTab2.setColumnCount(6)
+		self.modelTab2.setColumnWidth(0,80);
+		self.modelTab2.setColumnWidth(1,140);
+		self.modelTab2.setColumnWidth(2,40);
+		self.modelTab2.setColumnWidth(3,140);
+		#self.modelTab2.setColumnWidth(4,100);
+		self.modelTab2.setColumnWidth(4,30);
+		self.modelTab2.setColumnWidth(5,100);
+		self.modelTab2.horizontalHeader().setStretchLastSection(True)
+		self.modelTab2.resize(800,400)
+		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file path").split(","))
 
 		#The table which shows the details of the time-gating.
 		self.modelTab = QtGui.QTableWidget(self)
@@ -229,23 +247,11 @@ class Window(QtGui.QWidget):
 		self.modelTab.setColumnWidth(5,100);
 		self.modelTab.setColumnWidth(6,20);
 		self.modelTab.horizontalHeader().setStretchLastSection(True)
+		
 		self.modelTab.setMinimumSize(340,200)
 		self.modelTab.setHorizontalHeaderLabels(QtCore.QString(",From: , ,To: ,, , , , ").split(","))
 
-		#The table which shows the details of each correlated file. 
-		self.modelTab2 = QtGui.QTableWidget()
-		self.modelTab2.setRowCount(0)
-		self.modelTab2.setColumnCount(6)
-		self.modelTab2.setColumnWidth(0,80);
-		self.modelTab2.setColumnWidth(1,140);
-		self.modelTab2.setColumnWidth(2,40);
-		self.modelTab2.setColumnWidth(3,140);
-		#self.modelTab2.setColumnWidth(4,100);
-		self.modelTab2.setColumnWidth(4,30);
-		self.modelTab2.setColumnWidth(5,100);
-		self.modelTab2.horizontalHeader().setStretchLastSection(True)
-		self.modelTab2.resize(800,400)
-		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file path").split(","))
+		
 
 		
 		correlationBtns =  QtGui.QVBoxLayout()
@@ -260,16 +266,16 @@ class Window(QtGui.QWidget):
 		self.left_overview = QtGui.QHBoxLayout()
 		self.left_panel = QtGui.QVBoxLayout()
 		self.left_panel_top = QtGui.QVBoxLayout()
-		self.left_panel_top.setSpacing(0)
+		
 		
 		#Plots of the raw data.
 		self.raw_group = QtGui.QGroupBox('Raw data plots')
 		self.figure4 = plt.figure(figsize=(2,4))
 		self.canvas4 = FigureCanvas(self.figure4)
-		self.figure4.patch.set_facecolor('white')
+		#self.figure4.patch.set_facecolor('white')
 		self.figure5 = plt.figure(figsize=(2,4))
 		self.canvas5 = FigureCanvas(self.figure5)
-		self.figure5.patch.set_facecolor('white')
+		#self.figure5.patch.set_facecolor('white')
 		
 		self.left_panel.addWidget(self.raw_group)
 		self.left_panel.addStretch()
@@ -279,7 +285,7 @@ class Window(QtGui.QWidget):
 		self.raw_group.setLayout(self.left_panel_top)
 		
 
-		self.toolbar1 = NavigationToolbar(self.canvas1, self)
+
 		#self.toolbar2 = NavigationToolbar(self.canvas4, self)
 
 
@@ -290,8 +296,8 @@ class Window(QtGui.QWidget):
 		prevPane.setToolTip("Go back one pane in the XT carpet view.")
 		nextPane = QtGui.QPushButton('Next pane')
 		nextPane.setToolTip("Go forward one pane in the XT carpet view.")
-		prevPane.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
-		nextPane.setStyleSheet("padding-left: 5px; padding-right: 3px;padding-top: 1px; padding-bottom: 1px;");
+		#prevPane.setStyleSheet("padding-left: 5px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
+		#nextPane.setStyleSheet("padding-left: 5px; padding-right: 3px;padding-top: 1px; padding-bottom: 1px;");
 		prevPane.clicked.connect(self.prevPaneFn)
 		nextPane.clicked.connect(self.nextPaneFn)
 
@@ -321,7 +327,7 @@ class Window(QtGui.QWidget):
 		self.openFile.clicked.connect(self.ex.showDialog)
 		self.spacer = QtGui.QLabel()
 		main_layout = QtGui.QHBoxLayout()
-		self.import_adv_btn = QtGui.QPushButton('Crop image')
+		self.import_adv_btn = QtGui.QPushButton('Crop Carpet')
 		self.import_adv_btn.setToolTip('For selecting subsets of pixels for correlation.')
 		self.imp_adv_win = ImpAdvWin(self.par_obj,self)
 		self.import_adv_btn.clicked.connect(self.imp_adv_win.create_main_frame)
@@ -351,7 +357,7 @@ class Window(QtGui.QWidget):
 		self.spatialBinEdit.resize(40,50)
 
 
-		self.left_panel_centre_right.setSpacing(0)
+		
 		self.left_panel_centre_right.addWidget(self.openFile)
 		self.left_panel_centre_right.addWidget(self.import_adv_btn)
 		self.left_panel_centre_right.addWidget(self.mText)
@@ -361,11 +367,13 @@ class Window(QtGui.QWidget):
 		self.left_panel_centre_right.addWidget(self.spatialBinText)
 		self.left_panel_centre_right.addWidget(self.spatialBinEdit)
 		self.left_panel_centre_right.addWidget(self.reprocess_btn)
+		self.left_panel_centre_right.addStretch()
 		self.left_panel_centre_right.setAlignment(QtCore.Qt.AlignTop)
+
 		
 
 
-
+		
 		self.right_panel.addWidget(self.corr_window)
 		self.corr_window_layout.addLayout(correlationBtns)
 		
@@ -392,7 +400,7 @@ class Window(QtGui.QWidget):
 		
 		self.displayCarpetText = QtGui.QLabel('Display:')
 		self.displayCarpetText.setMinimumHeight(12)
-		self.displayCarpetText.setMaximumHeight(12)
+		self.displayCarpetText.setMaximumHeight(18)
 		#self.displayCarpetText.setStyleSheet("border-radius:0px;padding-left: 10px; padding-right: 5px;padding-top 5px;");
 		self.CH0Auto_btn = QtGui.QPushButton('Auto CH0')
 		self.CH0Auto_btn.setToolTip('Sets software to visualise first channel (CH0)')
@@ -405,7 +413,7 @@ class Window(QtGui.QWidget):
 
 		self.displayExportText = QtGui.QLabel('Export:')
 		self.displayExportText.setMinimumHeight(12)
-		self.displayExportText.setMaximumHeight(12)
+		self.displayExportText.setMaximumHeight(18)
 
 		#self.displayExportText.setStyleSheet("padding-left: 10px; padding-right: 5px;padding-top: 5px; ");
 		self.addRegion_btn = QtGui.QPushButton('Store Region');
@@ -428,7 +436,7 @@ class Window(QtGui.QWidget):
 		self.bleachCorr2_btn.clicked.connect(self.bleachInt2.create_main_frame)
 		self.addRegion_btn.clicked.connect(self.saveRegion)
 		
-		corrTopRow.setSpacing(0)
+		
 		corrTopRow.addWidget(self.bleachCorr1_btn)
 		corrTopRow.addWidget(self.bleachCorr2_btn)
 		corrTopRow.addWidget(self.bleachCorr1_on_off)
@@ -455,7 +463,7 @@ class Window(QtGui.QWidget):
 		self.save_corr_txt = QtGui.QLabel('Save:')
 		#self.save_corr_txt.setStyleSheet("spacing: 0px;padding-left: 10px; padding-right:2px;padding-top: 0px; padding-bottom: 0px;");
 		self.save_corr_txt.setMinimumHeight(12)
-		self.save_corr_txt.setMaximumHeight(12)
+		self.save_corr_txt.setMaximumHeight(18)
 		self.save_corr_carpet_btn = QtGui.QPushButton('Raw Carpet')
 		self.save_corr_carpet_btn.setToolTip('Exports an image of carpet without logarthmic spacing, suitable for subsequent analysis.')
 		#self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
@@ -477,7 +485,7 @@ class Window(QtGui.QWidget):
 
 		
 
-		self.corrBotRow.setSpacing(0)
+		
 		self.corrBotRow.addWidget(self.folderSelect_btn)
 		self.corrBotRow.addWidget(self.save_corr_txt )
 		self.corrBotRow.addWidget(self.save_corr_carpet_btn)
@@ -485,10 +493,11 @@ class Window(QtGui.QWidget):
 		#self.corrBotRow.addWidget(self.save_figure_btn)
 		#self.corrBotRow.addWidget(self.spot_size_calc)
 		self.corrBotRow.addStretch()
-		self.corrBotRow.addWidget(self.toolbar1)
 		
 		
 		panel_third_row_btns = QtGui.QHBoxLayout()
+		
+		
 
 		export_region_btn = QtGui.QPushButton('Export to Fit');
 		export_region_btn.setToolTip('Export current carpet to fit interface.')
@@ -505,7 +514,8 @@ class Window(QtGui.QWidget):
 		panel_third_row_btns.addWidget(export_all_data_to_csv_btn)
 		panel_third_row_btns.addStretch()
 		
-		self.corr_window_layout.setSpacing(0)
+		self.corr_window_layout.setSpacing(4)
+		self.corr_window_layout.setContentsMargins(0,0,0,0)
 		self.corr_window_layout.addStretch()
 		
 		self.image_status_text = QtGui.QStatusBar()
@@ -520,17 +530,19 @@ class Window(QtGui.QWidget):
 		correlationBtns.addLayout(corrTopRow)
 		correlationBtns.addLayout(self.corrBotRow)
 		correlationBtns.addLayout(panel_third_row_btns)
-		correlationBtns.setSpacing(0)
+		correlationBtns.addStretch()
 		main_layout.addLayout(self.right_panel)
 		
 		
 		
 
-		self.left_panel.addWidget(self.image_status_text)
+		#self.left_panel.addWidget(self.image_status_text)
 		#Advanced grid structure for the plot windows.
 		gs = gridspec.GridSpec(2, 3, height_ratios=[1, 0.98],width_ratios=[0.02, 0.96,0.02]) 
 		#Main correlation window
 		self.plt1 = self.figure1.add_subplot(gs[0,:])
+		
+
 		self.figure1.suptitle('Correlation Function Ouput', fontsize=12)
 		#Place holder for the colorbar.
 		self.plt6 = self.figure1.add_subplot(gs[1,2:3])
@@ -564,7 +576,24 @@ class Window(QtGui.QWidget):
 		self.plt5.get_yaxis().set_visible(False)
 		self.plt6.get_xaxis().set_visible(False)
 		self.plt6.get_yaxis().set_visible(False)
+		self.plt1.set_axis_bgcolor('#C6d3e0')
+		self.plt2.set_axis_bgcolor('#C6d3e0')
+		self.plt3.set_axis_bgcolor('#C6d3e0')
+		self.plt4.set_axis_bgcolor('#C6d3e0')
+		self.plt5.set_axis_bgcolor('#C6d3e0')
+		self.plt6.set_axis_bgcolor('#C6d3e0')
 
+		self.corr_window_layout.setContentsMargins(0,0,0,0)
+		self.corr_window_layout.setContentsMargins(0,0,0,0)
+		self.corr_window_layout.setContentsMargins(0,0,0,0)
+		corrTopRow.setSpacing(16)
+		self.corrBotRow.setSpacing(16)
+		panel_third_row_btns.setSpacing(16)
+		
+
+		
+
+		#print('wow',export_all_data_btn.getPadding())
 		
 		self.multiSelect = GateScanFileList(self,self.par_obj)
 
@@ -877,10 +906,10 @@ class Window(QtGui.QWidget):
 			XTcarpet[:,:,1]=np.flipud(objId.CH1[yLimMn:yLimMx,:].T)
 		
 		self.plt5.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,objId.CH0.shape[1]])
-	   	self.plt5.get_xaxis().set_visible(True)
+		self.plt5.get_xaxis().set_visible(True)
 		self.plt5.get_yaxis().set_visible(True)
 		self.figure5.subplots_adjust(bottom =0.2,left=0.1,right=0.95)
-		self.plt5.set_xlabel('Scan line', fontsize=8)
+		self.plt5.set_xlabel('Scan line ('+str(np.round(objId.deltat,2))+') ms', fontsize=8)
 		self.plt5.set_ylabel('Column pixels', fontsize=12)
 		self.plt5.tick_params(axis='both', which='major', labelsize=8)
 		self.plt5.autoscale(False)
@@ -956,7 +985,7 @@ class Window(QtGui.QWidget):
 		
 		
 		colbar = self.figure1.colorbar(self.corr_carpet, cax=self.plt6)
-		colbar.set_label('Scale (normalised to column max)')
+		colbar.set_label('Scale (norm. to pix max)')
 		
 		self.span2 = SpanSelector(self.plt2, self.onselect, 'vertical', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )
 		if self.clickedS1 and self.clickedS2 != None:
@@ -1070,8 +1099,8 @@ class Window(QtGui.QWidget):
 								a,c = self.plt1.get_ylim()
 								self.plt1.set_ylim(bottom=0,top=c)
 
-							self.canvas1.draw()
-							self.plt1.format_coord = lambda x, y: ''
+							#self.canvas1.draw()
+							#self.plt1.format_coord = lambda x, y: ''
 							#self.plt1.format_coord = lambda x, y,z: ''
 				#self.draw_line()
 	def export_track_to_fit(self):
@@ -1724,12 +1753,73 @@ if __name__ == '__main__':
 	
 	
 	mainWin = Window(par_obj,fit_obj)
+
+	style_sheet_d = """ QPushButton {color: #333;
+								border: 1px solid #000000;
+								border-radius: 3px;
+								padding: 5px;
+								background: qradialgradient(cx: 0.3, cy: -0.4,
+								fx: 0.3, fy: -0.4,
+								radius: 1.9, stop: 0 #fff, stop: 1 #888);
+								}
+
+					QPushButton:pressed {
+					    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+					                                      stop: 0 #dadbde, stop: 1 #f6f7fa);
+					}
+
+					QPushButton:flat {
+					    border: none; /* no border for a flat push button */
+					}
+
+					QPushButton:default {
+					    border-color: navy; /* make the default button prominent */
+					}
+								
+					
+								
+					QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed, 
+					QTableView, QHeaderView, QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed,
+					QHeaderView::section::horizontal::first, QHeaderView::section::horizontal::only-one,
+					QTableView::item:selected:active, QTreeView::item:selected:active, QListView::item:selected:active,
+					QHeaderView, QHeaderView::section, QHeaderView::section::horizontal::first, 
+					QHeaderView::section::vertical::only-one, QTableCornerButton::section
+					{Background-color:#dadbde;gridline-color: #dadbde;border-radius: 1px;
+					}
+					QSplitter::handle:vertical   {height: 6px; image: url(images/vsplitter.png);}
+					QSplitter::handle:horizontal {width:  6px; image: url(images/hsplitter.png);}
+					QTableView {color: #333;
+								border: 1px solid #000000;
+								border-radius: 3px;
+								padding: 2px;
+								background: #dadbde}
+"""
+	
+	#mainWin.setStyleSheet(style_sheet_d)
+	fit_obj.setStyleSheet(style_sheet_d)
+	win_tab.setStyleSheet(style_sheet_d)
+	app.setStyleSheet(style_sheet_d)
+
+
+
+	
+	
+	#win_tab.setPalette(palette)
 	
 	win_tab.addTab(mainWin, "Load And Correlate Data")
 	win_tab.addTab(fit_obj, "FCS Function Fitting")
 	win_tab.setTabToolTip(0,"test1")
 	win_tab.setTabToolTip(1,"test2")
 	win_tab.resize(1200,800)
+
+	win_tab.setStyleSheet("""QTabWidget{
+	background:qradialgradient(cx: 0.3, cy: -0.4,
+								fx: 0.3, fy: -0.4,
+								radius: 1.9, stop: 0 #fff, stop: 1 #888);
+								}
+								
+
+""")
 	
 
 	

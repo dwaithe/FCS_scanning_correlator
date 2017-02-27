@@ -139,9 +139,9 @@ class bleachCorr2(QtGui.QMainWindow):
 
         sel_time_window_size = QtGui.QLabel("Select time interval length")
 
-        self.export_trace_btn = QtGui.QPushButton('Apply to data')
+        self.export_trace_btn = QtGui.QPushButton('Apply to selected carpet')
 
-        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all open data')
+        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all carpets')
         self.vbox2 = QtGui.QHBoxLayout()
         
         self.export_trace_btn.clicked.connect(self.outputData)
@@ -896,6 +896,7 @@ class bleachCorr3(QtGui.QMainWindow):
 
 
 class ImpAdvWin(QtGui.QMainWindow):
+    """This is the cropping function. """
     def __init__(self,par_obj,win_obj):
         QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
         self.par_obj = par_obj;
@@ -985,8 +986,8 @@ class ImpAdvWin(QtGui.QMainWindow):
         
 
 
-        reprocess_btn = QtGui.QPushButton('Reprocess Data')
-        reprocess_all_btn = QtGui.QPushButton('Reprocess All Data')
+        reprocess_btn = QtGui.QPushButton('Reprocess Carpet')
+        reprocess_all_btn = QtGui.QPushButton('Reprocess All Carpets')
         apply_to_imports =  QtGui.QCheckBox('Apply to Subsequent Imports')
         store_profile = QtGui.QPushButton('Store profile')
         import_profile =QtGui.QPushButton('Import profile')
@@ -1010,14 +1011,12 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         reprocess_btn.clicked.connect(self.reprocess_and_create)
         reprocess_all_btn.clicked.connect(self.reprocess_and_create_all)
-        #vbox1.addLayout(hbox_top)
+        
         vbox1.addWidget(crop_panel)
         vbox1.addWidget(reprocess_btn)
         vbox1.addWidget(reprocess_all_btn)
         vbox1.addStretch()
-        #vbox1.addWidget(apply_to_imports)
-        #vbox1.addWidget(store_profile)
-        #vbox1.addWidget(import_profile)
+        
 
 
         
@@ -1070,17 +1069,17 @@ class ImpAdvWin(QtGui.QMainWindow):
             XTcarpet[:,:,1]=np.flipud(self.objId.CH1[yLimMn:yLimMx,:].T)
         
 
-        self.span1 = SpanSelector(self.plt2, self.set_column_pixels, 'vertical', useblit=True, span_stays=True,minspan =0, rectprops=dict(edgecolor='white',alpha=1.0, facecolor='None') )        
+        self.span1 = SpanSelector(self.plt2, self.set_column_pixels, 'vertical', useblit=True, span_stays=True,minspan =0, rectprops=dict(edgecolor='red',alpha=1.0, facecolor='None') )        
         
 
-        self.plt2.imshow(((XTcarpet)/np.max(XTcarpet)),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,self.objId.CH0.shape[1]])
+        self.plt2.imshow(((XTcarpet.astype(np.float64))/np.max(XTcarpet.astype(np.float64))),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,self.objId.CH0.shape[1]])
        
         
         try:
                 self.line.remove()
         except:
             pass
-        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="white",fill=False, alpha=1.0)
+        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="red",fill=False, alpha=1.0)
         self.canvas1.draw()
 
         self.plt2.set_title('XT Carpet',fontsize=10)
@@ -1136,7 +1135,7 @@ class ImpAdvWin(QtGui.QMainWindow):
                 self.line.remove()
         except:
             pass
-        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="white",fill=False, alpha=1.0)
+        self.line = self.plt2.axhspan(self.vmin, self.vmax, color="red",fill=False, alpha=1.0)
         self.canvas1.draw()
     def draw_region(self):
         self.rect = []
@@ -1253,7 +1252,7 @@ class bleachCorr(QtGui.QMainWindow):
         
         
         
-        self.export_trace_btn = QtGui.QPushButton('Apply to Data')
+        self.export_trace_btn = QtGui.QPushButton('Apply to Carpet')
         self.export_trace_btn.setEnabled(False)
         self.vbox2 = QtGui.QHBoxLayout()
         self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
@@ -1287,7 +1286,7 @@ class bleachCorr(QtGui.QMainWindow):
         self.equation_f02.setReadOnly(True)
         self.equation_tb2.setReadOnly(True)
 
-        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to All Data');
+        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to All Carpets');
         self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
         
         
@@ -1301,14 +1300,13 @@ class bleachCorr(QtGui.QMainWindow):
         
         vbox0.addLayout(self.vbox2)
         vbox0.addWidget(self.apply_corr_btn)
-        vbox0.addWidget(self.export_trace_btn)
         vbox0.addWidget(self.equation_label)
         vbox0.addLayout(self.equation_ch1_box)
         vbox0.addLayout(self.equation_ch2_box)
         if self.objId.numOfCH ==2:
             vbox0.addLayout(self.equation_ch3_box)
             vbox0.addLayout(self.equation_ch4_box)
-
+        vbox0.addWidget(self.export_trace_btn)
         vbox0.addWidget(self.apply_to_all_data_btn)
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
