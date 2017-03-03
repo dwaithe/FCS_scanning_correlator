@@ -34,10 +34,10 @@ import copy
 import uuid
 import datetime
 now = datetime.datetime.now()
-
-#if now.year == 2018:
-#        print 'Your version of the software has expired. Please return to source for up-to-date version'
-#        exit()
+print now.month
+if now.year == 2017 and now.month > 7:
+        print 'Your version of the software has expired. Please return to source for up-to-date version'
+        exit()
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
@@ -108,7 +108,7 @@ class FileDialog(QtGui.QMainWindow):
 		imLif_Arr = []
 		self.win_obj.yes_to_all = None
 		self.win_obj.last_in_list = False
-		file_list = fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
+		file_list = fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
 		c = 1
 		for filename in file_list:
 			if file_list.__len__() == c:
@@ -1046,6 +1046,7 @@ class Window(QtGui.QWidget):
 			
 			self.x0 = vmin
 			self.x1 = vmax
+			
 			if(self.x0 <0): self.x0 =0
 			if(self.x1 <0): self.x1 =0
 			if(self.x0 >self.x1): 
@@ -1069,6 +1070,7 @@ class Window(QtGui.QWidget):
 			self.draw_single_line()
 	def draw_single_line(self):
 				self.plt1.cla()
+
 				#self.par_obj.plt1.set_autoscale_on(True)
 				for objId in self.par_obj.objectRef:
 
@@ -1099,7 +1101,7 @@ class Window(QtGui.QWidget):
 								a,c = self.plt1.get_ylim()
 								self.plt1.set_ylim(bottom=0,top=c)
 
-							#self.canvas1.draw()
+							self.canvas1.draw()
 							#self.plt1.format_coord = lambda x, y: ''
 							#self.plt1.format_coord = lambda x, y,z: ''
 				#self.draw_line()
@@ -1531,6 +1533,7 @@ class scanFileList():
 
 			#Adds save button to the file.
 			xb = pushButtonSp3('X')
+			xb.setToolTip('Remove File from scanning software.')
 			xb.par_obj = self.par_obj
 			xb.win_obj = self.win_obj
 			xb.id = i
