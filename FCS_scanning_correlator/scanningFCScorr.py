@@ -1352,8 +1352,8 @@ class Window(QtGui.QWidget):
 					corrObj2.s2n = objId.s2nCH1[i]
 					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
-					corrObj2.max = np.max(objId.AutoCorr_carpetCH1_pc[:,i])
-					corrObj2.min = np.min(objId.AutoCorr_carpetCH1_pc[:,i])
+					corrObj2.max = np.max(objId.AutoCorr_carpetCH1[:,i])
+					corrObj2.min = np.min(objId.AutoCorr_carpetCH1[:,i])
 				
 				
 
@@ -1378,8 +1378,8 @@ class Window(QtGui.QWidget):
 				else:
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
 					corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
-					corrObj3.max = np.max(objId.AutoCorr_carpetCH01[:,i])
-					corrObj3.min = np.min(objId.AutoCorr_carpetCH01[:,i])
+					corrObj3.max = np.max(objId.CrossCorr_carpet01[:,i])
+					corrObj3.min = np.min(objId.CrossCorr_carpet01[:,i])
 				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 
 				corrObj1.siblings = [corrObj2,corrObj3]
@@ -1883,7 +1883,7 @@ def start_gui():
 	return win_tab, app,par_obj,mainWin,fit_obj
 	
 if __name__ == '__main__':
-	print 'here'
+	
 	win_tab, app,par_obj,win_obj,fit_obj = start_gui()
 
 	win_tab.show()
