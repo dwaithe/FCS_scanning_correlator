@@ -34,7 +34,7 @@ import copy
 import uuid
 import datetime
 now = datetime.datetime.now()
-print now.month
+
 #if now.year == 2017 and now.month > 7:
  #       print 'Your version of the software has expired. Please return to source for up-to-date version'
   #      exit()

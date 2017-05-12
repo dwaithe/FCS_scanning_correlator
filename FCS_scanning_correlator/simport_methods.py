@@ -266,7 +266,7 @@ class Import_msr():
 		if self.par_obj.gui == 'show':
 			self.win_obj.testWin = self.AppForm(self)
 			#self.win_obj.testWin.setWindowModality(QtCore.Qt.ApplicationModal)
-			self.win_obj.testWin.exec_()
+			self.win_obj.testWin.show()
 		
 	def import_msr_sing(self, selList):
 

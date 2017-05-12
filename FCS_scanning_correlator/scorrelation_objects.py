@@ -79,6 +79,8 @@ class scanObject():
             numberNandBCH1 =[]
             brightnessNandBCH0 =[]
             brightnessNandBCH1 =[]
+            signal_to_noiseCH0 = []
+            signal_to_noiseCH1 = []
             CV = []
             
             numOfOps = photonCarpetCH0.shape[1]
@@ -112,6 +114,31 @@ class scanObject():
 
                     AC0 = np.zeros((lenG,2))
                     corrArrScale = AC0[:,0]
+
+
+
+                #Signal to noise
+                def calc_signal_to_noise(int_ch,AC):
+                    a = np.copy(int_ch)
+                    size = int(a.size)
+                    hf_sz = size//2
+                    # subtract mean and pad with zeros to twice the size
+                    a_mean = a.mean().astype(np.float64)
+                    #Has the padding in
+                    a = np.pad(a-a_mean, a.size//2, mode='constant')
+                    M = np.int32((AC[:,0])*self.deltat/1000.0)
+                    c = np.zeros((AC.shape[0])).astype(np.float64)
+                    ct = 0
+                    for tau in M:
+                        c[ct] = np.var(a[hf_sz:-hf_sz]*a[tau:size+tau])
+                        ct += 1
+                    varG = (1.0/(size*a_mean**4))*c
+
+
+                    s2n = np.average(np.abs(AC[:,1]/varG**0.5))
+                    return s2n
+
+                signal_to_noiseCH0.append(calc_signal_to_noise(inFnCH0,AC0))
                     
                 
                 #Calculate number of counts
@@ -176,6 +203,8 @@ class scanObject():
 
                     corrArrCH1.append(AC1)
                     corrArrCC.append(CC01)
+
+                    signal_to_noiseCH1.append(calc_signal_to_noise(inFnCH1,AC1))
                     
                     out = []
                     for i in range(1,int(np.ceil((inFnCH1.shape[0]/int_time)))):
@@ -211,7 +240,7 @@ class scanObject():
                     AutoCorr_carpetCH1[:,b] = corrArrCH1[b][:,1]
                     CrossCorr_carpet01[:,b] = corrArrCC[b][:,1]    
 
-            return corrArrScale, AutoCorr_carpetCH0, AutoCorr_carpetCH1, CrossCorr_carpet01,kcountCH0,kcountCH1,numberNandBCH0,numberNandBCH1,brightnessNandBCH0,brightnessNandBCH1,CV
+            return corrArrScale, AutoCorr_carpetCH0, AutoCorr_carpetCH1, CrossCorr_carpet01,kcountCH0,kcountCH1,numberNandBCH0,numberNandBCH1,brightnessNandBCH0,brightnessNandBCH1,CV,signal_to_noiseCH0,signal_to_noiseCH1
         
 
     def processData(self):
@@ -440,12 +469,12 @@ class scanObject():
         for stx in range(start_x,self.CH0.shape[0]-self.num_of_lines+1,self.num_of_lines):
             #Function which calculates the correlation carpet.
             if self.numOfCH==1:
-                self.corrArrScale, AC_carCH0, ap, aq, self.kcountCH0,cq,self.numberNandBCH0,dq,self.brightnessNandBCH0,vq,cq = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],None,self.lenG)
+                self.corrArrScale, AC_carCH0, ap, aq, self.kcountCH0,cq,self.numberNandBCH0,dq,self.brightnessNandBCH0,vq,cq,self.s2nCH0, dq = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],None,self.lenG)
                 AC_all_CH0[:,:,c] = AC_carCH0
 
 
             elif self.numOfCH==2:
-                self.corrArrScale, AC_carCH0, AC_carCH1, CC_carCH01,self.kcountCH0,self.kcountCH1,self.numberNandBCH0,self.numberNandBCH1,self.brightnessNandBCH0,self.brightnessNandBCH1,self.CV = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],self.CH1[stx:stx+self.num_of_lines,:],self.lenG)
+                self.corrArrScale, AC_carCH0, AC_carCH1, CC_carCH01,self.kcountCH0,self.kcountCH1,self.numberNandBCH0,self.numberNandBCH1,self.brightnessNandBCH0,self.brightnessNandBCH1,self.CV, self.s2nCH0,self.s2nCH1 = self.calc_carpet(self.CH0[stx:stx+self.num_of_lines,:],self.CH1[stx:stx+self.num_of_lines,:],self.lenG)
                 AC_all_CH0[:,:,c]  = AC_carCH0
                 AC_all_CH1[:,:,c]  = AC_carCH1
                 CC_all_CH01[:,:,c] = CC_carCH01

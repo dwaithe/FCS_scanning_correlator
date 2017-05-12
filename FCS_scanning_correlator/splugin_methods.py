@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.lines as lines
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import numpy as np
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
@@ -181,7 +182,7 @@ class bleachCorr2(QtGui.QMainWindow):
     def redraw_carpet(self):
         """To make sure """
         self.objId.bleachCorr1_checked = False
-        self.objId.bleachCorr2_checked = False
+        
 
         if self.sel_channel.currentIndex() == 1:
             self.win_obj.CH1AutoFn()
@@ -329,9 +330,9 @@ class bleachCorr2(QtGui.QMainWindow):
             for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
                 #Function which calculates the correlation carpet.
                 if self.objId.numOfCH==1:
-                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
+                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null,self.s2nCH0, null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
                 elif self.objId.numOfCH==2:
-                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
+                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV,self.s2nCH0, self.s2nCH1= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
                     AC_all_CH1[:,:,c]  = AC_carCH1
                     CC_all_CH01[:,:,c] = CC_carCH01
                     kcountCH1_arr[:,c] = k1
@@ -382,7 +383,7 @@ class bleachCorr2(QtGui.QMainWindow):
         self.objId.bleachCorr1 = False
         self.objId.bleachCorr2 = True
         self.win_obj.bleachCorr1_checked = False
-        self.win_obj.bleachCorr2_checked = False
+        
         
         #Lets the user change channel.
         if self.sel_channel.currentIndex() == 1:
@@ -594,7 +595,7 @@ class bleachCorr3(QtGui.QMainWindow):
     def redraw_carpet(self):
         """To make sure """
         self.objId.bleachCorr1_checked = False
-        self.objId.bleachCorr2_checked = False
+        
 
         if self.sel_channel.currentIndex() == 1:
             self.win_obj.CH1AutoFn()
@@ -745,9 +746,9 @@ class bleachCorr3(QtGui.QMainWindow):
             for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
                 #Function which calculates the correlation carpet.
                 if self.objId.numOfCH==1:
-                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
+                    self.objId.corrArrScale_pc, AC_carCH0, null, null,k0,null,NB0,null,bNB0,null,null,self.s2nCH0, null= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],None,lenG)
                 elif self.objId.numOfCH==2:
-                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
+                    self.objId.corrArrScale_pc, AC_carCH0, AC_carCH1, CC_carCH01,k0,k1,NB0,NB1,bNB0,bNB1,CV,self.s2nCH0,self.s2nCH1= self.objId.calc_carpet(self.objId.CH0[stx:stx+num_of_lines,:],self.objId.CH1[stx:stx+num_of_lines,:],lenG)
                     AC_all_CH1[:,:,c]  = AC_carCH1
                     CC_all_CH01[:,:,c] = CC_carCH01
                     kcountCH1_arr[:,c] = k1
@@ -798,7 +799,7 @@ class bleachCorr3(QtGui.QMainWindow):
         self.objId.bleachCorr1 = False
         self.objId.bleachCorr2 = True
         self.win_obj.bleachCorr1_checked = False
-        self.win_obj.bleachCorr2_checked = False
+        
         
         #Lets the user change channel.
         if self.sel_channel.currentIndex() == 1:
@@ -1029,10 +1030,11 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         self.plt2 = self.figure1.add_subplot(2, 1, 1)
         
-
+        self.toolbar1 = NavigationToolbar(self.canvas1, self)
         #Makes sure it spans the whole figure.
         self.figure1.subplots_adjust(left=0.1, right=0.9, top=0.95, bottom=0.1, wspace=0.5,hspace=0.5)
         vbox2.addWidget(self.canvas1)
+        vbox2.addWidget(self.toolbar1)
         page.setLayout(hbox_main)
         self.setCentralWidget(page)
         
@@ -1386,13 +1388,13 @@ class bleachCorr(QtGui.QMainWindow):
             
         #Save the data to carpets.
         if self.objId.numOfCH == 1:
-            a,b,c,d,e,f,g,h,i,j,k = self.objId.calc_carpet(self.objId.CH0_pc,None,self.objId.lenG)
+            a,b,c,d,e,f,g,h,i,j,k,l,m = self.objId.calc_carpet(self.objId.CH0_pc,None,self.objId.lenG)
 
         elif self.objId.numOfCH == 2:
             for i in range(0, self.objId.CH1.shape[1]):
                 inFn = self.objId.CH1[:,i]
                 self.objId.CH1_pc[:,i] = self.apply_corr_fn(inFn,corr_ratio)
-            a,b,c,d,e,f,g,h,i,j,k = self.objId.calc_carpet(self.objId.CH0_pc,self.objId.CH1_pc,self.objId.lenG)
+            a,b,c,d,e,f,g,h,i,j,k,l,m = self.objId.calc_carpet(self.objId.CH0_pc,self.objId.CH1_pc,self.objId.lenG)
         
         self.objId.corrArrScale_pc = a
         self.objId.AutoCorr_carpetCH0_pc = b
@@ -1405,12 +1407,15 @@ class bleachCorr(QtGui.QMainWindow):
         self.objId.brightnessNandBCH0_pc = i
         self.objId.brightnessNandBCH1_pc = j
         self.objId.CV_pc = k
+        self.objId.s2nCH0 = l
+        self.objId.s2nCH1 = m
+
         
 
         self.objId.bleachCorr1 = True
         self.objId.bleachCorr2 = False
         self.win_obj.bleachCorr1_checked = False
-        self.win_obj.bleachCorr2_checked = False
+        
         self.win_obj.bleachCorr1fn()
         self.win_obj.bleachCorr1_on_off.setText('C1 ON')
         self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: green");
