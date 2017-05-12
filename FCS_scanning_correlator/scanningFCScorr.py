@@ -35,9 +35,9 @@ import uuid
 import datetime
 now = datetime.datetime.now()
 print now.month
-if now.year == 2017 and now.month > 7:
-        print 'Your version of the software has expired. Please return to source for up-to-date version'
-        exit()
+#if now.year == 2017 and now.month > 7:
+ #       print 'Your version of the software has expired. Please return to source for up-to-date version'
+  #      exit()
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
@@ -91,7 +91,7 @@ class FileDialog(QtGui.QMainWindow):
 		
 	def showDialog(self):
 		#Intialise Dialog.
-		fileInt = QtGui.QFileDialog()
+		self.fileInt = QtGui.QFileDialog()
 		try:
 			#Try and read the default location for a file.
 			filename = os.path.expanduser('~')+'/FCS_Analysis/configLoad'
@@ -108,7 +108,13 @@ class FileDialog(QtGui.QMainWindow):
 		imLif_Arr = []
 		self.win_obj.yes_to_all = None
 		self.win_obj.last_in_list = False
-		file_list = fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
+		if self.win_obj.testing == False:
+			file_list = self.fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
+		
+		else: 
+			file_list = self.win_obj.test_path
+
+
 		c = 1
 		for filename in file_list:
 			if file_list.__len__() == c:
@@ -120,7 +126,7 @@ class FileDialog(QtGui.QMainWindow):
 				imLif_Arr.append(imLif)
 
 			if fileExt == 'msr':
-				imMsr = Import_msr(filename,self.par_obj,self.win_obj)
+				self.imMsr = Import_msr(filename,self.par_obj,self.win_obj)
 			if fileExt == 'tif' or fileExt == 'tiff':
 				imTif = Import_tiff(filename,self.par_obj,self.win_obj)
 				self.par_obj.objectRef[-1].cb.setChecked(True)
@@ -184,7 +190,7 @@ class Window(QtGui.QWidget):
 		self.clim_high = None
 		self.carpetDisplay = 0
 		self.bleachCorr1_checked = False
-		self.bleachCorr2_checked = False
+		
 		# this is the Canvas Widget that displays the `figure`
 		
 
@@ -286,7 +292,7 @@ class Window(QtGui.QWidget):
 		
 
 
-		#self.toolbar2 = NavigationToolbar(self.canvas4, self)
+		self.toolbar2 = NavigationToolbar(self.canvas4, self)
 
 
 		#LEFT PANEL btns
@@ -301,7 +307,7 @@ class Window(QtGui.QWidget):
 		prevPane.clicked.connect(self.prevPaneFn)
 		nextPane.clicked.connect(self.nextPaneFn)
 
-		#self.left_panel_mid_btns.addWidget(self.toolbar2)
+		self.left_panel_mid_btns.addWidget(self.toolbar2)
 		self.left_panel_mid_btns.addWidget(prevPane)
 		self.left_panel_mid_btns.addWidget(nextPane)
 		self.left_panel_mid_btns.addStretch()
@@ -321,7 +327,7 @@ class Window(QtGui.QWidget):
 		self.left_panel.addStrut(500)
 		self.left_overview.addStretch()
 		#LEFT PANEL centre right
-		self.ex = FileDialog(self, par_obj, fit_obj)
+		self.ex = FileDialog(self, self.par_obj, self.fit_obj)
 		self.openFile = QtGui.QPushButton('Open File')
 		self.openFile.setToolTip("Import an uncorrelated XT timeseries, for processing.")
 		self.openFile.clicked.connect(self.ex.showDialog)
@@ -536,7 +542,7 @@ class Window(QtGui.QWidget):
 		
 		
 
-		#self.left_panel.addWidget(self.image_status_text)
+		self.left_panel.addWidget(self.image_status_text)
 		#Advanced grid structure for the plot windows.
 		gs = gridspec.GridSpec(2, 3, height_ratios=[1, 0.98],width_ratios=[0.02, 0.96,0.02]) 
 		#Main correlation window
@@ -619,7 +625,7 @@ class Window(QtGui.QWidget):
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				if objId.bleachCorr1 == True or objId.bleachCorr2 == True:
-					if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+					if self.bleachCorr1_checked == True:
 						#The bleach correction is on now we turn it off.
 						self.bleachCorr1_on_off.setText('  OFF  ')
 						self.bleachCorr1_on_off.setStyleSheet("color: red");
@@ -769,7 +775,7 @@ class Window(QtGui.QWidget):
 					objId.bleachCorr2 = False
 
 
-		self.bleachCorr2_checked = False
+		
 		self.bleachCorr1_checked = False
 		self.bleachCorr1_on_off.setText('  OFF  ')
 		self.bleachCorr1_on_off.setStyleSheet(" color: red");
@@ -918,7 +924,7 @@ class Window(QtGui.QWidget):
 
 		
 		#Checks which channel is displayed and then loads the relevant carpet.
-		if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+		if self.bleachCorr1_checked == True:
 			
 			#This is for the photo-corrected version of the carpets.
 			if self.carpetDisplay == 0:
@@ -1083,7 +1089,7 @@ class Window(QtGui.QWidget):
 							for b in range(self.clickedS1,self.clickedS2):
 								self.plt1.set_autoscale_on(True)
 								#Is the button checked.
-								if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+								if self.bleachCorr1_checked == True:
 									if self.carpetDisplay == 0:
 										self.plt1.plot(objId.corrArrScale_pc, objId.AutoCorr_carpetCH0_pc[:,int(b)],objId.color)
 									if self.carpetDisplay == 1:
@@ -1157,21 +1163,22 @@ class Window(QtGui.QWidget):
 						f.write('parent_filename,'+str(objId.file_name)+'\n')
 						
 						if self.bleachCorr1_checked == True:
-							f.write('pc, 1\n');
-							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
-							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+'\n');
-							f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
-							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
-							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
+							if objId.bleachCorr1 == True:
+								f.write('pc, 1\n');
+								f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
+								f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+'\n');
+								f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
+								f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
+								f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
+							
+							if objId.bleachCorr2 == True: 
+								f.write('pc, 2\n');
+								f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
+								f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
+								f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
 						
-						if self.bleachCorr2_checked == True:
-							f.write('pc, 2\n');
-							f.write('kcount,'+str(objId.kcountCH0_pc[i])+'\n')
-							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+'\n')
-							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+'\n')
 						
 						
-						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
 							f.write('Time (ns), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
@@ -1194,20 +1201,21 @@ class Window(QtGui.QWidget):
 						f.write('parent_filename,'+str(objId.file_name)+'\n')
 
 						if self.bleachCorr1_checked == True:
-							f.write('pc, 1\n');
-							f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
-							f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+','+str(objId.pbc_tb_ch1)+'\n');
-							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
-							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
-							f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
-
-						if self.bleachCorr2_checked == True:
-							f.write('pc, 2\n');
-							f.write('kcount,'+str(objId.kcountCH0_pc[i])+','+str(objId.kcountCH1_pc[i])+'\n')
-							f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
-							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
-							f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
-						if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+							if objId.bleachCorr1 == True:
+								f.write('pc, 1\n');
+								f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
+								f.write('pbc_tb,'+str(objId.pbc_tb_ch0)+','+str(objId.pbc_tb_ch1)+'\n');
+								f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
+								f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
+								f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
+							if objId.bleachCorr2 == True:
+							
+								f.write('pc, 2\n');
+								f.write('kcount,'+str(objId.kcountCH0_pc[i])+','+str(objId.kcountCH1_pc[i])+'\n')
+								f.write('numberNandB,'+str(objId.numberNandBCH0_pc[i])+','+str(objId.numberNandBCH1_pc[i])+'\n')
+								f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
+								f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
+						
 							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
@@ -1280,14 +1288,17 @@ class Window(QtGui.QWidget):
 			corrObj1.type = "scan"
 			corrObj1.siblings = None
 
-			if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+			if self.bleachCorr1_checked == True:
 				corrObj1.kcount = objId.kcountCH0_pc[i]
 				corrObj1.numberNandB = objId.numberNandBCH0_pc[i]
 				corrObj1.brightnessNandB = objId.brightnessNandBCH0_pc[i]
+				
 				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr_pc'
 				corrObj1.autotime = objId.corrArrScale_pc[:]
 				corrObj1.autoNorm = objId.AutoCorr_carpetCH0_pc[:,i]
-				if self.bleachCorr1_checked == True:
+				corrObj1.max = np.max(objId.AutoCorr_carpetCH0_pc[:,i])
+				corrObj1.min = np.min(objId.AutoCorr_carpetCH0_pc[:,i])
+				if objId.bleachCorr1 == True:
 					#Additional parameters from photobleaching method 1
 					corrObj1.pbc_f0 = objId.pbc_f0_ch0
 					corrObj1.pbc_tb = objId.pbc_tb_ch0
@@ -1295,9 +1306,12 @@ class Window(QtGui.QWidget):
 				corrObj1.kcount = objId.kcountCH0[i]
 				corrObj1.numberNandB = objId.numberNandBCH0[i]
 				corrObj1.brightnessNandB = objId.brightnessNandBCH0[i]
+				corrObj1.s2n = objId.s2nCH0[i]
 				corrObj1.name = objId.name+'row_'+str(i)+'_CH0_Auto_Corr'
 				corrObj1.autotime = objId.corrArrScale[:]
 				corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
+				corrObj1.max = np.max(objId.AutoCorr_carpetCH0[:,i])
+				corrObj1.min = np.min(objId.AutoCorr_carpetCH0[:,i])
 			
 			
 			if objId.numOfCH == 2:
@@ -1313,17 +1327,21 @@ class Window(QtGui.QWidget):
 				corrObj2.autotime = objId.corrArrScale[:]
 				
 				
+				
 				corrObj1.CV = objId.CV[i]
 				corrObj2.CV = objId.CV[i]
 				corrObj2.type = "scan"
-				if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+				if self.bleachCorr1_checked == True:
 					corrObj2.kcount = objId.kcountCH1_pc[i]
 					corrObj2.numberNandB = objId.numberNandBCH1_pc[i]
 					corrObj2.brightnessNandB = objId.brightnessNandBCH1_pc[i]
 					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr_pc'
 					corrObj2.autotime =	objId.corrArrScale_pc
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
-					if self.bleachCorr1_checked == True:
+					corrObj2.max = np.max(objId.AutoCorr_carpetCH1_pc[:,i])
+					corrObj2.min = np.min(objId.AutoCorr_carpetCH1_pc[:,i])
+
+					if objId.bleachCorr1 == True:
 						#Additional parameters from photobleaching method 1
 						corrObj2.pbc_f0 = objId.pbc_f0_ch1
 						corrObj2.pbc_tb = objId.pbc_tb_ch1
@@ -1331,8 +1349,11 @@ class Window(QtGui.QWidget):
 					corrObj2.kcount = objId.kcountCH1[i]
 					corrObj2.numberNandB = objId.numberNandBCH1[i]
 					corrObj2.brightnessNandB = objId.brightnessNandBCH1[i]
+					corrObj2.s2n = objId.s2nCH1[i]
 					corrObj2.name = objId.name+'row_'+str(i)+'_CH1_Auto_Corr'
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
+					corrObj2.max = np.max(objId.AutoCorr_carpetCH1_pc[:,i])
+					corrObj2.min = np.min(objId.AutoCorr_carpetCH1_pc[:,i])
 				
 				
 
@@ -1348,13 +1369,17 @@ class Window(QtGui.QWidget):
 				corrObj3.CV = objId.CV[i]
 				corrObj3.prepare_for_fit()
 				corrObj3.autotime = objId.corrArrScale[:]
-				if self.bleachCorr1_checked == True or self.bleachCorr2_checked == True:
+				if self.bleachCorr1_checked == True:
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
 					corrObj3.autotime =	objId.corrArrScale_pc
 					corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
+					corrObj3.max = np.max(objId.CrossCorr_carpetCH01_pc[:,i])
+					corrObj3.min = np.min(objId.CrossCorr_carpetCH01_pc[:,i])
 				else:
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
 					corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
+					corrObj3.max = np.max(objId.AutoCorr_carpetCH01[:,i])
+					corrObj3.min = np.min(objId.AutoCorr_carpetCH01[:,i])
 				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 
 				corrObj1.siblings = [corrObj2,corrObj3]
@@ -1451,11 +1476,7 @@ class checkBoxSp3(QtGui.QCheckBox):
 			self.win_obj.DeltatEdit.setText(str(self.obj.deltat));
 			self.obj.plotOn = self.isChecked()
 			
-			#The 
-			if self.obj.bleachCorr2 == False:
-				self.win_obj.bleachCorr1_on_off.setText('  OFF  ')
-				self.win_obj.bleachCorr1_on_off.setStyleSheet("color: red");
-				self.win_obj.bleachCorr2_checked = False
+			
 
 			if self.obj.bleachCorr1 == False:
 				self.win_obj.bleachCorr1_on_off.setText('  OFF  ')
@@ -1744,7 +1765,9 @@ class ParameterClass():
 		self.colors = ['blue','green','red','cyan','magenta','midnightblue','black']
 		self.gui  ='show'
 	
-if __name__ == '__main__':
+
+
+def start_gui():
 	app = QtGui.QApplication(sys.argv)
 	#app.setStyle(QtGui.QStyleFactory.create("GTK+"))
 
@@ -1769,6 +1792,10 @@ if __name__ == '__main__':
 					QPushButton:pressed {
 					    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
 					                                      stop: 0 #dadbde, stop: 1 #f6f7fa);
+					}
+
+					QPushButton:checked {
+					    background-color: red;
 					}
 
 					QPushButton:flat {
@@ -1796,7 +1823,7 @@ if __name__ == '__main__':
 								border-radius: 3px;
 								padding: 2px;
 								background: #dadbde}
-"""
+	"""
 	
 	#mainWin.setStyleSheet(style_sheet_d)
 	fit_obj.setStyleSheet(style_sheet_d)
@@ -1822,7 +1849,7 @@ if __name__ == '__main__':
 								}
 								
 
-""")
+	""")
 	
 
 	
@@ -1853,11 +1880,16 @@ if __name__ == '__main__':
 	
 
 	
+	return win_tab, app,par_obj,mainWin,fit_obj
 	
-	win_tab.show()
+	if __name__ == '__main__':
+		win_tab, app,par_obj,win_obj,fit_obj = start_gui()
+
+		win_tab.show()
+		sys.exit(app.exec_())
 
 
 
-	sys.exit(app.exec_())
+	
 
 	
