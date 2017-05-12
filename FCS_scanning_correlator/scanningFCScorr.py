@@ -108,11 +108,11 @@ class FileDialog(QtGui.QMainWindow):
 		imLif_Arr = []
 		self.win_obj.yes_to_all = None
 		self.win_obj.last_in_list = False
-		if self.win_obj.testing == False:
-			file_list = self.fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
+		#if self.win_obj.testing == False:
+		file_list = self.fileInt.getOpenFileNames(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
 		
-		else: 
-			file_list = self.win_obj.test_path
+		#else: 
+		#	file_list = self.win_obj.test_path
 
 
 		c = 1
@@ -1882,11 +1882,12 @@ def start_gui():
 	
 	return win_tab, app,par_obj,mainWin,fit_obj
 	
-	if __name__ == '__main__':
-		win_tab, app,par_obj,win_obj,fit_obj = start_gui()
+if __name__ == '__main__':
+	print 'here'
+	win_tab, app,par_obj,win_obj,fit_obj = start_gui()
 
-		win_tab.show()
-		sys.exit(app.exec_())
+	win_tab.show()
+	sys.exit(app.exec_())
 
 
 
