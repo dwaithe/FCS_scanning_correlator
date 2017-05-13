@@ -34,10 +34,10 @@ import copy
 import uuid
 import datetime
 now = datetime.datetime.now()
-
-#if now.year == 2017 and now.month > 7:
- #       print 'Your version of the software has expired. Please return to source for up-to-date version'
-  #      exit()
+print 'trial version. Please contact: Dominic Waithe (dominic.waithe@imm.ox.ac.uk) for full version.'
+if now.year == 2017 and now.month > 7:
+        print 'Your version of the software has expired. Please return to source for up-to-date version'
+  
 
 def intensity2bin(intTrace, winInt):
 	intTrace = np.array(intTrace)  
