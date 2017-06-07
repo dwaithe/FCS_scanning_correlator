@@ -1,4 +1,5 @@
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtGui import QMainWindow
 import matplotlib
 
 import matplotlib.pyplot as plt
@@ -14,9 +15,9 @@ from matplotlib.widgets import Slider, SpanSelector
 from scorrelation_objects import scanObject, autocorrelate, correlate
 import cPickle as pickle
 
-class bleachCorr2(QtGui.QMainWindow):
+class bleachCorr2(QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        QMainWindow.__init__(self,None)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -32,6 +33,8 @@ class bleachCorr2(QtGui.QMainWindow):
         
 
     def create_main_frame(self):
+        if self.par_obj.numOfLoaded == 0:
+            return
         for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
                 self.objId=objId
@@ -54,7 +57,7 @@ class bleachCorr2(QtGui.QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        page = QtGui.QWidget()        
+        self.bleach_corr2_win = QtGui.QWidget()        
         hbox_main = QtGui.QHBoxLayout()
         vbox1 = QtGui.QVBoxLayout()
         vbox0 = QtGui.QVBoxLayout()
@@ -80,13 +83,13 @@ class bleachCorr2(QtGui.QMainWindow):
 
         
 
-        self.plt1.set_title('Intensity Time Trace')
-        self.plt1.set_ylabel('Number of photons', fontsize=12)
-        self.plt1.set_xlabel('Time (ms)', fontsize=12)
+        self.plt1.set_title('Intensity Time Trace', fontsize=6)
+        self.plt1.set_ylabel('Number of photons', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
 
-        self.plt2.set_title('Preview Different Window Sizes')
-        self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Lag Time (ms)')
+        self.plt2.set_title('Preview Different Window Sizes', fontsize=6)
+        self.plt2.set_ylabel('Correlation', fontsize=6)
+        self.plt2.set_xlabel('Lag Time (ms)', fontsize=6)
 
 
         cid = self.canvas1.mpl_connect('button_press_event', self.onclick)
@@ -164,11 +167,12 @@ class bleachCorr2(QtGui.QMainWindow):
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
         
-        self.figure1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.95, wspace=0.2, hspace=0.6)
-        self.figure1.tight_layout(pad=1.5,w_pad=1.7)
-        self.figure1.subplots_adjust(right=0.85)
-        page.setLayout(hbox_main)
-        self.setCentralWidget(page)
+        self.figure1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.95,hspace=0.5)
+        #self.figure1.tight_layout(h_pad=5,w_pad=3.0)
+        #self.figure1.subplots_adjust(right=0.85)
+        self.bleach_corr2_win.setLayout(hbox_main)
+        self.setCentralWidget(self.bleach_corr2_win)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
         self.plotData()
         self.redraw_carpet()
@@ -188,12 +192,14 @@ class bleachCorr2(QtGui.QMainWindow):
             self.win_obj.CH1AutoFn()
         else:
             self.win_obj.CH0AutoFn()
-        self.plt3.set_xlabel('Lag Time (ms)', fontsize=12)
-        self.plt3.set_ylabel('Column pixel',fontsize=12)
-        self.plt3.set_xscale('log')
+        self.plt3.set_xlabel('Lag Time (ms)', fontsize=6)
+        self.plt3.set_ylabel('Column pixel',fontsize=6)
         
-        self.plt3.set_title('Correlation Carpet Preview')
-        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest',picker=5)
+        self.plt3.set_xscale('log')
+        self.plt3.set_title('Correlation Carpet Preview',fontsize=6)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[0]),self.objId.corrArrScale)
+        
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img.T,cmap='jet')
         self.canvas1.draw()
 
     def line_redraw(self,value):
@@ -226,9 +232,9 @@ class bleachCorr2(QtGui.QMainWindow):
         start_x = 0
         
         self.plt2.clear()
-        self.plt2.set_title('Preview Different Window Sizes')
-        self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Lag time (ms)')
+        self.plt2.set_title('Preview Different Window Sizes', fontsize=6)
+        self.plt2.set_ylabel('Correlation', fontsize=6)
+        self.plt2.set_xlabel('Lag time (ms)', fontsize=6)
         label_array = []
         for bit in self.duration_array:
             num_of_lines  = int(np.ceil((bit)/(self.objId.deltat/1000)))
@@ -393,16 +399,16 @@ class bleachCorr2(QtGui.QMainWindow):
         self.win_obj.bleachCorr1fn()
         
         #Updates buttons on main gui.
-        self.win_obj.bleachCorr1_on_off.setText('C2 ON')
-        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: green");
+        self.win_obj.bleach_corr_on_off.setText('M2 ON ')
+        self.win_obj.bleach_corr_on_off.setStyleSheet(" color: green");
         #self.win_obj.bleachCorr2_on_off.setText('ON')
         #self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
 
         #Plots the carpet internally.
         self.plt3.clear()
-        self.plt3.set_title('Correlation Carpet Preview')
-        self.plt3.set_xlabel('Lag Time (ms)', fontsize=12)
-        self.plt3.set_ylabel('Column pixel',fontsize=12)
+        self.plt3.set_title('Correlation Carpet Preview', fontsize=6)
+        self.plt3.set_xlabel('Lag Time (ms)', fontsize=6)
+        self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
         
         self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest')
@@ -429,20 +435,20 @@ class bleachCorr2(QtGui.QMainWindow):
                     color = 'blue'
                 else:
                     color = 'black'
-                self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color)
+                self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color,linewidth=1.0)
         else:
-            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[::10],color='blue')
+            self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[::10],color='blue',linewidth=1.0)
         
         #If plotting with correction:
-        self.plt1.set_title('Intensity Time Trace')
-        self.plt1.set_ylabel('Intensity count')
-        self.plt1.set_xlabel('Time (ms)')
+        self.plt1.set_title('Intensity Time Trace', fontsize=6)
+        self.plt1.set_ylabel('Intensity count', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
         self.canvas1.draw()
 
     
-class bleachCorr3(QtGui.QMainWindow):
+class bleachCorr3(QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        QMainWindow.__init__(self,None)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -475,7 +481,7 @@ class bleachCorr3(QtGui.QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        page = QtGui.QWidget()        
+        self.bleach_corr3_win = QtGui.QWidget()        
         hbox_main = QtGui.QHBoxLayout()
         vbox1 = QtGui.QVBoxLayout()
         vbox0 = QtGui.QVBoxLayout()
@@ -500,13 +506,13 @@ class bleachCorr3(QtGui.QMainWindow):
                
         
 
-        self.plt1.set_title('Intensity Time Trace')
-        self.plt1.set_ylabel('Number of photons', fontsize=12)
-        self.plt1.set_xlabel('Time (ms)', fontsize=12)
+        self.plt1.set_title('Intensity Time Trace', fontsize=6)
+        self.plt1.set_ylabel('Number of photons', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
 
-        self.plt2.set_title('Preview Different Window Sizes')
-        self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Time (ms)')
+        self.plt2.set_title('Preview Different Window Sizes', fontsize=6)
+        self.plt2.set_ylabel('Correlation', fontsize=6)
+        self.plt2.set_xlabel('Time (ms)', fontsize=6)
 
 
         cid = self.canvas1.mpl_connect('button_press_event', self.onclick)
@@ -585,8 +591,9 @@ class bleachCorr3(QtGui.QMainWindow):
         vbox1.addWidget(self.canvas1)
         
         self.figure1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.95, wspace=0.2, hspace=0.6)
-        page.setLayout(hbox_main)
-        self.setCentralWidget(page)
+        self.bleach_corr3_win.setLayout(hbox_main)
+        self.setCentralWidget(self.bleach_corr3_win)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
         self.plotData()
         self.redraw_carpet()
@@ -601,11 +608,11 @@ class bleachCorr3(QtGui.QMainWindow):
             self.win_obj.CH1AutoFn()
         else:
             self.win_obj.CH0AutoFn()
-        self.plt3.set_xlabel('Time (ms)', fontsize=12)
-        self.plt3.set_ylabel('Column pixel',fontsize=12)
+        self.plt3.set_xlabel('Time (ms)', fontsize=6)
+        self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
         
-        self.plt3.set_title('Correlation Carpet Preview')
+        self.plt3.set_title('Correlation Carpet Preview', fontsize=6)
         self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest',picker=5)
         self.canvas1.draw()
         
@@ -641,9 +648,9 @@ class bleachCorr3(QtGui.QMainWindow):
         start_x = 0
         
         self.plt2.clear()
-        self.plt2.set_title('Preview Different Window Sizes')
-        self.plt2.set_ylabel('Correlation')
-        self.plt2.set_xlabel('Time (ms)')
+        self.plt2.set_title('Preview Different Window Sizes', fontsize=6)
+        self.plt2.set_ylabel('Correlation', fontsize=6)
+        self.plt2.set_xlabel('Time (ms)', fontsize=6)
         label_array = []
         for bit in self.duration_array:
             num_of_lines  = int(np.ceil((bit)/(self.objId.deltat/1000)))
@@ -809,16 +816,14 @@ class bleachCorr3(QtGui.QMainWindow):
         self.win_obj.bleachCorr2fn()
         
         #Updates buttons on main gui.
-        self.win_obj.bleachCorr1_on_off.setText('OFF')
-        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: red");
-        self.win_obj.bleachCorr2_on_off.setText('ON')
-        self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: green");
+        self.win_obj.bleach_corr_on_off.setText('M2 ON ')
+        self.win_obj.bleach_corr_on_off.setStyleSheet(" color: green");
 
         #Plots the carpet internally.
         self.plt3.clear()
-        self.plt3.set_title('Correlation Carpet Preview')
-        self.plt3.set_xlabel('Time (ms)', fontsize=12)
-        self.plt3.set_ylabel('Column pixel',fontsize=12)
+        self.plt3.set_title('Correlation Carpet Preview', fontsize=6)
+        self.plt3.set_xlabel('Time (ms)', fontsize=6)
+        self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
         
         self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest')
@@ -855,9 +860,9 @@ class bleachCorr3(QtGui.QMainWindow):
             self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[::10],color='blue')
         
         #If plotting with correction:
-        self.plt1.set_title('Intensity Time Trace')
-        self.plt1.set_ylabel('Intensity count')
-        self.plt1.set_xlabel('Time (ms)')
+        self.plt1.set_title('Intensity Time Trace', fontsize=6)
+        self.plt1.set_ylabel('Intensity count', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
         self.canvas1.draw()
     def learn_corr_fn(self,totalFn):
             """Calculates the correction and generates output."""
@@ -896,16 +901,21 @@ class bleachCorr3(QtGui.QMainWindow):
 
 
 
-class ImpAdvWin(QtGui.QMainWindow):
+class cropDataWindow(QMainWindow):
     """This is the cropping function. """
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        QMainWindow.__init__(self,None)
         self.par_obj = par_obj;
         self.win_obj = win_obj;
         
 
     def create_main_frame(self):
-        page = QtGui.QWidget()
+
+        #Tests whether there are any files open. 
+        if self.par_obj.numOfLoaded == 0:
+            return
+
+        self.crop_window = QtGui.QWidget()
 
         for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
@@ -935,7 +945,7 @@ class ImpAdvWin(QtGui.QMainWindow):
 
         
 
-        crop_panel = QtGui.QGroupBox('Import Crop Settings')
+        self.crop_panel = QtGui.QGroupBox('Import Crop Settings')
 
         self.start_col_txt = QtGui.QLabel('Start column: ');
         self.end_col_txt = QtGui.QLabel('End column: ');
@@ -994,7 +1004,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         import_profile =QtGui.QPushButton('Import profile')
 
         left_grid = QtGui.QGridLayout()
-        crop_panel.setLayout(left_grid)
+        self.crop_panel.setLayout(left_grid)
 
         left_grid.addWidget(self.start_col_txt,1,0)
         left_grid.addWidget(self.end_col_txt,2,0)
@@ -1013,7 +1023,7 @@ class ImpAdvWin(QtGui.QMainWindow):
         reprocess_btn.clicked.connect(self.reprocess_and_create)
         reprocess_all_btn.clicked.connect(self.reprocess_and_create_all)
         
-        vbox1.addWidget(crop_panel)
+        vbox1.addWidget(self.crop_panel)
         vbox1.addWidget(reprocess_btn)
         vbox1.addWidget(reprocess_all_btn)
         vbox1.addStretch()
@@ -1035,10 +1045,12 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.figure1.subplots_adjust(left=0.1, right=0.9, top=0.95, bottom=0.1, wspace=0.5,hspace=0.5)
         vbox2.addWidget(self.canvas1)
         vbox2.addWidget(self.toolbar1)
-        page.setLayout(hbox_main)
-        self.setCentralWidget(page)
+        self.crop_window.setLayout(hbox_main)
+        self.setCentralWidget(self.crop_window)
         
         self.plotData()
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
         self.show()
     def plotData(self):
 
@@ -1084,9 +1096,9 @@ class ImpAdvWin(QtGui.QMainWindow):
         self.line = self.plt2.axhspan(self.vmin, self.vmax, color="red",fill=False, alpha=1.0)
         self.canvas1.draw()
 
-        self.plt2.set_title('XT Carpet',fontsize=10)
-        self.plt2.set_xlabel('Scan line ('+str(np.round(self.objId.deltat,2))+') ms', fontsize=10)
-        self.plt2.set_ylabel('Column pixels', fontsize=10)
+        self.plt2.set_title('XT Carpet',fontsize=6)
+        self.plt2.set_xlabel('Scan line ('+str(np.round(self.objId.deltat,2))+') ms', fontsize=6)
+        self.plt2.set_ylabel('Column pixels', fontsize=6)
         self.plt2.tick_params(axis='both', which='major', labelsize=8)
         self.plt2.autoscale(False)
         self.plt2.set_ylim(0,XTcarpet.shape[0])
@@ -1106,9 +1118,9 @@ class ImpAdvWin(QtGui.QMainWindow):
         #Plot 1 in 10 pixels from the Gasussian.
         self.plt1.plot(np.arange(0,totalFn.shape[0],10)*self.objId.deltat ,totalFn[0::10],color=self.objId.color)
         #If plotting with correction:
-        self.plt1.set_title('Intensity Time Trace',fontsize=10)
-        self.plt1.set_ylabel('Intensity count',fontsize=10)
-        self.plt1.set_xlabel('Time (ms)',fontsize=10)
+        self.plt1.set_title('Intensity Time Trace',fontsize=6)
+        self.plt1.set_ylabel('Intensity count',fontsize=6)
+        self.plt1.set_xlabel('Time (ms)',fontsize=6)
         
         if self.objId.numOfCH == 2:
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
@@ -1212,9 +1224,9 @@ class ImpAdvWin(QtGui.QMainWindow):
         
 
 
-class bleachCorr(QtGui.QMainWindow):
+class bleachCorr(QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        QMainWindow.__init__(self,None)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -1224,6 +1236,8 @@ class bleachCorr(QtGui.QMainWindow):
         
 
     def create_main_frame(self):
+        if self.par_obj.numOfLoaded == 0:
+            return
         for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
                 self.objId=objId
@@ -1232,7 +1246,7 @@ class bleachCorr(QtGui.QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        page = QtGui.QWidget()        
+        self.bleach_corr1_win = QtGui.QWidget()        
         hbox_main = QtGui.QHBoxLayout()
         vbox1 = QtGui.QVBoxLayout()
         vbox0 = QtGui.QVBoxLayout()
@@ -1313,8 +1327,9 @@ class bleachCorr(QtGui.QMainWindow):
         vbox0.addStretch();
         vbox1.addWidget(self.canvas1)
         
-        page.setLayout(hbox_main)
-        self.setCentralWidget(page)
+        self.bleach_corr1_win.setLayout(hbox_main)
+        self.setCentralWidget(self.bleach_corr1_win)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
         self.plotData()
         self.setFixedSize(800,300)
@@ -1417,16 +1432,16 @@ class bleachCorr(QtGui.QMainWindow):
         self.win_obj.bleachCorr1_checked = False
         
         self.win_obj.bleachCorr1fn()
-        self.win_obj.bleachCorr1_on_off.setText('C1 ON')
-        self.win_obj.bleachCorr1_on_off.setStyleSheet(" color: green");
+        self.win_obj.bleach_corr_on_off.setText('M1 ON ')
+        self.win_obj.bleach_corr_on_off.setStyleSheet(" color: green");
         #self.win_obj.bleachCorr2_on_off.setText('OFF')
         #self.win_obj.bleachCorr2_on_off.setStyleSheet(" color: red");
 
     def plotData(self):
         self.plt1.cla()
-        self.plt1.set_title('Intensity Time Trace CH0')
-        self.plt1.set_ylabel('Intensity Counts')
-        self.plt1.set_xlabel('Time (ms)')
+        self.plt1.set_title('Intensity Time Trace CH0', fontsize=6)
+        self.plt1.set_ylabel('Intensity Counts', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
         
         #Calculate the total integral
         totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
@@ -1452,9 +1467,9 @@ class bleachCorr(QtGui.QMainWindow):
         
         if self.objId.numOfCH == 2:
             self.plt2.cla()
-            self.plt2.set_title('Intensity Time Trace CH1')
-            self.plt2.set_ylabel('Intensity Counts')
-            self.plt2.set_xlabel('Time (ms)')
+            self.plt2.set_title('Intensity Time Trace CH1', fontsize=6)
+            self.plt2.set_ylabel('Intensity Counts', fontsize=6)
+            self.plt2.set_xlabel('Time (ms)', fontsize=6)
             #Calculate the total integral
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
             #Plot 1 in 10 pixels from the Gasussian.
@@ -1477,9 +1492,9 @@ class bleachCorr(QtGui.QMainWindow):
                 self.plt2.set_ylim(bottom=0)
 
         self.canvas1.draw()
-class SpotSizeCalculation(QtGui.QMainWindow):
+class SpotSizeCalculation(QMainWindow):
     def __init__(self,par_obj,win_obj):
-        QtGui.QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
+        QMainWindow.__init__(self,None, QtCore.Qt.WindowStaysOnTopHint)
         #self.fileArray = fileArray
         #self.create_main_frame()
         self.par_obj = par_obj
@@ -1662,9 +1677,9 @@ class SpotSizeCalculation(QtGui.QMainWindow):
 
     def plotData(self):
         self.plt1.cla()
-        self.plt1.set_title('Intensity Time Trace CH0')
-        self.plt1.set_ylabel('Intensity Counts')
-        self.plt1.set_xlabel('Time (ms)')
+        self.plt1.set_title('Intensity Time Trace CH0', fontsize=6)
+        self.plt1.set_ylabel('Intensity Counts', fontsize=6)
+        self.plt1.set_xlabel('Time (ms)', fontsize=6)
         
         #Calculate the total integral
         totalFn = np.sum(self.objId.CH0, 1).astype(np.float64)
@@ -1679,8 +1694,8 @@ class SpotSizeCalculation(QtGui.QMainWindow):
             self.equation_tb1.setText(str(np.round(1/self.learn_tb,5)))
             out_total_fn = self.apply_corr_fn(totalFn,1)
             
-            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')
-            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red')
+            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green',linewidth=1.0)
+            self.plt1.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red',linewidth=1.0)
             
             
             self.plt1.set_ylim(bottom=0)
@@ -1688,9 +1703,9 @@ class SpotSizeCalculation(QtGui.QMainWindow):
         
         if self.objId.numOfCH == 2:
             self.plt2.cla()
-            self.plt2.set_title('Intensity Time Trace CH1')
-            self.plt2.set_ylabel('Intensity Counts')
-            self.plt2.set_xlabel('Time (ms)')
+            self.plt2.set_title('Intensity Time Trace CH1', fontsize=6)
+            self.plt2.set_ylabel('Intensity Counts', fontsize=6)
+            self.plt2.set_xlabel('Time (ms)', fontsize=6)
             #Calculate the total integral
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
             #Plot 1 in 10 pixels from the Gasussian.
@@ -1704,8 +1719,8 @@ class SpotSizeCalculation(QtGui.QMainWindow):
                 self.equation_tb2.setText(str(1/np.round(self.learn_tb,5)))
                 out_total_fn = self.apply_corr_fn(totalFn,1)
                 
-                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green')
-                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red')
+                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,out_total_fn[0::10], 'green',linewidth=1.0)
+                self.plt2.plot(range(0,out_total_fn.shape[0],10) ,self.weightings[0::10], 'red',linewidth=1.0)
                 
                 
                 self.plt2.set_ylim(bottom=0)

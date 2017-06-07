@@ -105,70 +105,58 @@ class scanObject():
                 #nlines = self.num_of_lines
                 start_x = 0
                 #Correlation applied to each column of the correlation carpet.
-                if np.sum(np.array(inFnCH0))>0:
+                sum_of_inFnCH0 = np.sum(np.array(inFnCH0))
+                if sum_of_inFnCH0 > 0:
 
                     
                     AC0 = autocorrelate(np.array(inFnCH0), m=self.m, deltat=self.deltat, normalize=True,copy=True, dtype=None)
                     corrArrScale = AC0[:,0]
+                    signal_to_noiseCH0.append(self.calc_signal_to_noise(inFnCH0,AC0))
+                    
+                
+                    #Calculate number of counts
+
+                    int_time = 50
+                    out = []
+                    for i in range(1,int(np.ceil((inFnCH0.shape[0]/int_time)))):
+                        out.append(np.sum(inFnCH0[int_time*(i-1):int_time*i]))
+
+                    raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration (the first moment)
+                    var_count = np.var(out) #This is the second moment the variance
+
+                    
+
+                    #Calculate the number of kcounts / Hz.
+                    kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
+                    kcountCH0.append(kcount/1000)#KHz
+
+
+
+                    #Calculate the brightness and number using the moments.
+                    brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
+                    
+                    if (var_count-raw_count) == 0:
+                        numberNandBCH0.append(0)
+                    else:
+                        numberNandBCH0.append(raw_count**2/(var_count-raw_count))
                 else:
 
                     AC0 = np.zeros((lenG,2))
                     corrArrScale = AC0[:,0]
-
-
-
-                #Signal to noise
-                def calc_signal_to_noise(int_ch,AC):
-                    a = np.copy(int_ch)
-                    size = int(a.size)
-                    hf_sz = size//2
-                    # subtract mean and pad with zeros to twice the size
-                    a_mean = a.mean().astype(np.float64)
-                    #Has the padding in
-                    a = np.pad(a-a_mean, a.size//2, mode='constant')
-                    M = np.int32((AC[:,0])*self.deltat/1000.0)
-                    c = np.zeros((AC.shape[0])).astype(np.float64)
-                    ct = 0
-                    for tau in M:
-                        c[ct] = np.var(a[hf_sz:-hf_sz]*a[tau:size+tau])
-                        ct += 1
-                    varG = (1.0/(size*a_mean**4))*c
-
-
-                    s2n = np.average(np.abs(AC[:,1]/varG**0.5))
-                    return s2n
-
-                signal_to_noiseCH0.append(calc_signal_to_noise(inFnCH0,AC0))
-                    
-                
-                #Calculate number of counts
-
-                int_time = 50
-                out = []
-                for i in range(1,int(np.ceil((inFnCH0.shape[0]/int_time)))):
-                    out.append(np.sum(inFnCH0[int_time*(i-1):int_time*i]))
-
-                raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration (the first moment)
-                var_count = np.var(out) #This is the second moment the variance
-
-                
-
-                #Calculate the number of kcounts / Hz.
-                kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
-                kcountCH0.append(kcount/1000)#KHz
-
-
-
-                #Calculate the brightness and number using the moments.
-                brightnessNandBCH0.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
-                
-                if (var_count-raw_count) == 0:
+                    signal_to_noiseCH0.append(0)
+                    kcountCH0.append(0)
+                    brightnessNandBCH0.append(0)
                     numberNandBCH0.append(0)
-                else:
-                    numberNandBCH0.append(raw_count**2/(var_count-raw_count))
+
+
+
                 
+
+                
+                corrArrCH0.append(AC0)
                 if self.numOfCH ==2:
                     #If there are two channels calculate the coincidence.
+                    sum_of_inFnCH1 = np.sum(np.array(inFnCH1))
                     #This is only tested for lif files.
                     option = np.bincount((inFnCH0).astype(np.int64))
                     try:
@@ -186,39 +174,40 @@ class scanObject():
                     N2 = NN2
                     
                     CV.append((np.sum(N1*N2)/(np.sum(N1)*np.sum(N2)))*n)
-                    
-
-
-                
-                corrArrCH0.append(AC0)
-                
-                if self.numOfCH ==2:
-                    if np.sum(inFnCH1) > 0:
+            
+                    if sum_of_inFnCH1 > 0:
 
                         AC1 = autocorrelate(np.array(inFnCH1), m=self.m, deltat=self.deltat, normalize=True,copy=True, dtype=None)
                         CC01 = correlate(np.array(inFnCH0),np.array(inFnCH1), m=self.m, deltat=self.deltat, normalize=True,copy=True, dtype=None)
+                        corrArrCH1.append(AC1)
+                        corrArrCC.append(CC01)
+
+                        signal_to_noiseCH1.append(self.calc_signal_to_noise(inFnCH1,AC1))
+                        
+                        out = []
+                        for i in range(1,int(np.ceil((inFnCH1.shape[0]/int_time)))):
+                            out.append(np.sum(inFnCH1[int_time*(i-1):int_time*i]))
+
+                        raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration
+                        kcount = raw_count/(int_time*self.dwell_time*self.spatialBin)
+                        var_count = np.var(out)
+
+                        brightnessNandBCH1.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
+                        numberNandBCH1.append(raw_count**2/(var_count-raw_count))
+                        
+                        kcountCH1.append(kcount)
                     else:
                         AC1 = np.zeros((lenG,2))
                         CC01 = np.zeros((lenG,2))
+                        corrArrCH1.append(AC1)
+                        corrArrCC.append(CC01)
+                        signal_to_noiseCH1.append(0)
+                        brightnessNandBCH1.append(0)
+                        numberNandBCH1.append(0)
+                        kcountCH1.append(0)
 
-                    corrArrCH1.append(AC1)
-                    corrArrCC.append(CC01)
 
-                    signal_to_noiseCH1.append(calc_signal_to_noise(inFnCH1,AC1))
-                    
-                    out = []
-                    for i in range(1,int(np.ceil((inFnCH1.shape[0]/int_time)))):
-                        out.append(np.sum(inFnCH1[int_time*(i-1):int_time*i]))
-
-                    raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration
-                    kcount = raw_count/(int_time*self.dwell_time*self.spatialBin)
-                    var_count = np.var(out)
-
-                    brightnessNandBCH1.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
-                    numberNandBCH1.append(raw_count**2/(var_count-raw_count))
-                
-                    
-                    kcountCH1.append(kcount)#average count per window. Need to convert to second.
+                    #average count per window. Need to convert to second.
                 
             #Create ouput image.
             AutoCorr_carpetCH0 = np.zeros((corrArrCH0[0][:,1].shape[0],corrArrCH0.__len__()))
@@ -256,19 +245,28 @@ class scanObject():
             self.name = str(self.filepath).split('/')[-1]
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
-
+            self.numOfCH = 1
             temp = np.array(self.imDataStore).astype(np.float64)
             
-            if temp.shape.__len__() ==2:
+            if temp.shape.__len__() == 2 or  (temp.shape.__len__() ==3 and temp.shape[0] < 3 and temp.shape[0]==1):
                 self.CH0 = temp.reshape(temp.shape[0],temp.shape[1])
-            if temp.shape.__len__() ==3:
+            elif temp.shape.__len__() ==3 and temp.shape[0] > 2:
                 self.CH0 = temp.reshape(temp.shape[0]*temp.shape[1],temp.shape[2])
-            if temp.shape.__len__() ==4:
+            elif  (temp.shape.__len__() ==3 and temp.shape[0] < 3 and temp.shape[0]==2):
+                self.CH0 = copy.deepcopy(temp[0,:,:])
+                self.CH1 = copy.deepcopy(temp[1,:,:])
+                self.numOfCH = 2
+                if self.end_pt != 0:
+                    self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                    self.CH1 = np.array(self.CH1[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                if np.sum(self.CH1) ==0:
+                    self.numOfCH =1
+            elif temp.shape.__len__() ==4:
                 self.CH0 = copy.deepcopy(temp[:,0,:,:])
                 self.CH1 = copy.deepcopy(temp[:,0,:,:])
                 self.CH0 = self.CH0.reshape(self.CH0.shape[0]*self.CH0.shape[1],self.CH0.shape[2])
                 self.CH1 = self.CH1.reshape(self.CH1.shape[0]*self.CH1.shape[1],self.CH1.shape[2])
-                if np.sum(self.CH1) !=0:
+                if np.sum(self.CH1) ==0:
                     self.numOfCH =1
             
             if self.cmin == None:
@@ -276,17 +274,25 @@ class scanObject():
             if self.cmax == None:
                 self.cmax = self.CH0.shape[1]
             
-            if self.end_pt != 0:
+            
+            
+            if self.end_pt != 0 and self.numOfCH == 1:
                 self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                
+            if self.end_pt != 0 and self.numOfCH == 2:
+                self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                self.CH1 = np.array(self.CH1[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+            
+
             self.CH0_pc = np.zeros((self.CH0.shape))
-            self.numOfCH = 1
+            if self.numOfCH == 2:
+                self.CH1_pc = np.zeros((self.CH1.shape))
+
+            
         
         elif self.ext == 'lsm':
             print 'lsm'
             #For lsm files the dimensions can vary.
-
-
-
             if self.imDataStore.shape.__len__() > 2:
                 self.dimSize = [self.imDataStore.shape[1],self.imDataStore.shape[2]]
                 self.numOfCH = 2
@@ -392,7 +398,8 @@ class scanObject():
 
             #Single channel is simple to reshape from pages.
             if self.numOfCH == 1:
-                    
+                    print 'total size', self.dimSize
+                    print 'totalt',self.dimSize[1]*self.dimSize[2]
                     self.CH0 = np.array(self.imDataStore).reshape(self.dimSize[1]*self.dimSize[2],self.dimSize[0])
 
 
@@ -437,6 +444,14 @@ class scanObject():
         self.CH0_arrayColSum = np.sum(self.CH0[:,:],0).astype(np.float64)
 
         
+        if np.sum(self.CH0_arraySum) == 0:
+            print 'intensity trace excluded as contained no intensity signal:', self.file_name
+            self.parObj.objectRef.pop(self.parObj.numOfLoaded)
+            self.parObj.numOfLoaded = self.parObj.numOfLoaded - 1
+            return
+            
+
+        
         self.maxCountCH0 = np.max(self.CH0_arraySum)
         
         #CH0auto = autocorrelate(self.CH0_arraySum, m=self.m, deltat=self.deltat, normalize=True, copy=True, dtype=None)
@@ -455,6 +470,7 @@ class scanObject():
 
 
         #Find the length of the generated correlation function.
+        
         k = int(np.floor(np.log2(self.num_of_lines/self.m)))
         self.lenG = np.int(np.floor(self.m + k*self.m/2))
         mar = int((self.spatialBin-1)/2)
@@ -498,6 +514,26 @@ class scanObject():
 
 
         self.autotime = self.corrArrScale
+    #Signal to noise
+    def calc_signal_to_noise(self,int_ch,AC):
+        a = np.copy(int_ch)
+        size = int(a.size)
+        hf_sz = size//2
+        # subtract mean and pad with zeros to twice the size
+        a_mean = a.mean().astype(np.float64)
+        #Has the padding in
+        a = np.pad(a-a_mean, a.size//2, mode='constant')
+        M = np.int32((AC[:,0])*self.deltat/1000.0)
+        c = np.zeros((AC.shape[0])).astype(np.float64)
+        ct = 0
+        for tau in M:
+            c[ct] = np.var(a[hf_sz:-hf_sz]*a[tau:size+tau])
+            ct += 1
+        varG = (1.0/(size*a_mean**4))*c
+
+
+        s2n = np.average(np.abs(AC[:,1]/varG**0.5))
+        return s2n
 
 
     
