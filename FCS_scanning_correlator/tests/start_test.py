@@ -1,6 +1,14 @@
 from PyQt4.QtTest import QTest
 from PyQt4 import QtGui, QtCore
 import os
+import numpy as np
+from test_msr_file_import import test_msr_file_import
+from test_tiff_file_import import test_tiff_file_import
+from test_lsm_file_import import test_lsm_file_import
+from test_lif_file_import import test_lif_file_import
+from test_scan_interface_buttons import test_scan_interface_buttons
+from test_scan_PB1_buttons import test_scan_PB1_buttons
+import warnings
 
 def test_import_scripts():
 	print 'testing'
@@ -11,43 +19,21 @@ def test_import_scripts():
 
 
 	win_tab, app,par_obj,win_obj,fit_obj = sfc.start_gui()
-
-
-	#win_obj.ex.showDialog()
 	win_obj.testing = True
-	win_obj.test_path = [os.getcwd()+'/test_files/1.msr']
-	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	win_obj.testWin.check1.click()
-	QTest.mouseClick(win_obj.testWin.button, QtCore.Qt.LeftButton)
-
+	warnings.filterwarnings('ignore', '.*void CGSUpdateManager*',)
 	
-	#path = 'test_files/'
-	#filename = '20140902_ScanFCCS_Jcam Glass LCksnap STAR Sri.lif'
-	#par_obj.gui  ='show'
-	#filepath = path+filename
-	#scanlist = Import_lif(filepath,par_obj, mainWin)
-	#c=0
-	#selList =[];
-	#for name in scanlist.store:
-#		c = c+1
+	#res0 = test_lsm_file_import(par_obj,win_obj)
+	#res1 = test_msr_file_import(par_obj,win_obj)
+	#res2 = test_lif_file_import(par_obj,win_obj)
+	#res3 = test_tiff_file_import(par_obj,win_obj)
+	#res4 = test_scan_interface_buttons(par_obj,win_obj)
+	res5 = test_scan_PB1_buttons(par_obj,win_obj)
 
-		#exec("boolV = self.check"+str(c)+".isChecked()");
-#		if c == 3:
-#			selList.append(name)
-#	print selList.__len__()
-#	scanlist.import_lif_sing(selList)
-#	mainWin.testWin.close()
-#	mainWin.plotDataQueueFn()
-
-	#win_tab.show()
-	#Starts the display app.exec_()
-	#sys.exit(app.exec_())
-	
-
-	return False
-
+	win_tab.show()
+	sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
 
-	assert(test_import_scripts())
+	results = test_import_scripts()
+
