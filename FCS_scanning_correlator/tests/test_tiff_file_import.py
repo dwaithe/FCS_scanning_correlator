@@ -9,6 +9,7 @@ def test_tiff_file_import(par_obj,win_obj):
 		assert win_obj.diag.line_sampling_win.isVisible() == True
 		assert win_obj.diag.input_text.isVisible() == True
 		assert str(win_obj.diag.label.text()) == 'Enter the line sampling (Hz):'
+		win_obj.diag.input_text.clear()
 		QTest.keyClicks(win_obj.diag.input_text, str(sample_rate))
 		assert win_obj.diag.input_text.text() == str(sample_rate)
 		QTest.mouseClick(win_obj.diag.ok, QtCore.Qt.LeftButton)
@@ -18,6 +19,7 @@ def test_tiff_file_import(par_obj,win_obj):
 		#Open the dialog for inputing the dwell time.
 		assert win_obj.diag.dialog_dwell_win.isVisible() == True
 		assert win_obj.diag.input_text.isVisible() == True
+		win_obj.diag.input_text.clear()
 		assert str(win_obj.diag.label.text()) == 'Enter the pixel dwell time (us):'
 		QTest.keyClicks(win_obj.diag.input_text, str(dwell_time))
 		assert win_obj.diag.input_text.text() == str(dwell_time)
