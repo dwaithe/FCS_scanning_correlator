@@ -64,6 +64,7 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		
 		
 		QTest.mouseClick(win_obj.bleach_corr1_btn, QtCore.Qt.LeftButton)
+
 		assert win_obj.bleach_corr1_plugin.bleach_corr1_win.isVisible() == True
 		
 		assert win_obj.bleach_corr_on_off.text() == '  OFF  '
@@ -143,7 +144,10 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		win_obj.bleach_corr1_plugin.close()
 		assert win_obj.bleach_corr1_plugin.bleach_corr1_win.isVisible() == False
 		
-		
+		assert par_obj.numOfLoaded == 2
+		for i in range(1,-1,-1):
+			QTest.mouseClick(win_obj.xb[i], QtCore.Qt.LeftButton)
+		assert par_obj.numOfLoaded == 0
 		
 		
 

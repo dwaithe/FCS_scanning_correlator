@@ -89,6 +89,10 @@ def test_scan_interface_buttons(par_obj,win_obj):
 		win_obj.bleach_corr2_plugin.close()
 		assert win_obj.bleach_corr2_plugin.bleach_corr2_win.isVisible() == False
 
+		assert par_obj.numOfLoaded == 1
+		
+		QTest.mouseClick(win_obj.xb[0], QtCore.Qt.LeftButton)
+		assert par_obj.numOfLoaded == 0
 
 
 		"""#win_obj.toolbar1 

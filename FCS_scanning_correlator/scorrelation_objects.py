@@ -291,7 +291,7 @@ class scanObject():
             
         
         elif self.ext == 'lsm':
-            print 'lsm'
+            
             #For lsm files the dimensions can vary.
             if self.imDataStore.shape.__len__() > 2:
                 self.dimSize = [self.imDataStore.shape[1],self.imDataStore.shape[2]]
@@ -387,7 +387,7 @@ class scanObject():
             tempList1 =[];
 
             self.numOfCH = self.LUTName.__len__();
-            print self.numOfCH
+            
 
             if self.cmin == None:
                 self.cmin = 0
@@ -398,8 +398,7 @@ class scanObject():
 
             #Single channel is simple to reshape from pages.
             if self.numOfCH == 1:
-                    print 'total size', self.dimSize
-                    print 'totalt',self.dimSize[1]*self.dimSize[2]
+                    
                     self.CH0 = np.array(self.imDataStore).reshape(self.dimSize[1]*self.dimSize[2],self.dimSize[0])
 
 

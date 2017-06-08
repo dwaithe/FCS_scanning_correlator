@@ -34,30 +34,11 @@ def test_tiff_file_import(par_obj,win_obj):
 	win_obj.test_path.append(os.getcwd()+'/test_files/out_img_D_0p2_noi_0_drift_False_ts_30000_mol_120_bleach_False_prob_0_numCH2_shift.tif')
 	win_obj.test_path.append(os.getcwd()+'/test_files/out_img_D_0p2_noi_yes_drift_False_ts_30000_mol_120_bleach_False_prob_0_numCH2_shift-1.tif with additive Gaussian noise.tif')
 	
+	for i in range(0, win_obj.test_path.__len__()):
+		win_obj.test_path[i] = win_obj.test_path[i].replace('\\','/')
+
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	btns = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-	
-
-	#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-	select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[1])
-	select_1 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[2])
-	select_2 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[3])
-	select_3 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	#The Qrage parameter expresses my anger at the time.
-	Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_1[0],select_1[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_2[0],select_2[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_3[0],select_3[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-
-	QTest.mouseClick(btns[0], QtCore.Qt.LeftButton)
+	win_obj.file_import.file_dialog.done(1,win_obj.test_path[0:4])
 
 	assert win_obj.diag.line_sampling_win.isVisible() == True
 
@@ -74,8 +55,9 @@ def test_tiff_file_import(par_obj,win_obj):
 		if i < 3:
 			assert win_obj.diag.use_settings_win.isVisible() == True
 			QTest.mouseClick(win_obj.diag.no, QtCore.Qt.LeftButton)
-			#assert win_obj.diag.use_settings_win.isVisible() == False
 
+			#assert win_obj.diag.use_settings_win.isVisible() == False
+	
 	#Check that the line sampling dialog doesn't appear again.
 	assert win_obj.diag.line_sampling_win.isVisible() == False
 
@@ -115,30 +97,10 @@ def test_tiff_file_import(par_obj,win_obj):
 	assert par_obj.numOfLoaded == 0
 
 	#Opens file and then applies same settings to all.
+	
+
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	a = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-	#QTest.keyPress(win_obj.file_import.file_dialog, QtCore.Qt.Key_Shift)
-
-	#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-	select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[1])
-	select_1 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[2])
-	select_2 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[3])
-	select_3 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	#The Qrage parameter expresses my anger at the time.
-	Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_1[0],select_1[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_2[0],select_2[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_3[0],select_3[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-
-	QTest.mouseClick(a[0], QtCore.Qt.LeftButton)
+	win_obj.file_import.file_dialog.done(1,win_obj.test_path[0:4])
 	#Open the dialog for the line sampling (Hz):
 	test_line_sampling_dialog(1800 )
 	#Open the dialog for inputing the dwell time.
@@ -186,28 +148,10 @@ def test_tiff_file_import(par_obj,win_obj):
 	#multi channel tiff import.
 
 		#Opens file and then applies same settings to all.
+	
+
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	a = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-	#QTest.keyPress(win_obj.file_import.file_dialog, QtCore.Qt.Key_Shift)
-
-	#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[4])
-	select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[5])
-	select_1 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[6])
-	select_2 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	
-	#The Qrage parameter expresses my anger at the time.
-	Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_1[0],select_1[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_2[0],select_2[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	
-
-	QTest.mouseClick(a[0], QtCore.Qt.LeftButton)
+	win_obj.file_import.file_dialog.done(1,win_obj.test_path[4:7])
 	#Open the dialog for the line sampling (Hz):
 	test_line_sampling_dialog(1800 )
 	#Open the dialog for inputing the dwell time.

@@ -1961,7 +1961,7 @@ def start_gui():
 	win_tab.addTab(fit_obj, "FCS Function Fitting")
 	win_tab.setTabToolTip(0,"test1")
 	win_tab.setTabToolTip(1,"test2")
-	win_tab.resize(1200,800)
+	win_tab.resize(1400,800)
 
 	win_tab.setStyleSheet("""QTabWidget{
 	background:qradialgradient(cx: 0.3, cy: -0.4,

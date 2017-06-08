@@ -29,27 +29,12 @@ def test_lsm_file_import(par_obj,win_obj):
 	win_obj.test_path.append(os.getcwd()+'/test_files/2.lsm')
 	win_obj.test_path.append(os.getcwd()+'/test_files/Perp Scanning 0degree.lsm')
 	win_obj.test_path.append(os.getcwd()+'/test_files/Perp Scanning 90degree.lsm')
-
+	
+	for i in range(0, win_obj.test_path.__len__()):
+		win_obj.test_path[i] = win_obj.test_path[i].replace('\\','/')
 
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	btns = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-
-	#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-	select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[1])
-	select_1 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[2])
-	select_2 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	#The Qrage parameter expresses my anger at the time.
-	Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_1[0],select_1[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_2[0],select_2[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-
-	QTest.mouseClick(btns[0], QtCore.Qt.LeftButton)
+	win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 	
 	#assert win_obj.diag.line_sampling_win.isVisible() == True
 	
@@ -106,25 +91,11 @@ def test_lsm_file_import(par_obj,win_obj):
 		QTest.mouseClick(win_obj.xb[i], QtCore.Qt.LeftButton)
 	assert par_obj.numOfLoaded == 0
 
+	for i in range(0, win_obj.test_path.__len__()):
+		win_obj.test_path[i] = win_obj.test_path[i].replace('\\','/')
+
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-	btns = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-
-	#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-	select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[1])
-	select_1 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	win_obj.file_import.file_dialog.selectFile(win_obj.test_path[2])
-	select_2 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-	#The Qrage parameter expresses my anger at the time.
-	Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_1[0],select_1[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-	Qrage = QtGui.QItemSelection(select_2[0],select_2[0])
-	win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-
-	QTest.mouseClick(btns[0], QtCore.Qt.LeftButton)
+	win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 
 	#Open the dialog for the line sampling (Hz):
 	test_line_sampling_dialog(1800 )

@@ -222,7 +222,6 @@ def Import_tiff(filename,par_obj,win_obj):
 		deltat= 1000/float(self.text_1)
 		#pickle.dump(tif.asarray(), open('extra.p',"wb"))
 		ab = self.tif.asarray().astype(np.float64)
-		print 'tiff array',ab.shape
 		scanObject(filename,par_obj,[deltat,float(self.text_2)/1000000],ab,0,0);
 		win_obj.bleachCorr1 = False
 		win_obj.bleachCorr2 = False
@@ -265,7 +264,7 @@ def Import_tiff(filename,par_obj,win_obj):
 	
 		
 def Import_lsm(filename,par_obj,win_obj):
-	print 'called'
+	
 	win_obj.diag = dialog_import(par_obj,win_obj)
 	def import_data_fn(self):
 		deltat= 1000/float(self.text_1)
