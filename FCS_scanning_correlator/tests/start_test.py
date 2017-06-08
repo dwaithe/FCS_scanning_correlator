@@ -1,4 +1,4 @@
-from PyQt4.QtTest import QTest
+ from PyQt4.QtTest import QTest
 from PyQt4 import QtGui, QtCore
 import os
 import numpy as np

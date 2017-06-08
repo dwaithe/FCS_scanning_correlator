@@ -70,7 +70,7 @@ class FileDialog_2(QFileDialog):
 		self.tree = self.findChild(QtGui.QTreeView)
 		
 	
-	def done(self, intv):
+	def done(self, intv, override_list=None):
 		#Function gets fired when the dialog is closed. intv1 is positive if a selection is made.
 		super(QtGui.QFileDialog, self).done(intv)
 
@@ -85,6 +85,8 @@ class FileDialog_2(QFileDialog):
 		self.close()
 		
 		self.parent.file_list = files
+		if override_list != None:
+			self.parent.file_list = override_list
 		
 		self.parent.file_index = -1
 

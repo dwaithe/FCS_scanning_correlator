@@ -26,16 +26,10 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		
 		
 		win_obj.test_path = [os.getcwd()+'/test_files/out_img_D_0p2_noi_0_drift_False_ts_30000_mol_120_bleach_False_prob_0_with_PBC.tif']
+		win_obj.test_path[0] = win_obj.test_path[0].replace('\\','/')
+
 		QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-		btns = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-	
-		#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-		win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-		select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-		#The Qrage parameter expresses my anger at the time.
-		Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-		win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-		QTest.mouseClick(btns[0], QtCore.Qt.LeftButton)
+		win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 
 		#Open the dialog for the line sampling (Hz):
 		assert win_obj.diag.line_sampling_win.isVisible() == True
@@ -90,16 +84,10 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 
 
 		win_obj.test_path = [os.getcwd()+'/test_files/out_img_D_0p2_noi_0_drift_False_ts_30000_mol_120_bleach_False_prob_0_numCH2_with_PBC.tif']
+		win_obj.test_path[0] = win_obj.test_path[0].replace('\\','/')
+
 		QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
-		btns = win_obj.file_import.file_dialog.findChildren(QtGui.QPushButton)
-	
-		#This was very painful to come up with. This and next paragraph won't work if shortened into a for loop. I have no idea why.
-		win_obj.file_import.file_dialog.selectFile(win_obj.test_path[0])
-		select_0 = win_obj.file_import.file_dialog.tree.selectionModel().selectedIndexes()
-		#The Qrage parameter expresses my anger at the time.
-		Qrage = QtGui.QItemSelection(select_0[0],select_0[0])
-		win_obj.file_import.file_dialog.tree.selectionModel().select(Qrage,QtGui.QItemSelectionModel.Select)
-		QTest.mouseClick(btns[0], QtCore.Qt.LeftButton)
+		win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 
 		#Open the dialog for the line sampling (Hz):
 		assert win_obj.diag.line_sampling_win.isVisible() == True
