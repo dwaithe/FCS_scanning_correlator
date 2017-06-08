@@ -24,7 +24,7 @@ def test_msr_file_import(par_obj,win_obj):
 		QTest.keyClicks(win_obj.diag.input_text, str(dwell_time))
 		assert win_obj.diag.input_text.text() == str(dwell_time)
 		QTest.mouseClick(win_obj.diag.ok, QtCore.Qt.LeftButton)
-		assert win_obj.diag.dialog_dwell_win.isVisible() == False
+		
 		#assert win_obj.diag.dialog_dwell_win.isVisible() == False
 
 	##Test MSR file import.
@@ -152,7 +152,7 @@ def test_msr_file_import(par_obj,win_obj):
 	QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
 	win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 
-	
+
 	assert win_obj.diag.main_dialog_win.check1.isVisible() == True
 	assert win_obj.diag.main_dialog_win.check2.isVisible() == True
 	assert win_obj.diag.main_dialog_win.check3.isVisible() == True
