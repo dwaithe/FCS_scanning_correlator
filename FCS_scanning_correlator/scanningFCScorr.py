@@ -557,7 +557,7 @@ class Window(QWidget):
 		#self.save_corr_txt.setStyleSheet("spacing: 0px;padding-left: 10px; padding-right:2px;padding-top: 0px; padding-bottom: 0px;");
 		self.save_corr_txt.setMinimumHeight(12)
 		self.save_corr_txt.setMaximumHeight(18)
-		self.save_corr_carpet_btn = QPushButton('Raw Carpets to .tiff')
+		self.save_corr_carpet_btn = QPushButton('Correlation Carpets to .tiff')
 		self.save_corr_carpet_btn.setToolTip('Exports an image of carpet without logarthmic spacing, suitable for subsequent analysis.')
 		#self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_corr_carpet_btn.clicked.connect(self.save_carpets)
@@ -696,7 +696,7 @@ class Window(QWidget):
 		if self.par_obj.numOfLoaded == 0:
 			return
 		self.clickedS1 = 0 
-		self.clickedS2 = self.carpet_img.shape[0]
+		self.clickedS2 = self.carpet_img.shape[1]
 		try:
 			self.line.remove()
 		except:
@@ -930,19 +930,32 @@ class Window(QWidget):
 			if self.int_time_trace_mode == 'global':
 				
 				#If just one line is highlighted.
+				
 				if xmin == xmax:
-					totalFn = objId.CH0[:,xmin]
+					if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+						totalFn = objId.CH0_pc[:,xmin]
+					else:
+						totalFn = objId.CH0[:,xmin]
 				else:
-					totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
+					if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+						totalFn = np.sum(objId.CH0_pc[:,xmin:xmax], 1).astype(np.float64)
+					else: 
+						totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
 				
 				self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],color=objId.color, linewidth=1)
 				
 				if objId.numOfCH == 2:
 					#If just one line is highlighted.
 					if xmin == xmax:
-						totalFn = objId.CH1[:,xmin]
+						if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+							totalFn = objId.CH1_pc[:,xmin]
+						else:
+							totalFn = objId.CH1[:,xmin]
 					else:
-						totalFn = np.sum(objId.CH1[:,xmin:xmax], 1).astype(np.float64)
+						if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+							totalFn = np.sum(objId.CH1_pc[:,xmin:xmax], 1).astype(np.float64)
+						else:
+							totalFn = objId.CH1[:,xmin]
 					
 					self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],'grey', linewidth=1)
 			
@@ -1049,46 +1062,46 @@ class Window(QWidget):
 			
 			#This is for the photo-corrected version of the carpets.
 			if self.carpetDisplay == 0:
-				img = np.flipud(objId.AutoCorr_carpetCH0_pc[:,:].T);
+				img =objId.AutoCorr_carpetCH0_pc[:,:];
 				sum_img = np.flipud(objId.CH0_arrayColSum)
 				carp_scale = objId.corrArrScale_pc
 			if self.carpetDisplay == 1:
-				img = np.flipud(objId.AutoCorr_carpetCH1_pc[:,:].T);
+				img = objId.AutoCorr_carpetCH1_pc[:,:];
 				sum_img = np.flipud(objId.CH1_arrayColSum)
 				carp_scale = objId.corrArrScale_pc
 			if self.carpetDisplay == 2:
-				img = np.flipud(objId.CrossCorr_carpet01_pc[:,:].T);
+				img = objId.CrossCorr_carpet01_pc[:,:];
 				sum_img = np.flipud(objId.CH0_arrayColSum)
 				carp_scale = objId.corrArrScale_pc
 		else:
 			if self.carpetDisplay == 0:
-				img = np.flipud(objId.AutoCorr_carpetCH0[:,:].T);
+				img = objId.AutoCorr_carpetCH0[:,:]
 				sum_img = np.flipud(objId.CH0_arrayColSum)
 				carp_scale = objId.corrArrScale
 			if self.carpetDisplay == 1:
-				img = np.flipud(objId.AutoCorr_carpetCH1[:,:].T);
+				img =objId.AutoCorr_carpetCH1[:,:]
 				sum_img = np.flipud(objId.CH1_arrayColSum)
 				carp_scale = objId.corrArrScale
 			if self.carpetDisplay == 2:
-				img = np.flipud(objId.CrossCorr_carpet01[:,:].T);
+				img = objId.CrossCorr_carpet01[:,:]
 				sum_img = np.flipud(objId.CH0_arrayColSum)
 				carp_scale = objId.corrArrScale
 
 		self.carpet_img = np.copy(img) #Important to copy as img is pointer to original.
 		
 		self.carpet_img[self.carpet_img < 0]=0;
-		for i in range(0, img.shape[0]):
-			npmax = np.max(self.carpet_img[i,:])
+		for i in range(0, img.shape[1]):
+			npmax = np.max(self.carpet_img[:,i])
 			if npmax != 0:
-				self.carpet_img[i,:] = self.carpet_img[i,:]/npmax
+				self.carpet_img[:,i] = self.carpet_img[:,i]/npmax
 
 		self.plt2.set_xlabel('Lag time (ms)', fontsize=12)
 		self.plt2.set_xscale('log')
-		X, Y = np.meshgrid(np.arange(0,self.carpet_img.shape[0]),carp_scale)
-		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img.T,cmap='jet')
+		X, Y = np.meshgrid(np.arange(0,img.shape[1]),carp_scale)
+		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img,cmap='jet')
 
 		#Plot the interpolation iensity profile to the left.
-		im1 = self.plt3.imshow(sum_img.reshape(objId.CH0_arrayColSum.shape[0],1),extent=[0,5,0,img.shape[0]],interpolation = 'nearest',aspect='auto',cmap=cm.Reds_r);
+		im1 = self.plt3.imshow(sum_img.reshape(objId.CH0_arrayColSum.shape[0],1),extent=[0,5,0,img.shape[1]],interpolation = 'nearest',aspect='auto',cmap=cm.Reds_r);
 		self.plt3.set_ylabel('Column pixels')
 		self.plt3.set_xlabel('Intensity\nmaxima')
 		self.plt3.set_xticklabels('')
@@ -1103,7 +1116,7 @@ class Window(QWidget):
 		self.span2 = SpanSelector(self.plt2, self.onselect, 'vertical', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )
 		if self.clickedS1 and self.clickedS2 != None:
 			self.onselect(self.clickedS1, self.clickedS2)
-			self.plt2.set_ylim([0,img.shape[0]])
+			self.plt2.set_ylim([0,img.shape[1]-1])
 		
 		if self.clim_low != 0 and self.clim_high != None:
 			self.corr_carpetset_clim((0,np.max(imgN)))
@@ -1138,8 +1151,8 @@ class Window(QWidget):
 		cmax_ind = int(np.argmin(np.abs(self.autotime -  pix_sel_hgh)))
 		
 		
-		cmin  = np.min(self.carpet_img[:,cmin_ind])
-		cmax  = np.max(self.carpet_img[:,cmax_ind])
+		cmin  = np.min(self.carpet_img[cmin_ind,:])
+		cmax  = np.max(self.carpet_img[cmax_ind,:])
 		
 
 		self.corr_carpet.set_clim((cmin,cmax))
@@ -1173,9 +1186,9 @@ class Window(QWidget):
 				self.x0=self.x1;
 				self.x0=self.x1b
 			#Corner case fix. If a line is inherited beyond the dimensions of the present carpet.
-			if self.x1 > self.carpet_img.shape[0]:
-				self.x1 = int(np.floor(self.carpet_img.shape[0]/2)+0.5)
-				self.x0 = int(np.floor(self.carpet_img.shape[0]/2)-0.5)
+			if self.x1 > self.carpet_img.shape[1]:
+				self.x1 = int(np.floor(self.carpet_img.shape[1]/2)+0.5)
+				self.x0 = int(np.floor(self.carpet_img.shape[1]/2)-0.5)
 
 			self.clickedS1 = int(np.floor(self.x0))
 			self.clickedS2 = int(np.ceil(self.x1))
@@ -1592,8 +1605,8 @@ class checkBoxSp3(QCheckBox):
 			self.obj.plotOn = self.isChecked()
 			
 			
-
-			if self.obj.bleachCorr1 == False:
+			
+			if self.obj.bleachCorr1 == False and self.obj.bleachCorr2 == False:
 				self.win_obj.bleach_corr_on_off.setText('  OFF  ')
 				self.win_obj.bleach_corr_on_off.setStyleSheet("color: red");
 				self.win_obj.bleachCorr1_checked = False

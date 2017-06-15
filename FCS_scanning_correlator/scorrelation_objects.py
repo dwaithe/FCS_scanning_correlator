@@ -88,6 +88,15 @@ class scanObject():
             
             mar = int((self.spatialBin-1)/2)
 
+
+            #Zero pixels are bad for many calculations. Here we check and replace with very small number.
+
+            #photonCarpetCH0[photonCarpetCH0==0.0] = 1e-6
+            #if self.numOfCH == 2:
+             #   photonCarpetCH1[photonCarpetCH1==0.0] = 1e-6
+
+
+
             
             
             for i in range(mar,numOfOps-mar):

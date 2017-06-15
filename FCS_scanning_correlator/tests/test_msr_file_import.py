@@ -32,6 +32,7 @@ def test_msr_file_import(par_obj,win_obj):
 	win_obj.test_path.append(os.getcwd()+'/test_files/3 (505 Hz).msr')
 	win_obj.test_path.append(os.getcwd()+'/test_files/2 (245Hz).msr')
 	win_obj.test_path.append(os.getcwd()+'/test_files/1.msr')
+	win_obj.test_path.append(os.getcwd()+'/test_files/11 (mature, line 28).msr')
 	
 	
 	
@@ -95,7 +96,19 @@ def test_msr_file_import(par_obj,win_obj):
 	test_dwell_dialog(2.15)
 	assert win_obj.diag.use_settings_win.isVisible() == True
 	QTest.mouseClick(win_obj.diag.no, QtCore.Qt.LeftButton)
-	assert win_obj.diag.use_settings_win.isVisible() == False
+	
+
+	#Open third file.
+	assert win_obj.diag.main_dialog_win.check2.isVisible() == True
+	win_obj.diag.main_dialog_win.check2.click()
+	QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+	assert win_obj.diag.isVisible() == False
+	test_line_sampling_dialog(505)
+	#Open the dialog for inputing the dwell time.
+	test_dwell_dialog(2.15)
+	assert win_obj.diag.use_settings_win.isVisible() == True
+	QTest.mouseClick(win_obj.diag.no, QtCore.Qt.LeftButton)
+	
 
 
 	#Check that the line sampling dialog doesn't appear again.
@@ -108,6 +121,7 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.objectRef[3].name == 'ExpControl #0 {4}'
 	assert par_obj.objectRef[4].name == 'ExpControl #1 {3}'
 	assert par_obj.objectRef[5].name == 'ExpControl #1 {98}'
+	assert par_obj.objectRef[6].name == 'ExpControl #1 {8}'
 
 	assert par_obj.objectRef[0].CH0.shape == (8192,50)
 	assert par_obj.objectRef[1].CH0.shape == (5000,50)
@@ -115,12 +129,14 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.objectRef[3].CH0.shape == (5050,50)
 	assert par_obj.objectRef[4].CH0.shape == (2450,125)
 	assert par_obj.objectRef[5].CH0.shape == (4465,40)
+	assert par_obj.objectRef[6].CH0.shape == (4465,40)
 	assert par_obj.objectRef[0].CH0_pc.shape == (8192,50)
 	assert par_obj.objectRef[1].CH0_pc.shape == (5000,50)
 	assert par_obj.objectRef[2].CH0_pc.shape == (5000,50)
 	assert par_obj.objectRef[3].CH0_pc.shape == (5050,50)
 	assert par_obj.objectRef[4].CH0_pc.shape == (2450,125)
 	assert par_obj.objectRef[5].CH0_pc.shape == (4465,40)
+	assert par_obj.objectRef[6].CH0_pc.shape == (4465,40)
 
 	assert par_obj.objectRef[0].deltat == 1000.0/float(505)
 	assert par_obj.objectRef[0].dwell_time == float(2.15)/1000000.0
@@ -136,11 +152,13 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.objectRef[4].dwell_time == float(2.15)/1000000.0
 	assert par_obj.objectRef[5].deltat == 1000.0/float(505)
 	assert par_obj.objectRef[5].dwell_time == float(2.15)/1000000.0
+	assert par_obj.objectRef[6].deltat == 1000.0/float(505)
+	assert par_obj.objectRef[6].dwell_time == float(2.15)/1000000.0
 
 
 	#Tests how many files appear in main interface and then closes them.
-	assert par_obj.numOfLoaded == 6
-	for i in range(5,-1,-1):
+	assert par_obj.numOfLoaded == 7
+	for i in range(6,-1,-1):
 		QTest.mouseClick(win_obj.xb[i], QtCore.Qt.LeftButton)
 	assert par_obj.numOfLoaded == 0
 
@@ -188,9 +206,13 @@ def test_msr_file_import(par_obj,win_obj):
 	win_obj.diag.main_dialog_win.check2.click()
 	QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
 
+	#Load fourth file.
+	win_obj.diag.main_dialog_win.check2.click()
+	QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+
 
 	#Checks the values of the imported data. 
-	for i in range(0,6):
+	for i in range(0,7):
 		assert par_obj.objectRef[i].deltat == 1000.0/float(505)
 		assert par_obj.objectRef[i].dwell_time == float(2.15)/1000000.0
 
@@ -201,6 +223,7 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.objectRef[3].name == 'ExpControl #0 {4}'
 	assert par_obj.objectRef[4].name == 'ExpControl #1 {3}'
 	assert par_obj.objectRef[5].name == 'ExpControl #1 {98}'
+	assert par_obj.objectRef[6].name == 'ExpControl #1 {8}'
 
 	#Check dimensions.
 	assert par_obj.objectRef[0].CH0.shape == (8192,50)
@@ -209,11 +232,14 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.objectRef[3].CH0.shape == (5050,50)
 	assert par_obj.objectRef[4].CH0.shape == (2450,125)
 	assert par_obj.objectRef[5].CH0.shape == (4465,40)
-	
+	assert par_obj.objectRef[6].CH0.shape == (4465,40)
+
+	#This checks the correlation carpet is orientated properly.	
+	assert np.argmax(np.sum(win_obj.carpet_img,0)) == np.argmax((par_obj.objectRef[6].CH0_arrayColSum)) == 26
 	
 	#Tests how many files appear in main interface and then closes them.
-	assert par_obj.numOfLoaded == 6
-	for i in range(5,-1,-1):
+	assert par_obj.numOfLoaded == 7
+	for i in range(6,-1,-1):
 		QTest.mouseClick(win_obj.xb[i], QtCore.Qt.LeftButton)
 	assert par_obj.numOfLoaded == 0	
 	

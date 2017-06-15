@@ -102,7 +102,7 @@ class bleachCorr2(QMainWindow):
 
 
         self.carp_pix_sel = QtGui.QSpinBox()
-        self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[0]);
+        self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[1]-1);
 
         
         self.sel_channel = QtGui.QComboBox()
@@ -197,9 +197,9 @@ class bleachCorr2(QMainWindow):
         
         self.plt3.set_xscale('log')
         self.plt3.set_title('Correlation Carpet Preview',fontsize=6)
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[0]),self.objId.corrArrScale)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
         
-        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img.T,cmap='jet')
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.canvas1.draw()
 
     def line_redraw(self,value):
@@ -264,11 +264,13 @@ class bleachCorr2(QMainWindow):
             for stx in range(start_x,FT.__len__()-num_of_lines+1,num_of_lines):
                 
                 
-
-                out = autocorrelate(FT[stx:stx+num_of_lines].astype(np.float64),m=self.objId.m, deltat=self.objId.deltat, normalize=True,copy=True, dtype=None)
-                #if out.shape[0] != out_all.shape[0]:
-                #    out_all =  np.zeros((out.shape[0],1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
-                out_all[:,c] = out[:,1]
+                if np.sum(FT[stx:stx+num_of_lines].astype(np.float64)) !=0:
+                    #Just checks no empty pixels.
+                    out = autocorrelate(FT[stx:stx+num_of_lines].astype(np.float64),m=self.objId.m, deltat=self.objId.deltat, normalize=True,copy=True, dtype=None)
+                    out_all[:,c] = out[:,1]
+                else: 
+                    out =np.zeros((out_all.shape[0],2))
+                    out_all[:,c] = 0.0
                 c += 1
 
             
@@ -289,9 +291,13 @@ class bleachCorr2(QMainWindow):
         counter = 0
         for objId in self.par_obj.objectRef:
             self.objId = objId
-            self.outputData()
+            res = self.outputData()
+            if res == False:
+                break;
+
             counter = counter + 1
             self.win_obj.image_status_text.showMessage("Applying to carpet: "+str(counter)+' of '+str(self.par_obj.objectRef.__len__())+' selected.')
+            self.win_obj.image_status_text.setStyleSheet("color : blue")
             self.win_obj.fit_obj.app.processEvents()
         self.close()
 
@@ -330,8 +336,16 @@ class bleachCorr2(QMainWindow):
             
                 
             
-            
+            if self.objId.CH0.shape[0]-num_of_lines+1< 0:
+                print 'Time interval exceeds the allowed range for: '+self.objId.name+' please use shorter time interval.'
+                self.win_obj.image_status_text.showMessage('Time interval exceeds the allowed range for: '+self.objId.name+' please use shorter time interval.')
+                self.win_obj.image_status_text.setStyleSheet("color : red")
+                self.win_obj.fit_obj.app.processEvents()
+                self.close()
+                
+                return False
             c = 0
+            print self.objId.name,
             #For each sub-timeseries calculate the correlation carpet and the paramaters.
             for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
                 #Function which calculates the correlation carpet.
@@ -355,7 +369,6 @@ class bleachCorr2(QMainWindow):
 
                 #The index.
                 c = c + 1
-
             
             #Calculate average carpet  and the parameters for outputs
             self.objId.AutoCorr_carpetCH0_pc = np.average(AC_all_CH0,2)
@@ -411,9 +424,13 @@ class bleachCorr2(QMainWindow):
         self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
         
-        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest')
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale_pc)
+        
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.plotData()
         self.canvas1.draw()
+
+        return True
 
         
     def plotData(self):
@@ -525,7 +542,7 @@ class bleachCorr3(QMainWindow):
 
 
         self.carp_pix_sel = QtGui.QSpinBox()
-        self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[0]);
+        self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[1]);
 
         
         self.sel_channel = QtGui.QComboBox()
@@ -613,7 +630,10 @@ class bleachCorr3(QMainWindow):
         self.plt3.set_xscale('log')
         
         self.plt3.set_title('Correlation Carpet Preview', fontsize=6)
-        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest',picker=5)
+        
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
+        
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.canvas1.draw()
         
 
@@ -826,7 +846,10 @@ class bleachCorr3(QMainWindow):
         self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
         
-        self.plt3.imshow(self.win_obj.carpet_img,extent=[self.objId.corrArrScale[0],self.objId.corrArrScale[-1],0,self.win_obj.carpet_img.shape[0]],interpolation ='nearest')
+        self.plt3.set_title('Correlation Carpet Preview',fontsize=6)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
+        
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.plotData()
         self.canvas1.draw()
 
@@ -851,9 +874,6 @@ class bleachCorr3(QMainWindow):
                 else:
                     color = 'black'
                 a1,b1,c1 = self.learn_corr_fn(list(totalFn[stx:stx+num_of_lines]))
-
-                
-                print 'b1',b1,'c1',c1
                 self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat ,totalFn[stx:stx+num_of_lines:10],color=color)
                 self.plt1.plot(np.arange(stx,stx+num_of_lines,10)*self.objId.deltat,a1[::10],color='red')
         else:
@@ -871,7 +891,7 @@ class bleachCorr3(QMainWindow):
             def_param.add('tb', min =0, value=60000.0, vary=True)
             
             res = minimize(self.residual, def_param, args=(np.arange(0,totalFn.__len__()),np.array(totalFn).astype(np.float64)))
-            print res
+            
             x= np.arange(0,totalFn.__len__())
 
             #The useful parameters

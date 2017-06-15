@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 import os
 import numpy as np
 
-def test_scan_PB1_buttons(par_obj,win_obj):
+def test_scan_PB2_buttons(par_obj,win_obj):
 	
 		
 		QTest.mouseClick(win_obj.prev_pane, QtCore.Qt.LeftButton)
@@ -26,17 +26,25 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		
 		
 		win_obj.test_path = [os.getcwd()+'/test_files/out_img_D_0p2_noi_0_drift_False_ts_30000_mol_120_bleach_False_prob_0_with_PBC.tif']
-		win_obj.test_path[0] = win_obj.test_path[0].replace('\\','/')
+		win_obj.test_path.append(os.getcwd()+'/test_files/1.msr')
+		win_obj.test_path.append(os.getcwd()+'/test_files/2 (245Hz).msr')
+		win_obj.test_path.append(os.getcwd()+'/test_files/3 (505 Hz).msr')
+		win_obj.test_path.append(os.getcwd()+'/test_files/11 (mature, line 28).msr')
+
+		for i in range(0, win_obj.test_path.__len__()):
+			win_obj.test_path[i] = win_obj.test_path[i].replace('\\','/')
 
 		QTest.mouseClick(win_obj.openFile, QtCore.Qt.LeftButton)
 		win_obj.file_import.file_dialog.done(1,win_obj.test_path)
+
+		
 
 		#Open the dialog for the line sampling (Hz):
 		assert win_obj.diag.line_sampling_win.isVisible() == True, "Dialog for line sampling did not open."
 		assert win_obj.diag.input_text.isVisible() == True, "Text input for line sampling did not open."
 		assert str(win_obj.diag.label.text()) == 'Enter the line sampling (Hz):'
-		QTest.keyClicks(win_obj.diag.input_text, str(1800))
-		assert win_obj.diag.input_text.text() == str(1800)
+		QTest.keyClicks(win_obj.diag.input_text, str(404))
+		assert win_obj.diag.input_text.text() == str(404)
 		QTest.mouseClick(win_obj.diag.ok, QtCore.Qt.LeftButton)
 		assert win_obj.diag.line_sampling_win.isVisible() == False
 		#Open the dialog for inputing the dwell time.
@@ -48,24 +56,38 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		QTest.mouseClick(win_obj.diag.ok, QtCore.Qt.LeftButton)
 		assert win_obj.diag.dialog_dwell_win.isVisible() == False
 
-		#assert win_obj.diag.use_settings_win.isVisible() == False
-		#QTest.mouseClick(win_obj.diag.no, QtCore.Qt.LeftButton)
-		#assert win_obj.diag.use_settings_win.isVisible() == False
-
-		#Check that the line sampling dialog doesn't appear again.
-		assert win_obj.diag.line_sampling_win.isVisible() == False
-
-		#Check that the previous and next pane visualisation works well.
-		QTest.mouseClick(win_obj.prev_pane, QtCore.Qt.LeftButton)
-		for objId in par_obj.objectRef:
-			if(objId.cb.isChecked() == True):
-				assert objId.pane == 0
-				break;
+		assert win_obj.diag.use_settings_win.isVisible() == True
+		QTest.mouseClick(win_obj.diag.yes, QtCore.Qt.LeftButton)
 		
-		
-		QTest.mouseClick(win_obj.bleach_corr1_btn, QtCore.Qt.LeftButton)
 
-		assert win_obj.bleach_corr1_plugin.bleach_corr1_win.isVisible() == True
+
+		win_obj.diag.main_dialog_win.check1.click()
+		QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+		assert win_obj.diag.isVisible() == False
+		win_obj.diag.main_dialog_win.check1.click()
+		QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+		assert win_obj.diag.isVisible() == False
+		win_obj.diag.main_dialog_win.check1.click()
+		QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+		assert win_obj.diag.isVisible() == False
+		win_obj.diag.main_dialog_win.check1.click()
+		QTest.mouseClick(win_obj.diag.main_dialog_win.button, QtCore.Qt.LeftButton)
+		assert win_obj.diag.isVisible() == False
+
+		
+		"""
+		QTest.mouseClick(win_obj.bleach_corr2_btn, QtCore.Qt.LeftButton)
+
+		assert win_obj.bleach_corr2_plugin.bleach_corr2_win.isVisible() == True
+
+		QTest.mouseClick(win_obj.bleach_corr2_plugin.preview_selection_btn, QtCore.Qt.LeftButton)
+		win_obj.bleach_corr2_plugin.duration_combo.setCurrentIndex(3)
+
+		QTest.mouseClick(win_obj.bleach_corr2_plugin.export_trace_btn, QtCore.Qt.LeftButton)
+
+		QTest.mouseClick(win_obj.bleach_corr2_plugin.apply_to_all_data_btn, QtCore.Qt.LeftButton)
+
+
 		
 		assert win_obj.bleach_corr_on_off.text() == '  OFF  '
 		QTest.mouseClick(win_obj.bleach_corr1_plugin.apply_corr_btn, QtCore.Qt.LeftButton)
@@ -153,5 +175,5 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 
 		
 		
-
+		"""
 
