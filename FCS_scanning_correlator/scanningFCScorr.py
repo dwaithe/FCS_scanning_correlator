@@ -1099,6 +1099,7 @@ class Window(QWidget):
 		self.plt2.set_xscale('log')
 		X, Y = np.meshgrid(np.arange(0,img.shape[1]),carp_scale)
 		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img,cmap='jet')
+		self.plt2.set_xlim(0,objId.corrArrScale[-1])
 
 		#Plot the interpolation iensity profile to the left.
 		im1 = self.plt3.imshow(sum_img.reshape(objId.CH0_arrayColSum.shape[0],1),extent=[0,5,0,img.shape[1]],interpolation = 'nearest',aspect='auto',cmap=cm.Reds_r);
