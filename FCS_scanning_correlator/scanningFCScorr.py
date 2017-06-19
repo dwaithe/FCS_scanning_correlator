@@ -1531,7 +1531,8 @@ class lineEditSp(QLineEdit):
 		self.type = []
 		self.TGid =[]
 	def __handleEditingFinished(self):
-		self.par_obj.m = float(self.text())
+		if(self.type == 'm'):
+			self.par_obj.m = float(self.text())
 		
 		if(self.type == 'tgt0' ):
 			
@@ -1696,7 +1697,7 @@ class scanFileList():
 
 			#The filename
 			b = baseList()
-			b.setText('<HTML><p style="margin-top:0">'+self.par_obj.objectRef[i].ext+' file :'+str(self.par_obj.data[i])+' </p></HTML>')
+			b.setText('<HTML><p style="margin-top:0">'+self.par_obj.objectRef[i].ext+' file :'+str(self.par_obj.objectRef[i].filepath)+' </p></HTML>')
 			self.win_obj.modelTab2.setCellWidget(i, 5, b)
 			
 			
@@ -1888,9 +1889,8 @@ class ParameterClass():
 	def __init__(self):
 		
 		#Where the data is stored.
-		self.data = []
+		
 		self.objectRef =[]
-		self.data = []
 		self.ax_cb = [];
 		self.numOfLoaded = 0
 		self.TGnumOfRgn = []

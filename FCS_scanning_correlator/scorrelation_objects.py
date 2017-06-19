@@ -28,11 +28,12 @@ class scanObject():
         self.parentId = None
         
         self.filepath = str(filepath)
+        
         self.parObj = parObj
         self.nameAndExt = os.path.basename(self.filepath).split('.')
         self.file_name = self.nameAndExt[0]
         self.ext = self.nameAndExt[-1]
-        self.parObj.data.append(filepath);
+        #self.parObj.data.append(filepath);
         self.parObj.objectRef.append(self)
 
         self.unqID = self.parObj.numOfLoaded

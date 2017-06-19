@@ -1221,8 +1221,8 @@ class cropDataWindow(QMainWindow):
         #self.win_obj.canvas1.draw()
 
         self.win_obj.label.generateList()
-        self.par_obj.objectRef[0].plotOn = True
-        self.par_obj.objectRef[0].cb.setChecked(True)
+        self.par_obj.objectRef[-1].plotOn = True
+        self.par_obj.objectRef[-1].cb.setChecked(True)
 
         self.close()
     def reprocess_and_create(self):
@@ -1236,9 +1236,11 @@ class cropDataWindow(QMainWindow):
            
             s.append(scanObject(self.objId.filepath,self.par_obj,self.objId.imDataDesc,self.objId.imDataStore,st,en,int(np.round(self.vmin,0)),int(np.round(self.vmax,0))));
             s[-1].type = self.objId.type+' sub '+str(s[-1].unqID)
-            s[-1].name = s[-1].name+ '_sub_'+str(s[-1].unqID)+'_'
+            s[-1].name = self.objId.name+ '_sub_'+str(s[-1].unqID)+'_'
         #self.win_obj.canvas1.draw()
         self.win_obj.label.generateList()
+        self.par_obj.objectRef[-1].plotOn = True
+        self.par_obj.objectRef[-1].cb.setChecked(True)
         self.close()
         #self.win_obj.GateScanFileListObj.generateList()
         

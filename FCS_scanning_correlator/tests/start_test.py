@@ -24,15 +24,15 @@ def test_import_scripts():
 	win_obj.testing = True
 	warnings.filterwarnings('ignore', '.*void CGSUpdateManager*',)
 	
-	#res0 = test_lsm_file_import(par_obj,win_obj)
-	#res1 = test_msr_file_import(par_obj,win_obj)
-	#res2 = test_lif_file_import(par_obj,win_obj)
-	#res3 = test_tiff_file_import(par_obj,win_obj)
-	#res4 = test_scan_interface_buttons(par_obj,win_obj)
-	#res5 = test_scan_PB1_buttons(par_obj,win_obj)
+	res0 = test_lsm_file_import(par_obj,win_obj)
+	res1 = test_msr_file_import(par_obj,win_obj)
+	res2 = test_lif_file_import(par_obj,win_obj)
+	res3 = test_tiff_file_import(par_obj,win_obj)
+	res4 = test_scan_interface_buttons(par_obj,win_obj)
+	res5 = test_scan_PB1_buttons(par_obj,win_obj)
 	res5 = test_scan_PB2_buttons(par_obj,win_obj)
-	#win_tab.setCurrentIndex(1)
-	#res6 = test_for_fit_btns(par_obj,win_obj,fit_obj)
+	win_tab.setCurrentIndex(1)
+	res6 = test_for_fit_btns(par_obj,win_obj,fit_obj)
 
 	win_tab.show()
 	sys.exit(app.exec_())

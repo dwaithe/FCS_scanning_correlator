@@ -515,6 +515,7 @@ def Import_msr(fname, par_obj,win_obj):
 		self.imDataDesc[3] =  self.stack_ind['size']
 		self.imDataDesc[4] = [1.0/float(self.text_1)]
 		self.imDataDesc[2] = ['Red']
+		
 		scanObject(self.stack_ind['title'],self.par_obj,self.imDataDesc,self.stack_ind['image'].astype(np.float64),0,0)
 		self.win_obj.bleachCorr1 = False
 		self.win_obj.bleachCorr2 = False
