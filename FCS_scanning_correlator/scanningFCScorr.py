@@ -283,7 +283,7 @@ class Window(QWidget):
 		self.clim_low = 0
 		self.clim_high = None
 		self.carpetDisplay = 0
-		self.bleachCorr1_checked = False
+		self.bleach_corr_on = False
 		
 		# this is the Canvas Widget that displays the `figure`
 		
@@ -719,11 +719,11 @@ class Window(QWidget):
 		for objId in self.par_obj.objectRef:
 			if(objId.cb.isChecked() == True):
 				if objId.bleachCorr1 == True or objId.bleachCorr2 == True:
-					if self.bleachCorr1_checked == True:
+					if self.bleach_corr_on == True:
 						#The bleach correction is on now we turn it off.
 						self.bleach_corr_on_off.setText('  OFF  ')
 						self.bleach_corr_on_off.setStyleSheet("color: red");
-						self.bleachCorr1_checked = False
+						self.bleach_corr_on = False
 						self.plotDataQueueFn()
 					else:
 						#The bleach correction is off now we turn it on.
@@ -732,7 +732,7 @@ class Window(QWidget):
 						if objId.bleachCorr2 == True:
 							self.bleach_corr_on_off.setText('M2 ON ')
 						self.bleach_corr_on_off.setStyleSheet("color: green");
-						self.bleachCorr1_checked = True
+						self.bleach_corr_on = True
 						self.plotDataQueueFn()
 				
 						
@@ -910,7 +910,7 @@ class Window(QWidget):
 					objId.bleachCorr1 = False
 					objId.bleachCorr2 = False
 
-		self.bleachCorr1_checked = False
+		self.bleach_corr_on = False
 		self.bleach_corr_on_off.setText('  OFF  ')
 		self.bleach_corr_on_off.setStyleSheet(" color: red");
 		self.plotDataQueueFn();
@@ -961,12 +961,12 @@ class Window(QWidget):
 				#If just one line is highlighted.
 				
 				if xmin == xmax:
-					if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+					if  self.bleach_corr_on  == True and objId.bleachCorr1 == True:
 						totalFn = objId.CH0_pc[:,xmin]
 					else:
 						totalFn = objId.CH0[:,xmin]
 				else:
-					if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+					if  self.bleach_corr_on  == True and objId.bleachCorr1 == True:
 						totalFn = np.sum(objId.CH0_pc[:,xmin:xmax], 1).astype(np.float64)
 					else: 
 						totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
@@ -976,12 +976,12 @@ class Window(QWidget):
 				if objId.numOfCH == 2:
 					#If just one line is highlighted.
 					if xmin == xmax:
-						if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+						if  self.bleach_corr_on  == True and objId.bleachCorr1 == True:
 							totalFn = objId.CH1_pc[:,xmin]
 						else:
 							totalFn = objId.CH1[:,xmin]
 					else:
-						if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
+						if  self.bleach_corr_on  == True and objId.bleachCorr1 == True:
 							totalFn = np.sum(objId.CH1_pc[:,xmin:xmax], 1).astype(np.float64)
 						else:
 							totalFn = np.sum(objId.CH1[:,xmin:xmax], 1).astype(np.float64)
@@ -1087,7 +1087,7 @@ class Window(QWidget):
 
 		
 		#Checks which channel is displayed and then loads the relevant carpet.
-		if self.bleachCorr1_checked == True:
+		if self.bleach_corr_on == True:
 			
 			#This is for the photo-corrected version of the carpets.
 			if self.carpetDisplay == 0:
@@ -1245,7 +1245,7 @@ class Window(QWidget):
 							for b in range(self.clickedS1,self.clickedS2):
 								self.plt1.set_autoscale_on(True)
 								#Is the button checked.
-								if self.bleachCorr1_checked == True:
+								if self.bleach_corr_on == True:
 									if self.carpetDisplay == 0:
 										self.plt1.plot(objId.corrArrScale_pc, objId.AutoCorr_carpetCH0_pc[:,int(b)],objId.color, linewidth=1)
 									if self.carpetDisplay == 1:
@@ -1320,7 +1320,7 @@ class Window(QWidget):
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
 						f.write('parent_filename,'+str(objId.file_name)+'\n')
 						
-						if self.bleachCorr1_checked == True:
+						if self.bleach_corr_on == True:
 							if objId.bleachCorr1 == True:
 								f.write('pc, 1\n');
 								f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+'\n');
@@ -1358,7 +1358,7 @@ class Window(QWidget):
 						f.write('parent_uqid,'+str(parent_uqid)+'\n')
 						f.write('parent_filename,'+str(objId.file_name)+'\n')
 
-						if self.bleachCorr1_checked == True:
+						if self.bleach_corr_on == True:
 							if objId.bleachCorr1 == True:
 								f.write('pc, 1\n');
 								f.write('pbc_f0,'+str(objId.pbc_f0_ch0)+','+str(objId.pbc_f0_ch1)+'\n');
@@ -1446,7 +1446,7 @@ class Window(QWidget):
 			corrObj1.type = "scan"
 			corrObj1.siblings = None
 
-			if self.bleachCorr1_checked == True:
+			if self.bleach_corr_on == True:
 				corrObj1.kcount = objId.kcountCH0_pc[i]
 				corrObj1.numberNandB = objId.numberNandBCH0_pc[i]
 				corrObj1.brightnessNandB = objId.brightnessNandBCH0_pc[i]
@@ -1489,7 +1489,7 @@ class Window(QWidget):
 				corrObj1.CV = objId.CV[i]
 				corrObj2.CV = objId.CV[i]
 				corrObj2.type = "scan"
-				if self.bleachCorr1_checked == True:
+				if self.bleach_corr_on == True:
 					corrObj2.kcount = objId.kcountCH1_pc[i]
 					corrObj2.numberNandB = objId.numberNandBCH1_pc[i]
 					corrObj2.brightnessNandB = objId.brightnessNandBCH1_pc[i]
@@ -1527,7 +1527,7 @@ class Window(QWidget):
 				corrObj3.CV = objId.CV[i]
 				corrObj3.prepare_for_fit()
 				corrObj3.autotime = objId.corrArrScale[:]
-				if self.bleachCorr1_checked == True:
+				if self.bleach_corr_on == True:
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
 					corrObj3.autotime =	objId.corrArrScale_pc
 					corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
@@ -1640,7 +1640,7 @@ class checkBoxSp3(QCheckBox):
 			if self.obj.bleachCorr1 == False and self.obj.bleachCorr2 == False:
 				self.win_obj.bleach_corr_on_off.setText('  OFF  ')
 				self.win_obj.bleach_corr_on_off.setStyleSheet("color: red");
-				self.win_obj.bleachCorr1_checked = False
+				self.win_obj.bleach_corr_on = False
 			
 			
 			self.win_obj.plotDataQueueFn()

@@ -134,7 +134,7 @@ class bleachCorr2(QMainWindow):
         
         
         
-        self.duration = self.duration_array[0]
+        self.win_obj.duration = self.duration_array[0]
         self.duration_combo.activated[str].connect(self.duration_activated)
         
 
@@ -178,14 +178,19 @@ class bleachCorr2(QMainWindow):
         self.redraw_carpet()
         self.setFixedSize(1000,600)
         
-
+        self.duration_activated('')
        
         #pickle.dump(self.objId.CH0, open('/Users/dwaithe/Documents/collaborators/EggelingC/FCS_simulator/model_data.pkl', "w" ))   
     
     
     def redraw_carpet(self):
         """To make sure """
-        self.objId.bleachCorr1_checked = False
+        if self.win_obj.bleach_corr_on == True:
+            carp_scale = self.objId.corrArrScale_pc
+        else:
+            carp_scale = self.objId.corrArrScale
+
+        
         
 
         if self.sel_channel.currentIndex() == 1:
@@ -197,9 +202,11 @@ class bleachCorr2(QMainWindow):
         
         self.plt3.set_xscale('log')
         self.plt3.set_title('Correlation Carpet Preview',fontsize=6)
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
+        
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),carp_scale)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
         self.canvas1.draw()
 
     def line_redraw(self,value):
@@ -222,7 +229,7 @@ class bleachCorr2(QMainWindow):
                 
 
     def duration_activated(self,text):
-        self.duration = self.duration_array[self.duration_combo.currentIndex()]
+        self.win_obj.duration = self.duration_array[self.duration_combo.currentIndex()]
                 
             
 
@@ -309,7 +316,7 @@ class bleachCorr2(QMainWindow):
         if  self.duration_combo_idx >0:
 
             #Calculates how many lines there are in the series.
-            num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+            num_of_lines  = int(np.ceil((self.win_obj.duration)/(self.objId.deltat/1000)))
             
             if num_of_lines%2 == 1:
                 num_of_lines -= 1
@@ -345,7 +352,7 @@ class bleachCorr2(QMainWindow):
                 
                 return False
             c = 0
-            print self.objId.name,
+            
             #For each sub-timeseries calculate the correlation carpet and the paramaters.
             for stx in range(start_x,self.objId.CH0.shape[0]-num_of_lines+1,num_of_lines):
                 #Function which calculates the correlation carpet.
@@ -401,7 +408,7 @@ class bleachCorr2(QMainWindow):
         #Applies to data and forgets old settings.
         self.objId.bleachCorr1 = False
         self.objId.bleachCorr2 = True
-        self.win_obj.bleachCorr1_checked = False
+        self.win_obj.bleach_corr_on = False
         
         
         #Lets the user change channel.
@@ -409,7 +416,10 @@ class bleachCorr2(QMainWindow):
             self.win_obj.carpetDisplay = 1
         else:
             self.win_obj.carpetDisplay = 0
+
+        
         self.win_obj.bleachCorr1fn()
+        
         
         #Updates buttons on main gui.
         self.win_obj.bleach_corr_on_off.setText('M2 ON ')
@@ -423,10 +433,12 @@ class bleachCorr2(QMainWindow):
         self.plt3.set_xlabel('Lag Time (ms)', fontsize=6)
         self.plt3.set_ylabel('Column pixel',fontsize=6)
         self.plt3.set_xscale('log')
+
         
         X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale_pc)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
         self.plotData()
         self.canvas1.draw()
 
@@ -437,7 +449,7 @@ class bleachCorr2(QMainWindow):
         self.plt1.clear()
         start_x = 0
         #Calculate the total integral
-        num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+        num_of_lines  = int(np.ceil((self.win_obj.duration)/(self.objId.deltat/1000)))
 
         if self.sel_channel.currentIndex() ==1:
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
@@ -574,7 +586,7 @@ class bleachCorr3(QMainWindow):
         
         
         
-        self.duration = self.duration_array[0]
+        #self.win_obj.duration = self.duration_array[0]
         self.duration_combo.activated[str].connect(self.duration_activated)
         
 
@@ -618,7 +630,7 @@ class bleachCorr3(QMainWindow):
         
     def redraw_carpet(self):
         """To make sure """
-        self.objId.bleachCorr1_checked = False
+        self.win_obj.bleach_corr_on = False
         
 
         if self.sel_channel.currentIndex() == 1:
@@ -658,7 +670,7 @@ class bleachCorr3(QMainWindow):
                 
 
     def duration_activated(self,text):
-        self.duration = self.duration_array[self.duration_combo.currentIndex()]
+        self.win_obj.duration = self.duration_array[self.duration_combo.currentIndex()]
                 
             
 
@@ -740,7 +752,7 @@ class bleachCorr3(QMainWindow):
         if  self.duration_combo_idx >0:
 
             #Calculates how many lines there are in the series.
-            num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+            num_of_lines  = int(np.ceil((self.win_obj.duration)/(self.objId.deltat/1000)))
             
             if num_of_lines%2 == 1:
                 num_of_lines -= 1
@@ -825,7 +837,7 @@ class bleachCorr3(QMainWindow):
         #Applies to data and forgets old settings.
         self.objId.bleachCorr1 = False
         self.objId.bleachCorr2 = True
-        self.win_obj.bleachCorr1_checked = False
+        self.win_obj.bleach_corr_on = False
         
         
         #Lets the user change channel.
@@ -858,7 +870,7 @@ class bleachCorr3(QMainWindow):
         self.plt1.clear()
         start_x = 0
         #Calculate the total integral
-        num_of_lines  = int(np.ceil((self.duration)/(self.objId.deltat/1000)))
+        num_of_lines  = int(np.ceil((self.win_obj.duration)/(self.objId.deltat/1000)))
 
         if self.sel_channel.currentIndex() ==1:
             totalFn = np.sum(self.objId.CH1, 1).astype(np.float64)
@@ -1451,7 +1463,7 @@ class bleachCorr(QMainWindow):
 
         self.objId.bleachCorr1 = True
         self.objId.bleachCorr2 = False
-        self.win_obj.bleachCorr1_checked = False
+        self.win_obj.bleach_corr_on = False
         
         self.win_obj.bleachCorr1fn()
         self.win_obj.bleach_corr_on_off.setText('M1 ON ')
