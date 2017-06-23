@@ -955,7 +955,7 @@ class Window(QWidget):
 						if  self.bleachCorr1_checked  == True and objId.bleachCorr1 == True:
 							totalFn = np.sum(objId.CH1_pc[:,xmin:xmax], 1).astype(np.float64)
 						else:
-							totalFn = objId.CH1[:,xmin]
+							totalFn = np.sum(objId.CH1[:,xmin:xmax], 1).astype(np.float64)
 					
 					self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],'grey', linewidth=1)
 			
