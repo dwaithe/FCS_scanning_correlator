@@ -557,10 +557,13 @@ class Window(QWidget):
 		#self.save_corr_txt.setStyleSheet("spacing: 0px;padding-left: 10px; padding-right:2px;padding-top: 0px; padding-bottom: 0px;");
 		self.save_corr_txt.setMinimumHeight(12)
 		self.save_corr_txt.setMaximumHeight(18)
+		self.save_raw_carpet_btn = QPushButton('Raw Intensity to .tiff')
+		self.save_raw_carpet_btn.setToolTip('Exports the raw intensity carpet to tiff suitable for subsequent analysis.')
 		self.save_corr_carpet_btn = QPushButton('Correlation Carpets to .tiff')
 		self.save_corr_carpet_btn.setToolTip('Exports an image of carpet without logarthmic spacing, suitable for subsequent analysis.')
 		#self.save_corr_carpet_btn.setStyleSheet("padding-left: 10px; padding-right: 20px;padding-top: 1px; padding-bottom: 1px;");
 		self.save_corr_carpet_btn.clicked.connect(self.save_carpets)
+		self.save_raw_carpet_btn.clicked.connect(self.save_raw_carpet_fn)
 
 		#self.save_log_corr_carpet_btn = QPushButton('Log Norm. Carpet')
 		#self.save_log_corr_carpet_btn.setToolTip('Exports an image of correlated carpet with logarthmic spacing')
@@ -581,6 +584,7 @@ class Window(QWidget):
 		
 		self.corrBotRow.addWidget(self.folderSelect_btn)
 		self.corrBotRow.addWidget(self.save_corr_txt )
+		self.corrBotRow.addWidget(self.save_raw_carpet_btn)
 		self.corrBotRow.addWidget(self.save_corr_carpet_btn)
 		#self.corrBotRow.addWidget(self.save_log_corr_carpet_btn)
 		#self.corrBotRow.addWidget(self.save_figure_btn)
@@ -798,6 +802,31 @@ class Window(QWidget):
 				metadata = json.dumps(metadata)
 
 				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'.tif', self.carpet_img.astype(np.float32), description=metadata)
+	def save_raw_carpet_fn(self):
+		"""Saves the carpet raw data to an image file"""
+		for objId in self.par_obj.objectRef:
+			if(objId.cb.isChecked() == True):
+				height = objId.CH0.shape[0]
+				width = objId.CH0.shape[1]
+				
+				if objId.numOfCH ==1:
+					
+						export_im =np.zeros((height,width))
+						export_im[:,:] = objId.CH0
+
+				if objId.numOfCH ==2:
+					
+						export_im =np.zeros((2,height,width))
+						export_im[0,:,:] =  objId.CH0
+						export_im[1,:,:] =  objId.CH1
+						
+
+				metadata = dict(microscope='', shape=export_im.shape, dtype=export_im.dtype.str)
+				#print(data.shape, data.dtype, metadata['microscope'])
+
+				metadata = json.dumps(metadata)
+
+				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'_raw.tif', export_im.astype(np.float32), description=metadata)
 
 	def save_carpets(self):
 		"""Saves the carpet raw data to an image file"""
