@@ -1531,8 +1531,8 @@ class Window(QWidget):
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr_pc'
 					corrObj3.autotime =	objId.corrArrScale_pc
 					corrObj3.autoNorm = objId.CrossCorr_carpet01_pc[:,i]
-					corrObj3.max = np.max(objId.CrossCorr_carpetCH01_pc[:,i])
-					corrObj3.min = np.min(objId.CrossCorr_carpetCH01_pc[:,i])
+					corrObj3.max = np.max( objId.CrossCorr_carpet01_pc[:,i])
+					corrObj3.min = np.min( objId.CrossCorr_carpet01_pc[:,i])
 				else:
 					corrObj3.name = objId.name+'row_'+str(i)+'_CH01_Auto_Corr'
 					corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
