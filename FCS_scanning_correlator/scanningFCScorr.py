@@ -273,6 +273,8 @@ class Window(QWidget):
 		self.fit_obj = fit_obj
 		self.par_obj = par_obj
 		self.generateWindow()
+	
+
 	def generateWindow(self):
 		# a figure instance to plot on
 		self.figure1 = plt.figure(figsize=(10,6))
@@ -284,6 +286,7 @@ class Window(QWidget):
 		self.clim_high = None
 		self.carpetDisplay = 0
 		self.bleach_corr_on = False
+		self.toggle_carpet_state = 0
 		
 		# this is the Canvas Widget that displays the `figure`
 		
@@ -322,19 +325,30 @@ class Window(QWidget):
 		self.label = scanFileList(self,self.par_obj)
 		#The table which shows the details of each correlated file. 
 		self.modelTab2 = QTableWidget(self)
-		self.modelTab2.setRowCount(0)
-		self.modelTab2.setColumnCount(6)
-		self.modelTab2.setColumnWidth(0,80);
-		self.modelTab2.setColumnWidth(1,140);
-		self.modelTab2.setColumnWidth(2,40);
-		self.modelTab2.setColumnWidth(3,140);
-		#self.modelTab2.setColumnWidth(4,100);
-		self.modelTab2.setColumnWidth(4,30);
-		self.modelTab2.setColumnWidth(5,100);
-		self.modelTab2.horizontalHeader().setStretchLastSection(True)
-		self.modelTab2.resize(800,400)
-		self.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file path").split(","))
 
+		self.carpet_browser = QtGui.QMainWindow()
+		self.carpet_browser.setWindowTitle('File browser window')
+		self.carpet_browser.modelTab2 = self.modelTab2
+		
+		self.carpet_browser.setCentralWidget(self.modelTab2)
+		
+
+		self.carpet_browser.modelTab2.setRowCount(0)
+		self.carpet_browser.modelTab2.setColumnCount(6)
+		self.carpet_browser.modelTab2.setColumnWidth(0,80);
+		self.carpet_browser.modelTab2.setColumnWidth(1,140);
+		self.carpet_browser.modelTab2.setColumnWidth(2,40);
+		self.carpet_browser.modelTab2.setColumnWidth(3,140);
+		#self.modelTab2.setColumnWidth(4,100);
+		self.carpet_browser.modelTab2.setColumnWidth(4,30);
+		self.carpet_browser.modelTab2.setColumnWidth(5,100);
+		self.carpet_browser.modelTab2.horizontalHeader().setStretchLastSection(True)
+		self.carpet_browser.modelTab2.resize(800,400)
+		self.carpet_browser.modelTab2.setHorizontalHeaderLabels(QtCore.QString(",data name,plot, file name,,file path").split(","))
+
+		self.carpet_browser.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+		
+		
 		#The table which shows the details of the time-gating.
 		self.modelTab = QTableWidget(self)
 		self.modelTab.setRowCount(0)
@@ -605,11 +619,16 @@ class Window(QWidget):
 		self.export_all_data_to_csv_btn = QPushButton('Export All Carpets to CSV')
 		self.export_all_data_to_csv_btn.setToolTip('Exports correlated data out of software.')
 		self.export_all_data_to_csv_btn.clicked.connect(self.save_all_as_csv_fn)
+
+		self.toggle_carpet_browser_btn = QPushButton('Toggle Carpet Browser')
+		self.toggle_carpet_browser_btn.clicked.connect(self.toggle_carpet_browser_fn)
 		
 		panel_third_row_btns.addWidget(self.export_region_btn)
 		panel_third_row_btns.addWidget(self.export_all_data_btn)
 		panel_third_row_btns.addWidget(self.export_all_data_to_csv_btn)
+
 		panel_third_row_btns.addStretch()
+		panel_third_row_btns.addWidget(self.toggle_carpet_browser_btn)
 		
 		self.corr_window_layout.setSpacing(4)
 		self.corr_window_layout.setContentsMargins(0,0,0,0)
@@ -691,11 +710,21 @@ class Window(QWidget):
 
 		
 
-		#print('wow',export_all_data_btn.getPadding())
-		
+				
 		self.multiSelect = GateScanFileList(self,self.par_obj)
 
 		self.update_correlation_parameters()
+	def toggle_carpet_browser_fn(self):
+		if self.toggle_carpet_state == 1:
+			self.right_panel.addWidget(self.modelTab2)
+			self.toggle_carpet_state = 0
+			self.carpet_browser.hide()
+		else: 
+			self.carpet_browser.setCentralWidget(self.modelTab2)
+			self.toggle_carpet_state = 1
+			
+			self.carpet_browser.show()
+
 	def clear_region_fn(self):
 		if self.par_obj.numOfLoaded == 0:
 			return
@@ -1668,9 +1697,14 @@ class scanFileList():
 	def __init__(self, win_obj, par_obj):
 		
 		self.subNum =0
+
+
 		self.win_obj = win_obj
+		
+		
 		self.par_obj = par_obj
 		self.generateList()
+		
 	def generateList(self):
 		
 		self.obj =[];
@@ -1856,6 +1890,7 @@ class pushButtonSp3(QPushButton):
 			self.par_obj.numOfLoaded = self.par_obj.numOfLoaded - 1
 			self.par_obj.objectRef.pop(self.id)
 			self.win_obj.modelTab2.setRowCount(0)
+			self.win_obj.carpet_browser.modelTab2.setRowCount(0)
 			self.parent_id.generateList()
 			if self.par_obj.numOfLoaded == 0:
 				self.win_obj.plotDataQueueFn()
@@ -2021,6 +2056,11 @@ def start_gui():
 	win_tab.setTabToolTip(1,"test2")
 	win_tab.resize(1400,800)
 
+	def closeEvent(event):
+		win_obj.carpet_browser.close()
+		event.accept()
+	win_tab.closeEvent = closeEvent
+
 	win_tab.setStyleSheet("""QTabWidget{
 	background:qradialgradient(cx: 0.3, cy: -0.4,
 								fx: 0.3, fy: -0.4,
@@ -2039,7 +2079,7 @@ def start_gui():
 	warnings.filterwarnings('ignore', '.*mages are not supported on non-linear axes.*',)
 	warnings.filterwarnings('ignore', '.*aspect is not supported for*',)
 	mainWin.app = app
-	
+	win_tab.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
 	
 	return win_tab, app,par_obj,mainWin,fit_obj
@@ -2049,6 +2089,7 @@ if __name__ == '__main__':
 	win_tab, app,par_obj,win_obj,fit_obj = start_gui()
 	win_obj.testing = False #Is set to true when testing. Sets file  path locations automatically.
 	win_tab.show()
+
 	sys.exit(app.exec_())
 
 
