@@ -972,6 +972,9 @@ class Window(QWidget):
 						totalFn = np.sum(objId.CH0[:,xmin:xmax], 1).astype(np.float64)
 				
 				self.plt4.plot(np.arange(0,totalFn.shape[0],10)*objId.deltat ,totalFn[0::10],color=objId.color, linewidth=1)
+				if self.bleach_corr_on:
+
+					self.plt4.text(0,self.plt4.get_ylim()[0]+1,  'photobleaching correction on',dict(color='green', alpha=0.5))
 				
 				if objId.numOfCH == 2:
 					#If just one line is highlighted.
@@ -1045,6 +1048,8 @@ class Window(QWidget):
 		self.plt1.xaxis.grid(True,'major')
 		self.plt1.yaxis.grid(True,'minor')
 		self.plt1.yaxis.grid(True,'major')
+
+		
 		
 
 		#The span function which changes the carpet visualisation.
@@ -1083,6 +1088,8 @@ class Window(QWidget):
 		self.plt5.tick_params(axis='both', which='major', labelsize=8)
 		self.plt5.autoscale(False)
 		self.canvas5.draw()
+
+
 
 
 		
@@ -1135,9 +1142,14 @@ class Window(QWidget):
 		self.plt3.set_ylabel('Column pixels')
 		self.plt3.set_xlabel('Intensity\nmaxima')
 		self.plt3.set_xticklabels('')
+		#if self.bleach_corr_on:
+		#	self.plt2.text(0, 0, 'photobleaching correction on',transform=self.plt2.transAxes,withdash=True)
+		if self.bleach_corr_on:
+			self.plt1.text(0, 0.1, 'photobleaching correction on',transform=self.plt1.transAxes,withdash=True,fontdict=dict(color='green', alpha=0.5,fontsize=18))
 
 		self.canvas1.draw()
 		self.plt1.cla()
+		
 		
 		
 		colbar = self.figure1.colorbar(self.corr_carpet, cax=self.plt6)
@@ -1241,6 +1253,9 @@ class Window(QWidget):
 				
 						self.plt1.set_xscale('log');
 						self.plt1.set_ylabel('Correlation', fontsize=12)
+						if self.bleach_corr_on:
+							self.plt1.text(0.1, 0.1, 'photobleaching correction on',transform=self.plt1.transAxes,withdash=True,fontdict=dict(color='green', alpha=0.5,fontsize=14))
+
 						if self.clickedS1 != None  and self.clickedS2 != None:
 							for b in range(self.clickedS1,self.clickedS2):
 								self.plt1.set_autoscale_on(True)
