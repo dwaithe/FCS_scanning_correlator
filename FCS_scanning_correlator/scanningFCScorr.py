@@ -2057,7 +2057,10 @@ def start_gui():
 	win_tab.resize(1400,800)
 
 	def closeEvent(event):
-		win_obj.carpet_browser.close()
+		try:
+			win_obj.carpet_browser.close()
+		except:
+			pass
 		event.accept()
 	win_tab.closeEvent = closeEvent
 
