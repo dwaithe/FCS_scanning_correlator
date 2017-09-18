@@ -203,7 +203,7 @@ class bleachCorr2(QMainWindow):
         self.plt3.set_xscale('log')
         self.plt3.set_title('Correlation Carpet Preview',fontsize=6)
         
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),carp_scale)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),carp_scale)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
@@ -444,7 +444,7 @@ class bleachCorr2(QMainWindow):
         self.plt3.set_xscale('log')
 
         
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale_pc)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale_pc)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
@@ -659,7 +659,7 @@ class bleachCorr3(QMainWindow):
         else:
             self.win_obj.carpet_img = self.objId.CrossCorr_carpet01_pc
         
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.canvas1.draw()
@@ -883,7 +883,7 @@ class bleachCorr3(QMainWindow):
         else:
             self.win_obj.carpet_img = self.objId.CrossCorr_carpet01_pc
             
-        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]),self.objId.corrArrScale)
+        X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale)
         
         self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
         self.plotData()

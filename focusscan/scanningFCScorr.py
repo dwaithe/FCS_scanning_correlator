@@ -20,7 +20,7 @@ from matplotlib.widgets import  SpanSelector
 
 import matplotlib.cm as cm
 
-sys.path.append('../../FCS_point/FCS_point_correlator/focuspoint')
+sys.path.append('../../../FCS_point/FCS_point_correlator/focuspoint')
 from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
 from splugin_methods import bleachCorr, cropDataWindow, bleachCorr2, bleachCorr3, SpotSizeCalculation
 from scorrelation_objects import scanObject
@@ -400,7 +400,7 @@ class Window(QWidget):
 		
 
 
-		self.toolbar2 = NavigationToolbar(self.canvas4, self)
+		#self.toolbar2 = NavigationToolbar(self.canvas4, self)
 
 
 		#LEFT PANEL btns
@@ -414,7 +414,7 @@ class Window(QWidget):
 		self.prev_pane.clicked.connect(self.prev_pane_fn)
 		self.next_pane.clicked.connect(self.next_pane_fn)
 
-		self.left_panel_mid_btns.addWidget(self.toolbar2)
+		#self.left_panel_mid_btns.addWidget(self.toolbar2)
 		self.left_panel_mid_btns.addWidget(self.prev_pane)
 		self.left_panel_mid_btns.addWidget(self.next_pane)
 		self.left_panel_mid_btns.addStretch()
@@ -1162,7 +1162,9 @@ class Window(QWidget):
 
 		self.plt2.set_xlabel('Lag time (ms)', fontsize=12)
 		self.plt2.set_xscale('log')
-		X, Y = np.meshgrid(np.arange(0,img.shape[1]),carp_scale)
+		print 'mesh',img.shape[1]
+		print 'carp',self.carpet_img.shape
+		X, Y = np.meshgrid(np.arange(0,img.shape[1]+1),carp_scale)
 		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img,cmap='jet')
 		self.plt2.set_xlim(0,objId.corrArrScale[-1])
 
@@ -1187,7 +1189,7 @@ class Window(QWidget):
 		self.span2 = SpanSelector(self.plt2, self.onselect, 'vertical', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )
 		if self.clickedS1 and self.clickedS2 != None:
 			self.onselect(self.clickedS1, self.clickedS2)
-			self.plt2.set_ylim([0,img.shape[1]-1])
+			self.plt2.set_ylim([0,img.shape[1]])
 		
 		if self.clim_low != 0 and self.clim_high != None:
 			self.corr_carpetset_clim((0,np.max(imgN)))
