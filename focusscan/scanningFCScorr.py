@@ -20,7 +20,7 @@ from matplotlib.widgets import  SpanSelector
 
 import matplotlib.cm as cm
 
-sys.path.append('../../../FCS_point/FCS_point_correlator/focuspoint')
+sys.path.append('../../FCS_point/FCS_point_correlator/focuspoint')
 from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
 from splugin_methods import bleachCorr, cropDataWindow, bleachCorr2, bleachCorr3, SpotSizeCalculation
 from scorrelation_objects import scanObject
@@ -1162,8 +1162,8 @@ class Window(QWidget):
 
 		self.plt2.set_xlabel('Lag time (ms)', fontsize=12)
 		self.plt2.set_xscale('log')
-		print 'mesh',img.shape[1]
-		print 'carp',self.carpet_img.shape
+		#print 'mesh',img.shape[1]
+		#print 'carp',self.carpet_img.shape
 		X, Y = np.meshgrid(np.arange(0,img.shape[1]+1),carp_scale)
 		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img,cmap='jet')
 		self.plt2.set_xlim(0,objId.corrArrScale[-1])
