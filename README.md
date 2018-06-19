@@ -3,7 +3,8 @@
 ### Python scanning FCS  data visualiser. 
 
 
-This is source code repository for FoCuS-scan software. 
+This is source code repository for FoCuS-scan software.
+
 [![DOI](https://zenodo.org/badge/30016621.svg)](https://zenodo.org/badge/latestdoi/30016621)
 
 This software is associated with the following Methods journal article:
