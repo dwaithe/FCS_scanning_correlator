@@ -136,7 +136,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
     else:
         m = int(m)
 
-    N = N0 = len(trace)
+    N = N0 = int(len(trace))
     
     # Find out the length of the correlation function.
     # The integer k defines how many times we can average over
@@ -184,7 +184,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
         ## Get the next m/2 values via correlation of the trace
         for n in range(1,int(m/2)+1):
             idx = int(m + n - 1 + (step-1)*m/2)
-            if len(trace[:N-(n+m/2)]) == 0:
+            if len(trace[:int(N-(n+m/2))]) == 0:
                 # This is a shortcut that stops the iteration once the
                 # length of the trace is too small to compute a corre- 
                 # lation. The actual length of the correlation function 
@@ -218,7 +218,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
             else:
                 G[idx,0] = deltat * (n+m/2) * 2**step
                 # This is the computationally intensive step
-                G[idx,1] = np.sum(trace[:N-(n+m/2)]*trace[(n+m/2):],
+                G[idx,1] = np.sum(trace[:int(N-(n+m/2))]*trace[int(n+m/2):],
                                   dtype=dtype)
                 normstat[idx] = N-(n+m/2)
                 normnump[idx] = N
@@ -226,7 +226,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
         if N%2 == 1:
             N -= 1
         # Add up every second element
-        trace = (trace[:N:2]+trace[1:N+1:2])/2
+        trace = (trace[:int(N):2]+trace[1:int(N+1):2])/2
         N /= 2
 
     if normalize:
@@ -390,7 +390,7 @@ def correlate(a, v, m=16, deltat=1, normalize=False,
         # Get the next m/2 values of the trace
         for n in range(1,int(m/2)+1):
             idx = int(m + n - 1 + (step-1)*m/2)
-            if len(trace1[:N-(n+m/2)]) == 0:
+            if len(trace1[:int(N-(n+m/2))]) == 0:
                 # Abort
                 G = G[:idx-1]
                 normstat = normstat[:idx-1]
@@ -398,7 +398,7 @@ def correlate(a, v, m=16, deltat=1, normalize=False,
                 break
             else:
                 G[idx,0] = deltat * (n+m/2) * 2**step
-                G[idx,1] = np.sum(trace1[:N-(n+m/2)]*trace2[(n+m/2):])
+                G[idx,1] = np.sum(trace1[:int(N-(n+m/2))]*trace2[int(n+m/2):])
                 normstat[idx] = N-(n+m/2)
                 normnump[idx] = N
 
@@ -406,8 +406,8 @@ def correlate(a, v, m=16, deltat=1, normalize=False,
         if N%2 == 1:
             N -= 1
         # Add up every second element
-        trace1 = (trace1[:N:2]+trace1[1:N+1:2])/2
-        trace2 = (trace2[:N:2]+trace2[1:N+1:2])/2
+        trace1 = (trace1[:int(N):2]+trace1[1:int(N+1):2])/2
+        trace2 = (trace2[:int(N):2]+trace2[1:int(N+1):2])/2
         N /= 2
 
     if normalize:

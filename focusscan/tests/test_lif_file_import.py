@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
@@ -40,7 +40,7 @@ def test_lif_file_import(par_obj,win_obj):
 	win_obj.file_import.file_dialog.done(1,win_obj.test_path)
 
 	for i in range(0,14):
-		print i
+		print (i)
 		assert win_obj.diag.lif_import_win.item_list[i].checkState() == False
 	
 
@@ -57,7 +57,7 @@ def test_lif_file_import(par_obj,win_obj):
 	win_obj.diag.lif_import_win.item_list[9].setCheckState(QtCore.Qt.Checked)
 	QTest.mouseClick(win_obj.diag.load_data_btn, QtCore.Qt.LeftButton)
 
-	print 'shape',par_obj.objectRef[0].CH0.shape
+	print ('shape',par_obj.objectRef[0].CH0.shape)
 	assert par_obj.objectRef[0].CH0.shape == (24576, 64)
 	assert par_obj.objectRef[1].CH0.shape == (24576, 64)
 	assert par_obj.objectRef[2].CH0.shape == (24576, 64)
@@ -79,10 +79,10 @@ def test_lif_file_import(par_obj,win_obj):
 	assert np.round(np.max(par_obj.objectRef[3].CH0),3) == 4095.000
 	assert np.round(np.median(par_obj.objectRef[3].CH0),3) == 1097
 
-	print np.round(np.average(par_obj.objectRef[3].CH0[:,0]),3) == 1133.802
-	print np.round(np.min(par_obj.objectRef[3].CH0[:,0]),3) == 0.000
-	print np.round(np.max(par_obj.objectRef[3].CH0[:,0]),3) == 3568
-	print np.round(np.median(par_obj.objectRef[3].CH0[:,0]),3) == 1086
+	print (np.round(np.average(par_obj.objectRef[3].CH0[:,0]),3) == 1133.802)
+	print (np.round(np.min(par_obj.objectRef[3].CH0[:,0]),3) == 0.000)
+	print (np.round(np.max(par_obj.objectRef[3].CH0[:,0]),3) == 3568)
+	print (np.round(np.median(par_obj.objectRef[3].CH0[:,0]),3) == 1086)
 
 	#Tests how many files appear in main interface and then closes them.
 	assert par_obj.numOfLoaded == 4
@@ -91,5 +91,5 @@ def test_lif_file_import(par_obj,win_obj):
 	assert par_obj.numOfLoaded == 0
 	
 
-	print 'tests finished. LIF Import looks fine'
+	print ('tests finished. LIF Import looks fine')
 	return True

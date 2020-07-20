@@ -1,10 +1,10 @@
 import sys, os
 import numpy as np
-import cPickle as pickle
+import _pickle as pickle
 from scorrelation_methods import *
 import csv
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
-from fitting_methods import equation_
+from fitting_methods.fitting_methods_SE import equation_
 import time
 import copy
 
@@ -454,7 +454,7 @@ class scanObject():
 
         
         if np.sum(self.CH0_arraySum) == 0:
-            print 'intensity trace excluded as contained no intensity signal:', self.file_name
+            print('intensity trace excluded as contained no intensity signal:', self.file_name)
             self.parObj.objectRef.pop(self.parObj.numOfLoaded)
             self.parObj.numOfLoaded = self.parObj.numOfLoaded - 1
             return

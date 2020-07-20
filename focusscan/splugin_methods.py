@@ -1,5 +1,5 @@
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QMainWindow
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtWidgets import QMainWindow,QWidget
 import matplotlib
 
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.font_manager import FontProperties
 from matplotlib.widgets import Slider, SpanSelector
 from scorrelation_objects import scanObject, autocorrelate, correlate
-import cPickle as pickle
+import _pickle as pickle
 
 class bleachCorr2(QMainWindow):
     def __init__(self,par_obj,win_obj):
@@ -57,10 +57,10 @@ class bleachCorr2(QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        self.bleach_corr2_win = QtGui.QWidget()        
-        hbox_main = QtGui.QHBoxLayout()
-        vbox1 = QtGui.QVBoxLayout()
-        vbox0 = QtGui.QVBoxLayout()
+        self.bleach_corr2_win = QtWidgets.QWidget()        
+        hbox_main = QtWidgets.QHBoxLayout()
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox0 = QtWidgets.QVBoxLayout()
         self.setWindowTitle("Bleach correction method 2: (local averaging)")
         self.figure1 = plt.figure(figsize=(10,8))
         
@@ -98,14 +98,14 @@ class bleachCorr2(QMainWindow):
             
         #line, = self.plt2.plot([0], [0])  # empty line
         #linebuilder = LineBuilder(line)
-        carp_pix_sel_txt = QtGui.QLabel('Select carpet column pixel: ')
+        carp_pix_sel_txt = QtWidgets.QLabel('Select carpet column pixel: ')
 
 
-        self.carp_pix_sel = QtGui.QSpinBox()
+        self.carp_pix_sel = QtWidgets.QSpinBox()
         self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[1]-1);
 
         
-        self.sel_channel = QtGui.QComboBox()
+        self.sel_channel = QtWidgets.QComboBox()
         self.sel_channel.addItem('CH0')
         if self.objId.numOfCH == 2:
             self.sel_channel.addItem('CH1')
@@ -116,7 +116,7 @@ class bleachCorr2(QMainWindow):
         if self.win_obj.carpetDisplay == 1:
             self.sel_channel.setCurrentIndex(1)
 
-        self.duration_combo = QtGui.QComboBox()
+        self.duration_combo = QtWidgets.QComboBox()
         self.duration_combo.addItem("full")
         cc = 0
         for time in self.duration_array:
@@ -138,15 +138,15 @@ class bleachCorr2(QMainWindow):
         self.duration_combo.activated[str].connect(self.duration_activated)
         
 
-        self.preview_selection_btn = QtGui.QPushButton('Preview different intervals')
+        self.preview_selection_btn = QtWidgets.QPushButton('Preview different intervals')
         self.preview_selection_btn.clicked.connect(self.preview_selection_fn)
 
-        sel_time_window_size = QtGui.QLabel("Select time interval length")
+        sel_time_window_size = QtWidgets.QLabel("Select time interval length")
 
-        self.export_trace_btn = QtGui.QPushButton('Apply to selected carpet')
+        self.export_trace_btn = QtWidgets.QPushButton('Apply to selected carpet')
 
-        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all carpets')
-        self.vbox2 = QtGui.QHBoxLayout()
+        self.apply_to_all_data_btn = QtWidgets.QPushButton('Apply to all carpets')
+        self.vbox2 = QtWidgets.QHBoxLayout()
         
         self.export_trace_btn.clicked.connect(self.outputData)
         self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
@@ -344,7 +344,7 @@ class bleachCorr2(QMainWindow):
                 
             
             if self.objId.CH0.shape[0]-num_of_lines+1< 0:
-                print 'Time interval exceeds the allowed range for: '+self.objId.name+' please use shorter time interval.'
+                print( 'Time interval exceeds the allowed range for: '+self.objId.name+' please use shorter time interval.')
                 self.win_obj.image_status_text.showMessage('Time interval exceeds the allowed range for: '+self.objId.name+' please use shorter time interval.')
                 self.win_obj.image_status_text.setStyleSheet("color : red")
                 self.win_obj.fit_obj.app.processEvents()
@@ -519,10 +519,10 @@ class bleachCorr3(QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        self.bleach_corr3_win = QtGui.QWidget()        
-        hbox_main = QtGui.QHBoxLayout()
-        vbox1 = QtGui.QVBoxLayout()
-        vbox0 = QtGui.QVBoxLayout()
+        self.bleach_corr3_win = QtWidgets.QWidget()        
+        hbox_main = QtWidgets.QHBoxLayout()
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox0 = QtWidgets.QVBoxLayout()
         self.setWindowTitle("Bleach correction method 2: (local averaging)")
         self.figure1 = plt.figure(figsize=(10,8))
         
@@ -559,14 +559,14 @@ class bleachCorr3(QMainWindow):
             
         #line, = self.plt2.plot([0], [0])  # empty line
         #linebuilder = LineBuilder(line)
-        carp_pix_sel_txt = QtGui.QLabel('Select carpet column pixel: ')
+        carp_pix_sel_txt = QtWidgets.QLabel('Select carpet column pixel: ')
 
 
-        self.carp_pix_sel = QtGui.QSpinBox()
+        self.carp_pix_sel = QtWidgets.QSpinBox()
         self.carp_pix_sel.setRange(0,self.win_obj.carpet_img.shape[1]);
 
         
-        self.sel_channel = QtGui.QComboBox()
+        self.sel_channel = QtWidgets.QComboBox()
         self.sel_channel.addItem('CH0')
         if self.objId.numOfCH == 2:
             self.sel_channel.addItem('CH1')
@@ -577,7 +577,7 @@ class bleachCorr3(QMainWindow):
         if self.win_obj.carpetDisplay == 1:
             self.sel_channel.setCurrentIndex(1)
 
-        self.duration_combo = QtGui.QComboBox()
+        self.duration_combo = QtWidgets.QComboBox()
         self.duration_combo.addItem("full")
         cc = 0
         for time in self.duration_array:
@@ -599,15 +599,15 @@ class bleachCorr3(QMainWindow):
         self.duration_combo.activated[str].connect(self.duration_activated)
         
 
-        self.preview_selection_btn = QtGui.QPushButton('Preview different intervals')
+        self.preview_selection_btn = QtWidgets.QPushButton('Preview different intervals')
         self.preview_selection_btn.clicked.connect(self.preview_selection_fn)
 
-        sel_time_window_size = QtGui.QLabel("Select time interval length")
+        sel_time_window_size = QtWidgets.QLabel("Select time interval length")
 
-        self.export_trace_btn = QtGui.QPushButton('Apply to data')
+        self.export_trace_btn = QtWidgets.QPushButton('Apply to data')
 
-        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to all open data')
-        self.vbox2 = QtGui.QHBoxLayout()
+        self.apply_to_all_data_btn = QtWidgets.QPushButton('Apply to all open data')
+        self.vbox2 = QtWidgets.QHBoxLayout()
         
         self.export_trace_btn.clicked.connect(self.outputData)
         self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
@@ -971,7 +971,7 @@ class cropDataWindow(QMainWindow):
         if self.par_obj.numOfLoaded == 0:
             return
 
-        self.crop_window = QtGui.QWidget()
+        self.crop_window = QWidget()
 
         for objId in self.par_obj.objectRef:
             if(objId.cb.isChecked() == True):
@@ -992,29 +992,29 @@ class cropDataWindow(QMainWindow):
 
 
 
-        hbox_main = QtGui.QHBoxLayout()
-        vbox1 = QtGui.QVBoxLayout()
-        vbox2 = QtGui.QVBoxLayout()
+        hbox_main = QtWidgets.QHBoxLayout()
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox2 = QtWidgets.QVBoxLayout()
 
         hbox_main.addLayout(vbox1)
         hbox_main.addLayout(vbox2)
 
         
 
-        self.crop_panel = QtGui.QGroupBox('Import Crop Settings')
+        self.crop_panel = QtWidgets.QGroupBox('Import Crop Settings')
 
-        self.start_col_txt = QtGui.QLabel('Start column: ');
-        self.end_col_txt = QtGui.QLabel('End column: ');
-        self.start_col_sp = QtGui.QSpinBox()
-        self.end_col_sp = QtGui.QSpinBox()
+        self.start_col_txt = QtWidgets.QLabel('Start column: ');
+        self.end_col_txt = QtWidgets.QLabel('End column: ');
+        self.start_col_sp = QtWidgets.QSpinBox()
+        self.end_col_sp = QtWidgets.QSpinBox()
        
 
-        self.start_pt_txt = QtGui.QLabel('Start time (ms) pt: ');
-        self.end_pt_txt = QtGui.QLabel('End time (ms) pt: ');
-        self.interval_pt_txt = QtGui.QLabel('Num of Intervals ');
-        self.start_pt_sp = QtGui.QSpinBox()
-        self.end_pt_sp = QtGui.QSpinBox()
-        self.interval_pt_sp = QtGui.QSpinBox()
+        self.start_pt_txt = QtWidgets.QLabel('Start time (ms) pt: ');
+        self.end_pt_txt = QtWidgets.QLabel('End time (ms) pt: ');
+        self.interval_pt_txt = QtWidgets.QLabel('Num of Intervals ');
+        self.start_pt_sp = QtWidgets.QSpinBox()
+        self.end_pt_sp = QtWidgets.QSpinBox()
+        self.interval_pt_sp = QtWidgets.QSpinBox()
 
         
 
@@ -1053,13 +1053,13 @@ class cropDataWindow(QMainWindow):
         
 
 
-        reprocess_btn = QtGui.QPushButton('Reprocess Carpet')
-        reprocess_all_btn = QtGui.QPushButton('Reprocess All Carpets')
-        apply_to_imports =  QtGui.QCheckBox('Apply to Subsequent Imports')
-        store_profile = QtGui.QPushButton('Store profile')
-        import_profile =QtGui.QPushButton('Import profile')
+        reprocess_btn = QtWidgets.QPushButton('Reprocess Carpet')
+        reprocess_all_btn = QtWidgets.QPushButton('Reprocess All Carpets')
+        apply_to_imports =  QtWidgets.QCheckBox('Apply to Subsequent Imports')
+        store_profile = QtWidgets.QPushButton('Store profile')
+        import_profile =QtWidgets.QPushButton('Import profile')
 
-        left_grid = QtGui.QGridLayout()
+        left_grid = QtWidgets.QGridLayout()
         self.crop_panel.setLayout(left_grid)
 
         left_grid.addWidget(self.start_col_txt,1,0)
@@ -1304,10 +1304,10 @@ class bleachCorr(QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        self.bleach_corr1_win = QtGui.QWidget()        
-        hbox_main = QtGui.QHBoxLayout()
-        vbox1 = QtGui.QVBoxLayout()
-        vbox0 = QtGui.QVBoxLayout()
+        self.bleach_corr1_win = QtWidgets.QWidget()        
+        hbox_main = QtWidgets.QHBoxLayout()
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox0 = QtWidgets.QVBoxLayout()
         self.setWindowTitle("Bleach correction")
         self.figure1 = plt.figure(figsize=(10,4))
         self.figure1.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.90, wspace=0.3, hspace=0.2)
@@ -1326,20 +1326,20 @@ class bleachCorr(QMainWindow):
         
         
         
-        self.export_trace_btn = QtGui.QPushButton('Apply to Carpet')
+        self.export_trace_btn = QtWidgets.QPushButton('Apply to Carpet')
         self.export_trace_btn.setEnabled(False)
-        self.vbox2 = QtGui.QHBoxLayout()
-        self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
+        self.vbox2 = QtWidgets.QHBoxLayout()
+        self.apply_corr_btn = QtWidgets.QPushButton('Generate Correction')
 
-        self.equation_label = QtGui.QLabel('GDiff = f0*np.exp(-x/tb)')
+        self.equation_label = QtWidgets.QLabel('GDiff = f0*np.exp(-x/tb)')
         
 
-        self.equation_ch1_box = QtGui.QHBoxLayout()
-        self.equation_ch2_box = QtGui.QHBoxLayout()
-        self.equation_f01_txt = QtGui.QLabel('CH0 f0:')
-        self.equation_f01 = QtGui.QLineEdit()
-        self.equation_tb1_txt = QtGui.QLabel('CH0 (1/tb):')
-        self.equation_tb1 = QtGui.QLineEdit()
+        self.equation_ch1_box = QtWidgets.QHBoxLayout()
+        self.equation_ch2_box = QtWidgets.QHBoxLayout()
+        self.equation_f01_txt = QtWidgets.QLabel('CH0 f0:')
+        self.equation_f01 = QtWidgets.QLineEdit()
+        self.equation_tb1_txt = QtWidgets.QLabel('CH0 (1/tb):')
+        self.equation_tb1 = QtWidgets.QLineEdit()
         self.equation_ch1_box.addWidget(self.equation_f01_txt)
         self.equation_ch1_box.addWidget(self.equation_f01)
         self.equation_ch2_box.addWidget(self.equation_tb1_txt)
@@ -1347,12 +1347,12 @@ class bleachCorr(QMainWindow):
         self.equation_f01.setReadOnly(True)
         self.equation_tb1.setReadOnly(True)
 
-        self.equation_ch3_box = QtGui.QHBoxLayout()
-        self.equation_ch4_box = QtGui.QHBoxLayout()
-        self.equation_f02_txt = QtGui.QLabel('CH1 f0:')
-        self.equation_f02 = QtGui.QLineEdit()
-        self.equation_tb2_txt = QtGui.QLabel('CH1 (1/tb):')
-        self.equation_tb2 = QtGui.QLineEdit()
+        self.equation_ch3_box = QtWidgets.QHBoxLayout()
+        self.equation_ch4_box = QtWidgets.QHBoxLayout()
+        self.equation_f02_txt = QtWidgets.QLabel('CH1 f0:')
+        self.equation_f02 = QtWidgets.QLineEdit()
+        self.equation_tb2_txt = QtWidgets.QLabel('CH1 (1/tb):')
+        self.equation_tb2 = QtWidgets.QLineEdit()
         self.equation_ch3_box.addWidget(self.equation_f02_txt)
         self.equation_ch3_box.addWidget(self.equation_f02)
         self.equation_ch4_box.addWidget(self.equation_tb2_txt)
@@ -1360,7 +1360,7 @@ class bleachCorr(QMainWindow):
         self.equation_f02.setReadOnly(True)
         self.equation_tb2.setReadOnly(True)
 
-        self.apply_to_all_data_btn = QtGui.QPushButton('Apply to All Carpets');
+        self.apply_to_all_data_btn = QtWidgets.QPushButton('Apply to All Carpets');
         self.apply_to_all_data_btn.clicked.connect(self.apply_to_all_data_fn)
         
         
@@ -1569,10 +1569,10 @@ class SpotSizeCalculation(QMainWindow):
         self.corrFn = False      
         #self.trace_idx = self.par_obj.clickedS1
 
-        page = QtGui.QWidget()        
-        hbox_main = QtGui.QHBoxLayout()
-        vbox1 = QtGui.QVBoxLayout()
-        vbox0 = QtGui.QVBoxLayout()
+        page = QtWidgets.QWidget()        
+        hbox_main = QtWidgets.QHBoxLayout()
+        vbox1 = QtWidgets.QVBoxLayout()
+        vbox0 = QtWidgets.QVBoxLayout()
         self.setWindowTitle("Bleach correction")
         self.figure1 = plt.figure(figsize=(10,4))
         self.figure1.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.90, wspace=0.3, hspace=0.2)
@@ -1588,23 +1588,23 @@ class SpotSizeCalculation(QMainWindow):
     
     
         
-        self.export_trace_btn = QtGui.QPushButton('Apply to Data')
+        self.export_trace_btn = QtWidgets.QPushButton('Apply to Data')
         self.export_trace_btn.setEnabled(False)
-        self.vbox2 = QtGui.QHBoxLayout()
-        self.apply_corr_btn = QtGui.QPushButton('Generate Correction')
+        self.vbox2 = QtWidgets.QHBoxLayout()
+        self.apply_corr_btn = QtWidgets.QPushButton('Generate Correction')
 
-        self.equation_label = QtGui.QLabel('y = (1/N)*(np.exp(-(2*x**2)/((d**2)/(2*np.log(2)))))')
+        self.equation_label = QtWidgets.QLabel('y = (1/N)*(np.exp(-(2*x**2)/((d**2)/(2*np.log(2)))))')
         
 
-        self.equation_ch1_box = QtGui.QHBoxLayout()
-        self.equation_ch2_box = QtGui.QHBoxLayout()
-        self.equation_ch3_box = QtGui.QHBoxLayout()
-        self.equation_N_txt = QtGui.QLabel('CH0 N:')
-        self.equation_N = QtGui.QLineEdit()
-        self.equation_d_txt = QtGui.QLabel('CH0 d:')
-        self.equation_d = QtGui.QLineEdit()
-        self.pixel_size_txt = QtGui.QLabel('pixel size: (nm)')
-        self.pixel_size = QtGui.QLineEdit()
+        self.equation_ch1_box = QtWidgets.QHBoxLayout()
+        self.equation_ch2_box = QtWidgets.QHBoxLayout()
+        self.equation_ch3_box = QtWidgets.QHBoxLayout()
+        self.equation_N_txt = QtWidgets.QLabel('CH0 N:')
+        self.equation_N = QtWidgets.QLineEdit()
+        self.equation_d_txt = QtWidgets.QLabel('CH0 d:')
+        self.equation_d = QtWidgets.QLineEdit()
+        self.pixel_size_txt = QtWidgets.QLabel('pixel size: (nm)')
+        self.pixel_size = QtWidgets.QLineEdit()
         self.equation_ch1_box.addWidget(self.equation_N_txt)
         self.equation_ch1_box.addWidget(self.equation_N)
         self.equation_ch2_box.addWidget(self.equation_d_txt)

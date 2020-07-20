@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
@@ -53,7 +53,7 @@ def test_tiff_file_import(par_obj,win_obj):
 		#Open the dialog for inputing the dwell time.
 		test_dwell_dialog(2.15 + (i*0.01))
 		#Open the dialog for asking whether to continue asking for details or not.
-		print i
+		print (i)
 		if i < 3:
 			assert win_obj.diag.use_settings_win.isVisible() == True
 			QTest.mouseClick(win_obj.diag.no, QtCore.Qt.LeftButton)
@@ -211,5 +211,5 @@ def test_tiff_file_import(par_obj,win_obj):
 	
 
 
-	print 'tests finished. TIFF Import looks fine'
+	print ('tests finished. TIFF Import looks fine')
 	return True

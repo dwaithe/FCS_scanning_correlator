@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
@@ -72,7 +72,7 @@ def test_scan_PB1_buttons(par_obj,win_obj):
 		QTest.mouseClick(win_obj.bleach_corr1_plugin.export_trace_btn, QtCore.Qt.LeftButton)
 		assert win_obj.bleach_corr_on_off.text() == 'M1 ON '
 
-		print 'self.', np.sum(win_obj.bleach_corr1_plugin.objId.CH0_pc)
+		print ('self.', np.sum(win_obj.bleach_corr1_plugin.objId.CH0_pc))
 
 
 

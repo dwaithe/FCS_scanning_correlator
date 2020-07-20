@@ -1,10 +1,10 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
 def test_for_fit_btns(par_obj,win_obj,fit_obj):
-		print 'testing'
+		print ('testing')
 
 		#self.main_frame = QWidget()
 		

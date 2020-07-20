@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 

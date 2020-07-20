@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 from test_msr_file_import import test_msr_file_import
@@ -13,7 +13,7 @@ from test_for_fit_btns import test_for_fit_btns
 import warnings
 
 def test_import_scripts():
-	print 'testing'
+	print ('testing')
 	import sys
 	sys.path.append('../')
 	sys.path.append('../../../FCS_point/FCS_point_correlator/focuspoint')
@@ -24,7 +24,7 @@ def test_import_scripts():
 	win_obj.testing = True
 	warnings.filterwarnings('ignore', '.*void CGSUpdateManager*',)
 	
-	res0 = test_lsm_file_import(par_obj,win_obj)
+	#res0 = test_lsm_file_import(par_obj,win_obj)
 	res1 = test_msr_file_import(par_obj,win_obj)
 	res2 = test_lif_file_import(par_obj,win_obj)
 	res3 = test_tiff_file_import(par_obj,win_obj)

@@ -1,7 +1,7 @@
 import struct
 from xml.etree import ElementTree as ET
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QDialog 
+from PyQt5 import QtWidgets, QtCore,QtGui
+from PyQt5.QtWidgets import QDialog 
 import warnings
 import numpy as np
 import tifffile as tif_fn
@@ -19,10 +19,10 @@ class dialog_import(QDialog):
 			#Creates window with the data files which need loading.        
 			self.main_dialog_win = QDialog(self)     
 			self.main_dialog_win.setWindowTitle("Select Images to Import")
-			vbox0 = QtGui.QVBoxLayout()
-			hbox1 = QtGui.QHBoxLayout()
-			hbox2 = QtGui.QHBoxLayout()
-			vbox1 = QtGui.QVBoxLayout()
+			vbox0 = QtWidgets.QVBoxLayout()
+			hbox1 = QtWidgets.QHBoxLayout()
+			hbox2 = QtWidgets.QHBoxLayout()
+			vbox1 = QtWidgets.QVBoxLayout()
 			
 			c =0 
 			for subindex in self.stack_holder:
@@ -30,11 +30,11 @@ class dialog_import(QDialog):
 				if self.stack_holder[subindex]['timeseries'] == True and self.stack_holder[subindex]['size'][1] > 500:
 					
 					c = c+1
-					exec("subhbox"+str(c)+" = QtGui.QHBoxLayout()")
+					exec("subhbox"+str(c)+" = QtWidgets.QHBoxLayout()")
 				
-					exec("self.main_dialog_win.check"+str(c)+" = QtGui.QCheckBox()");
+					exec("self.main_dialog_win.check"+str(c)+" = QtWidgets.QCheckBox()");
 					
-					exec("self.main_dialog_win.label"+str(c)+" = QtGui.QLabel()");
+					exec("self.main_dialog_win.label"+str(c)+" = QtWidgets.QLabel()");
 					exec("self.main_dialog_win.label"+str(c)+".setText(\""+str(self.stack_holder[subindex]['name'])+"\")")
 					
 					exec("subhbox"+str(c)+".addWidget(self.main_dialog_win.check"+str(c)+")");
@@ -43,7 +43,7 @@ class dialog_import(QDialog):
 					exec("vbox1.addLayout(subhbox"+str(c)+")");
 				
 				
-			self.main_dialog_win.button = QtGui.QPushButton('load Images')
+			self.main_dialog_win.button = QtWidgets.QPushButton('load Images')
 			hbox1.addLayout(vbox1)
 			hbox2.addWidget(self.main_dialog_win.button)
 			vbox0.addLayout(hbox1)
@@ -52,7 +52,7 @@ class dialog_import(QDialog):
 			#page.setLayout(vbox0)
 			self.main_dialog_win.setLayout(vbox0)
 
-			self.connect(self.main_dialog_win.button, QtCore.SIGNAL("clicked()"), self.submit_options)
+			self.main_dialog_win.button.clicked.connect(self.submit_options)
 			self.main_dialog_win.show()
 		def next_index(self, subindex):
 
@@ -77,7 +77,7 @@ class dialog_import(QDialog):
 					
 					if self.stack_holder[subindex]['timeseries'] == True and self.stack_holder[subindex]['size'][1] > 500:
 						c = c+1
-						exec("boolV = self.main_dialog_win.check"+str(c)+".isChecked()");
+						exec("boolV = self.main_dialog_win.check"+str(c)+".isChecked()",locals(),globals());
 						if boolV == True:
 							self.selList.append(subindex)
 				
@@ -91,17 +91,17 @@ class dialog_import(QDialog):
 			
 			
 			self.line_sampling_win.setWindowTitle('File: '+self.stack_ind['title']+' '+self.stack_ind['name'])
-			vbox0 = QtGui.QVBoxLayout()
-			hbox1 = QtGui.QHBoxLayout()
-			hbox2 = QtGui.QHBoxLayout()
-			vbox1 = QtGui.QVBoxLayout()
+			vbox0 = QtWidgets.QVBoxLayout()
+			hbox1 = QtWidgets.QHBoxLayout()
+			hbox2 = QtWidgets.QHBoxLayout()
+			vbox1 = QtWidgets.QVBoxLayout()
 			
 			
-			self.label = QtGui.QLabel('Enter the line sampling (Hz):')
+			self.label = QtWidgets.QLabel('Enter the line sampling (Hz):')
 
-			self.input_text = QtGui.QLineEdit(str(suggest_line_time))	
-			self.cancel = QtGui.QPushButton('Cancel')
-			self.ok = QtGui.QPushButton('Ok')
+			self.input_text = QtWidgets.QLineEdit(str(suggest_line_time))	
+			self.cancel = QtWidgets.QPushButton('Cancel')
+			self.ok = QtWidgets.QPushButton('Ok')
 			hbox1.addLayout(vbox1)
 			hbox1.addWidget(self.label)
 			hbox1.addWidget(self.input_text)
@@ -116,23 +116,23 @@ class dialog_import(QDialog):
 			self.line_sampling_win.setLayout(vbox0)
 			self.input_text.setFocus(True)
 			
-			self.connect(self.cancel, QtCore.SIGNAL("clicked()"), self.cancel1)
-			self.connect(self.ok, QtCore.SIGNAL("clicked()"), self.ok_fun_1)
+			self.cancel.clicked.connect(self.cancel1)
+			self.ok.clicked.connect(self.ok_fun_1)
 			self.line_sampling_win.show()
 		def create_pixel_dwell(self):        
 			self.dialog_dwell_win = QDialog(self.win_obj)     
 			
 			self.dialog_dwell_win.setWindowTitle('File: '+self.stack_ind['title']+' '+self.stack_ind['name'])
-			vbox0 = QtGui.QVBoxLayout()
-			hbox1 = QtGui.QHBoxLayout()
-			hbox2 = QtGui.QHBoxLayout()
-			vbox1 = QtGui.QVBoxLayout()
+			vbox0 = QtWidgets.QVBoxLayout()
+			hbox1 = QtWidgets.QHBoxLayout()
+			hbox2 = QtWidgets.QHBoxLayout()
+			vbox1 = QtWidgets.QVBoxLayout()
 			
 			
-			self.label = QtGui.QLabel('Enter the pixel dwell time (us):')	
-			self.input_text = QtGui.QLineEdit('')	
-			self.cancel = QtGui.QPushButton('Cancel')
-			self.ok = QtGui.QPushButton('Ok')
+			self.label = QtWidgets.QLabel('Enter the pixel dwell time (us):')	
+			self.input_text = QtWidgets.QLineEdit('')	
+			self.cancel = QtWidgets.QPushButton('Cancel')
+			self.ok = QtWidgets.QPushButton('Ok')
 			hbox1.addLayout(vbox1)
 			hbox1.addWidget(self.label)
 			hbox1.addWidget(self.input_text)
@@ -146,24 +146,23 @@ class dialog_import(QDialog):
 			#page.setLayout(vbox0)
 			self.dialog_dwell_win.setLayout(vbox0)
 			self.input_text.setFocus(True)
-			
-			self.win_obj.connect(self.cancel, QtCore.SIGNAL("clicked()"), self.cancel2)
-			self.win_obj.connect(self.ok, QtCore.SIGNAL("clicked()"), self.ok_fun_2)
+			self.cancel.clicked.connect(self.cancel2)
+			self.ok.clicked.connect(self.ok_fun_2)
 			self.dialog_dwell_win.show()
 		def create_use_settings(self):        
 			self.use_settings_win = QDialog(self.win_obj)     
 			
 			self.use_settings_win.setWindowTitle('File: '+self.stack_ind['title']+' '+self.stack_ind['name'])
-			vbox0 = QtGui.QVBoxLayout()
-			hbox1 = QtGui.QHBoxLayout()
-			hbox2 = QtGui.QHBoxLayout()
-			vbox1 = QtGui.QVBoxLayout()
+			vbox0 = QtWidgets.QVBoxLayout()
+			hbox1 = QtWidgets.QHBoxLayout()
+			hbox2 = QtWidgets.QHBoxLayout()
+			vbox1 = QtWidgets.QVBoxLayout()
 			
 			
-			self.label = QtGui.QLabel('Use parameters for remaining images?')	
-			self.input_text = QtGui.QLineEdit('')	
-			self.yes = QtGui.QPushButton('Yes')
-			self.no = QtGui.QPushButton('No')
+			self.label = QtWidgets.QLabel('Use parameters for remaining images?')	
+			self.input_text = QtWidgets.QLineEdit('')	
+			self.yes = QtWidgets.QPushButton('Yes')
+			self.no = QtWidgets.QPushButton('No')
 			hbox1.addLayout(vbox1)
 			hbox1.addWidget(self.label)
 			hbox2.addStretch()
@@ -178,8 +177,8 @@ class dialog_import(QDialog):
 			self.use_settings_win.setLayout(vbox0)
 			self.input_text.setFocus(True)
 			
-			self.connect(self.no, QtCore.SIGNAL("clicked()"), self.no_use_fn)
-			self.connect(self.yes, QtCore.SIGNAL("clicked()"), self.yes_use_fn)
+			self.no.clicked.connect(self.no_use_fn)
+			self.yes.clicked.connect(self.yes_use_fn)
 			self.use_settings_win.show()
 		def ok_fun_1(self):
 			self.text_1 = self.input_text.text()
@@ -222,6 +221,7 @@ def Import_tiff(filename,par_obj,win_obj):
 		deltat= 1000/float(self.text_1)
 		#pickle.dump(tif.asarray(), open('extra.p',"wb"))
 		ab = self.tif.asarray().astype(np.float64)
+		print('shape',ab.shape)
 		scanObject(filename,par_obj,[deltat,float(self.text_2)/1000000],ab,0,0);
 		win_obj.bleachCorr1 = False
 		win_obj.bleachCorr2 = False
@@ -229,15 +229,15 @@ def Import_tiff(filename,par_obj,win_obj):
 		self.win_obj.image_status_text.showMessage("Correlating carpet: File " +str(self.win_obj.file_import.file_index+1)+' of '+str(self.win_obj.file_import.file_list.__len__()))
 		self.win_obj.app.processEvents()
 		if win_obj.last_in_list == False:
-			print 'moving to next file'
+			print ('moving to next file')
 			win_obj.file_import.load_next_file()
 		else:
-			print 'finished with all files'
+			print( 'finished with all files')
 			win_obj.file_import.post_initial_import()
 	win_obj.diag.import_data_fn = import_data_fn
 
 
-
+	print("filename",str(filename))
 	tif = tif_fn.TiffFile(str(filename))
 	name = str(filename).split('/')[-1]
 	win_obj.diag.stack_ind = {}
@@ -279,10 +279,10 @@ def Import_lsm(filename,par_obj,win_obj):
 		self.win_obj.app.processEvents()
 
 		if win_obj.last_in_list == False:
-			print 'moving to next file'
+			print( 'moving to next file')
 			win_obj.file_import.load_next_file()
 		else:
-			print 'finished with all files'
+			print ('finished with all files')
 			win_obj.file_import.post_initial_import()
 
 
@@ -337,9 +337,9 @@ def Import_msr(fname, par_obj,win_obj):
 	
 
 	f = open(fname, 'rb')
-	str_lnk = ""
+	str_lnk = bytearray()
 	for i in range(0,10):
-		str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+		str_lnk.extend(struct.unpack('c', f.read(1))[0])
 	
 	struct.unpack('I', f.read(4))[0]
 	start_x = struct.unpack('Q', f.read(8))[0]
@@ -354,9 +354,9 @@ def Import_msr(fname, par_obj,win_obj):
 
 
 		f.seek(start_x)
-		str_lnk = ""
+		str_lnk = bytearray()
 		for i in range(0,16):
-			str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+			str_lnk.extend(struct.unpack('c', f.read(1))[0])
 		
 		file_version = struct.unpack('I', f.read(4))[0]
 		rank = struct.unpack('I', f.read(4))[0] -1
@@ -425,10 +425,10 @@ def Import_msr(fname, par_obj,win_obj):
 		#print 'next_stack_pos',start_x
 		if exit_state == True:
 			continue
-		str_lnk = ""
+		str_lnk = bytearray()
 		for i in range(0,len_of_name):
-			str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
-		stack_details['name'] = str_lnk
+			str_lnk.extend(bytes(struct.unpack('c', f.read(1))[0]))
+		stack_details['name'] = str_lnk.decode("utf-8")
 		
 		
 		if len_of_desc > 0:
@@ -474,9 +474,9 @@ def Import_msr(fname, par_obj,win_obj):
 		for b in range(0,rank+1):
 			length = struct.unpack('<I', f.read(4))[0]
 
-			str_lnk = ""
+			str_lnk = bytearray()
 			for i in range(0,length):
-				str_lnk = str_lnk+struct.unpack('c', f.read(1))[0]
+				str_lnk.extend(bytes(struct.unpack('c', f.read(1))[0]))
 		   
 
 
@@ -540,11 +540,11 @@ def Import_msr(fname, par_obj,win_obj):
 			self.win_obj.app.processEvents()
 			#Is it the last file in the list
 			if self.win_obj.last_in_list == False:
-				print 'moving to next file'
+				print('moving to next file')
 
 				self.win_obj.file_import.load_next_file()
 			else:
-				print 'finished with all files'
+				print('finished with all files')
 				self.win_obj.file_import.post_initial_import()
 	
 	
@@ -571,10 +571,11 @@ class Import_lif():
 		#Number of characters in file, have to mutiply by 2 to get bytes
 		len_meta = int(struct.unpack('i', self.f.read(4))[0])
 		xml='';
-		meta_raw = self.f.read(len_meta*2)
-		for i in range(0,meta_raw.__len__()):
-			xml = xml + struct.unpack('c', meta_raw[i])[0]
-		root = ET.XML(xml)
+		meta_raw = self.f.read(len_meta*2).decode("utf-8")
+		#print ('meta_raw',meta_raw)
+		#for i in range(0,meta_raw.__len__()):
+		#	xml = xml + struct.unpack('c', meta_raw[i])[0]
+		root = ET.XML(meta_raw)
 
 
 		LUTName = [];
@@ -585,8 +586,8 @@ class Import_lif():
 		
 		count = 0
 		for neighbor1 in root.findall(".//Element"):
-		   for nun in neighbor1.findall("./Memory"):
-				if int(nun.attrib['Size']) >0 :
+			for nun in neighbor1.findall("./Memory"):
+				if int(nun.attrib['Size']) >0:
 					ele = neighbor1.find('.//ATLConfocalSettingDefinition');
 					try:
 						if ele.attrib['ScanMode'] =="xt":
@@ -652,23 +653,25 @@ class Import_lif():
 				
 
 
-				memDesc ='';
+				memDesc =bytearray() ;
 				for i in range(0,c*2):
-					memDesc = memDesc + self.f.read(1)
+					memDesc.extend(bytes( self.f.read(1)))
 				#print struct.unpack('i', f.read(4))[0]
 				
-
+				
 				#Read a memory block of the correct size.
 				#imBinData = self.f.read(memSize)
-				memDesc = memDesc.translate(None,'\x00')
+				memDesc = memDesc.translate(None,b'\x00').decode("utf-8") 
 				#loadImBool = (memDesc in memId )
 				loadImBool = False
+				
 
 				#Catch data if it happens to be in array
 				for b in selList:
 					
 					
 					#print memDesc+' '+temp[0]
+					
 					if self.meta_array[b]['memid'] == memDesc:
 					   loadImBool = True
 					   bytesInc = self.meta_array[b]['bytesinc']
@@ -692,7 +695,7 @@ class Import_lif():
 								byteData = struct.unpack('B',imBinData[iv:iv+1])[0]
 								imData[iv] = byteData
 						if bytesInc == 2:
-							imData=[0]*(imBinData.__len__()/2)
+							imData=[0]*int(imBinData.__len__()/2)
 							
 							cc = 0
 							for iv in range(0,imBinData.__len__(),2):
@@ -740,17 +743,17 @@ class Import_lif():
 			
 
 		def create_main_frame(self):        
-			self.lif_import_win = QtGui.QWidget()        
+			self.lif_import_win = QtWidgets.QWidget()        
 
 			
 			self.setWindowTitle("Select Images to Import from: "+self.parObj.fname.split("/")[-1])
-			vbox0 = QtGui.QVBoxLayout()
-			hbox1 = QtGui.QHBoxLayout()
-			hbox2 = QtGui.QHBoxLayout()
-			vbox1 = QtGui.QVBoxLayout()
+			vbox0 = QtWidgets.QVBoxLayout()
+			hbox1 = QtWidgets.QHBoxLayout()
+			hbox2 = QtWidgets.QHBoxLayout()
+			vbox1 = QtWidgets.QVBoxLayout()
 
-			self.series_list_view = QtGui.QTreeView()
-			self.series_list_view.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+			self.series_list_view = QtWidgets.QTreeView()
+			self.series_list_view.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 			self.series_list_model = QtGui.QStandardItemModel()
 			self.series_list_view.setModel(self.series_list_model)
 			self.series_list_view.setHeaderHidden(True)
@@ -775,8 +778,8 @@ class Import_lif():
 				item.setChild(4,QtGui.QStandardItem("number of channels: "+str( self.meta_array[idx]['lutname'].__len__())))
 				
 				
-			self.load_data_btn = QtGui.QPushButton('load Images')
-			self.check_all_btn = QtGui.QPushButton('Check All')
+			self.load_data_btn = QtWidgets.QPushButton('load Images')
+			self.check_all_btn = QtWidgets.QPushButton('Check All')
 			hbox1.addLayout(vbox1)
 			
 			vbox0.addWidget(self.series_list_view)
@@ -814,7 +817,7 @@ class Import_lif():
 			self.win_obj.app.processEvents()
 			#Is it the last file in the list
 			if self.win_obj.last_in_list == False:
-				print 'moving to next file'
+				print( 'moving to next file')
 
 				self.win_obj.file_import.total_carpets.append(self.parObj.selList.__len__())
 				self.win_obj.file_import.load_next_file()
@@ -822,7 +825,7 @@ class Import_lif():
 				
 				
 			else:
-				print 'finished with all files'
+				print( 'finished with all files')
 				self.win_obj.file_import.post_initial_import()
 				
 		   

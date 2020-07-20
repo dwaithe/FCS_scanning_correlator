@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
@@ -244,5 +244,5 @@ def test_msr_file_import(par_obj,win_obj):
 	assert par_obj.numOfLoaded == 0	
 	
 
-	print 'tests finished. MSR Import looks fine'
+	print ('tests finished. MSR Import looks fine')
 	return True

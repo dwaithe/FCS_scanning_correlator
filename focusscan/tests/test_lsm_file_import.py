@@ -1,5 +1,5 @@
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtTest import QTest
+from PyQt5 import QtGui, QtCore
 import os
 import numpy as np
 
@@ -45,12 +45,12 @@ def test_lsm_file_import(par_obj,win_obj):
 	#Goes through first file.
 	for i in range(0,3):
 		#Open the dialog for the line sampling (Hz):
-		print  win_obj.diag.input_text.text()
+		print  (win_obj.diag.input_text.text())
 		test_line_sampling_dialog(str(float(win_obj.diag.input_text.text())+ (i*4.)))
 		#Open the dialog for inputing the dwell time.
 		test_dwell_dialog(2.15 + (i*0.01))
 		#Open the dialog for asking whether to continue asking for details or not.
-		print i
+		print (i)
 		
 		if i < 2:
 			assert win_obj.diag.use_settings_win.isVisible() == True
@@ -154,5 +154,5 @@ def test_lsm_file_import(par_obj,win_obj):
 	
 	
 
-	print 'tests finished. lsm Import looks fine'
+	print ('tests finished. lsm Import looks fine')
 	return True
