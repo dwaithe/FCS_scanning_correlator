@@ -27,7 +27,7 @@ from splugin_methods import bleachCorr, cropDataWindow, bleachCorr2, bleachCorr3
 from scorrelation_objects import scanObject
 from focuspoint.correlation_objects import corrObject
 
-from fitting_gui import Form
+from focuspoint.fitting_gui import Form
 import os.path
 import warnings
 import _pickle as pickle
