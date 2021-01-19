@@ -4,7 +4,7 @@ import _pickle as pickle
 from scorrelation_methods import *
 import csv
 from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
-from fitting_methods.fitting_methods_SE import equation_
+from focuspoint.fitting_methods.fitting_methods_SE import equation_
 import time
 import copy
 
