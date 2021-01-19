@@ -25,7 +25,7 @@ sys.path.append('../../FCS_point/FCS_point_correlator/focuspoint')
 from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
 from splugin_methods import bleachCorr, cropDataWindow, bleachCorr2, bleachCorr3, SpotSizeCalculation
 from scorrelation_objects import scanObject
-from correlation_objects import corrObject
+from focuspoint.correlation_objects import corrObject
 
 from fitting_gui import Form
 import os.path
