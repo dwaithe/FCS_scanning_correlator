@@ -2046,9 +2046,9 @@ def start_gui():
 	"""
 	
 	#mainWin.setStyleSheet(style_sheet_d)
-	fit_obj.setStyleSheet(style_sheet_d)
-	win_tab.setStyleSheet(style_sheet_d)
-	app.setStyleSheet(style_sheet_d)
+	#fit_obj.setStyleSheet(style_sheet_d)
+	#win_tab.setStyleSheet(style_sheet_d)
+	#app.setStyleSheet(style_sheet_d)
 
 
 
