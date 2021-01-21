@@ -2070,14 +2070,7 @@ def start_gui():
 		event.accept()
 	win_tab.closeEvent = closeEvent
 
-	win_tab.setStyleSheet("""QTabWidget{
-	background:qradialgradient(cx: 0.3, cy: -0.4,
-								fx: 0.3, fy: -0.4,
-								radius: 1.9, stop: 0 #fff, stop: 1 #888);
-								}
-								
-
-	""")
+	
 	
 
 	
