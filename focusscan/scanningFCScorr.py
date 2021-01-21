@@ -10,11 +10,11 @@ from PyQt5.QtWidgets import QListView,QHBoxLayout,QPushButton,QTextEdit,QTableWi
 from PyQt5.QtWidgets import QStatusBar, QApplication, QTabWidget, QGroupBox, QFileDialog
 from PyQt5.QtGui import QIcon
 import matplotlib
-matplotlib.use('Agg') # before import pylab
+#matplotlib.use('Agg') # before import pylab
 
 import matplotlib.pylab as plt
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.gridspec as gridspec
 from matplotlib.widgets import  SpanSelector
 
@@ -1384,7 +1384,7 @@ class Window(QWidget):
 						
 						
 						
-							f.write('Time (ns), CH0 Auto-Correlation\n')
+							f.write('Time (ms), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+ '\n')
 						else:
@@ -1392,7 +1392,7 @@ class Window(QWidget):
 							f.write('kcount,'+str(objId.kcountCH0[i])+'\n')
 							f.write('numberNandB,'+str(objId.numberNandBCH0[i])+'\n')
 							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+'\n')
-							f.write('Time (ns), CH0 Auto-Correlation\n')
+							f.write('Time (ms), CH0 Auto-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+ '\n')
 						f.write('end\n')
@@ -1421,7 +1421,7 @@ class Window(QWidget):
 								f.write('brightnessNandB,'+str(objId.brightnessNandBCH0_pc[i])+','+str(objId.brightnessNandBCH1_pc[i])+'\n')
 								f.write('CV,'+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+','+str(objId.CV_pc[i])+'\n')
 						
-							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
+							f.write('Time (ms), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale_pc.shape[0]):
 								f.write(str(float(objId.corrArrScale_pc[x]))+','+str(objId.AutoCorr_carpetCH0_pc[x,i])+','+str(objId.AutoCorr_carpetCH1_pc[x,i])+','+str(objId.CrossCorr_carpet01_pc[x,i])+ '\n')
 						else:
@@ -1430,7 +1430,7 @@ class Window(QWidget):
 							f.write('numberNandB,'+str(objId.numberNandBCH0[i])+','+str(objId.numberNandBCH1[i])+'\n')
 							f.write('brightnessNandB,'+str(objId.brightnessNandBCH0[i])+','+str(objId.brightnessNandBCH1[i])+'\n')
 							f.write('CV,'+str(objId.CV[i])+','+str(objId.CV[i])+','+str(objId.CV[i])+'\n')
-							f.write('Time (ns), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
+							f.write('Time (ms), CH0 Auto-Correlation, CH1 Auto-Correlation, CH01 Cross-Correlation\n')
 							for x in range(0,objId.corrArrScale.shape[0]):
 								f.write(str(float(objId.corrArrScale[x]))+','+str(objId.AutoCorr_carpetCH0[x,i])+','+str(objId.AutoCorr_carpetCH1[x,i])+','+str(objId.CrossCorr_carpet01[x,i])+'\n')
 						f.write('end\n')
@@ -1445,7 +1445,7 @@ class Window(QWidget):
 		
 		# if self.objId.numOfCH == 2:
 		# 	f = open(self.win_obj.folderOutput.filepath+'/'+self.objId.name+'_correlation.csv', 'w')
-		# 	f.write('# Time (ns),CH0 Auto-Correlation, CH1 Auto-Correlation, CC01 Auto-Correlation, CC10 Auto-Correlation\n')
+		# 	f.write('# Time (ms),CH0 Auto-Correlation, CH1 Auto-Correlation, CC01 Auto-Correlation, CC10 Auto-Correlation\n')
 		# 	for x in range(0,self.objId.autotime.shape[0]):
 		# 		f.write(str(int(self.objId.autotime[x]))+','+str(self.objId.autoNorm[x,0,0])+','+str(self.objId.autoNorm[x,1,1])+','+str(self.objId.autoNorm[x,0,1])+','+str(self.objId.autoNorm[x,1,0])+ '\n')
 
