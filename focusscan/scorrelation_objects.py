@@ -205,7 +205,7 @@ class scanObject():
                         brightnessNandBCH1.append(((var_count -raw_count)/(raw_count))/(int_time*self.dwell_time*self.spatialBin)/1000)
                         numberNandBCH1.append(raw_count**2/(var_count-raw_count))
                         
-                        kcountCH1.append(kcount)
+                        kcountCH1.append(kcount/1000) #Khz
                     else:
                         AC1 = np.zeros((lenG,2))
                         CC01 = np.zeros((lenG,2))
