@@ -1492,6 +1492,7 @@ class Window(QWidget):
 			
 			corrObj1.type = "scan"
 			corrObj1.siblings = None
+			corrObj1.item_in_list = False
 
 			if self.bleach_corr_on == True:
 				corrObj1.kcount = objId.kcountCH0_pc[i]
@@ -1517,6 +1518,8 @@ class Window(QWidget):
 				corrObj1.autoNorm = objId.AutoCorr_carpetCH0[:,i]
 				corrObj1.max = np.max(objId.AutoCorr_carpetCH0[:,i])
 				corrObj1.min = np.min(objId.AutoCorr_carpetCH0[:,i])
+			corrObj1.tmax = np.max(corrObj1.autotime)
+			corrObj1.tmin = np.min(corrObj1.autotime)
 			
 			
 			if objId.numOfCH == 2:
@@ -1530,7 +1533,8 @@ class Window(QWidget):
 				corrObj2.param = copy.deepcopy(self.fit_obj.def_param)
 				corrObj2.prepare_for_fit()
 				corrObj2.autotime = objId.corrArrScale[:]
-				
+				corrObj2.item_in_list = False
+
 				
 				
 				corrObj1.CV = objId.CV[i]
@@ -1545,6 +1549,7 @@ class Window(QWidget):
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1_pc[:,i]
 					corrObj2.max = np.max(objId.AutoCorr_carpetCH1_pc[:,i])
 					corrObj2.min = np.min(objId.AutoCorr_carpetCH1_pc[:,i])
+					
 
 					if objId.bleachCorr1 == True:
 						#Additional parameters from photobleaching method 1
@@ -1559,7 +1564,8 @@ class Window(QWidget):
 					corrObj2.autoNorm = objId.AutoCorr_carpetCH1[:,i]
 					corrObj2.max = np.max(objId.AutoCorr_carpetCH1[:,i])
 					corrObj2.min = np.min(objId.AutoCorr_carpetCH1[:,i])
-				
+				corrObj2.tmax = np.max(corrObj2.autotime)
+				corrObj2.tmin = np.min(corrObj2.autotime)
 				
 
 				corrObj3 = corrObject(objId.filepath,self.fit_obj);
@@ -1568,7 +1574,8 @@ class Window(QWidget):
 				corrObj3.parent_uqid = parent_uqid
 				corrObj3.file_name = objId.file_name
 				self.fit_obj.objIdArr.append(corrObj3.objId)
-				
+				corrObj3.item_in_list = False
+
 				corrObj3.ch_type = 2
 				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 				corrObj3.CV = objId.CV[i]
@@ -1585,6 +1592,8 @@ class Window(QWidget):
 					corrObj3.autoNorm = objId.CrossCorr_carpet01[:,i]
 					corrObj3.max = np.max(objId.CrossCorr_carpet01[:,i])
 					corrObj3.min = np.min(objId.CrossCorr_carpet01[:,i])
+				corrObj3.tmax = np.max(corrObj3.autotime)
+				corrObj3.tmin = np.min(corrObj3.autotime)
 				corrObj3.param = copy.deepcopy(self.fit_obj.def_param)
 
 				corrObj1.siblings = [corrObj2,corrObj3]
