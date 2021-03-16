@@ -455,11 +455,22 @@ class Window(QWidget):
 		self.mEdit =lineEditSp('30',self, self.par_obj)
 		self.mEdit.setToolTip('This is represents the number of points to be calculated for each log-level of tau. ')
 		self.mEdit.type ='m'
+
+
 		self.DeltatText = QLabel('Deltat (ms):')
 		self.DeltatText.setToolTip('The calculated scanning line time in ms.')
 		self.DeltatEdit = QLabel()
 		self.DeltatEdit.par_obj = self
 		self.DeltatEdit.type = 'deltat'
+
+		self.kcountBinText = QLabel('Photon counting bin: ')
+		self.kcountBinText.resize(50,40)
+		self.kcountBinEdit = QSpinBox()
+		self.kcountBinEdit.setRange(1,10000);
+		self.kcountBinEdit.setSingleStep(1)
+		self.kcountBinEdit.par_obj = self
+		self.kcountBinEdit.resize(40,50)
+		
 
 		self.spatialBinText = QLabel()
 		self.spatialBinText.setText('Spatial Pixel Binning: ')
@@ -478,6 +489,8 @@ class Window(QWidget):
 		self.left_panel_centre_right.addWidget(self.mEdit)
 		self.left_panel_centre_right.addWidget(self.DeltatText)
 		self.left_panel_centre_right.addWidget(self.DeltatEdit)
+		self.left_panel_centre_right.addWidget(self.kcountBinText)
+		self.left_panel_centre_right.addWidget(self.kcountBinEdit)
 		self.left_panel_centre_right.addWidget(self.spatialBinText)
 		self.left_panel_centre_right.addWidget(self.spatialBinEdit)
 		self.left_panel_centre_right.addWidget(self.reprocess_btn)
@@ -782,6 +795,8 @@ class Window(QWidget):
 		""""""
 		self.par_obj.spatialBin = int(self.spatialBinEdit.value())
 		self.par_obj.m = float(self.mEdit.text())
+		self.par_obj.int_time = int(self.kcountBinEdit.value())
+		
 		
 	def CH0AutoFn(self):
 		"""We change the view of the carpetDisplay to the auto-correlation channel 0. """
@@ -1620,21 +1635,14 @@ class lineEditSp(QLineEdit):
 			self.par_obj.m = float(self.text())
 		
 		if(self.type == 'tgt0' ):
-			
 			self.win_obj.multiSelect.x1[self.TGid] = float(self.text())
-			
-			
-			
-			
-			
+	
 		if(self.type == 'tgt1' ):
 			self.win_obj.multiSelect.x0[self.TGid] = float(self.text())
-		   
-			
-			
-			
+
 		if(self.type == 'name' ):
 			self.obj.name = str(self.text())
+		
 
 		   
 			

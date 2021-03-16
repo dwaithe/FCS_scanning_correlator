@@ -126,18 +126,20 @@ class scanObject():
                 
                     #Calculate number of counts
 
-                    int_time = 50
+                    int_time = self.int_time
                     out = []
-                    for i in range(1,int(np.ceil((inFnCH0.shape[0]/int_time)))):
-                        out.append(np.sum(inFnCH0[int_time*(i-1):int_time*i]))
-
+                    if int_time >1:
+                        for i in range(1,int(np.ceil((inFnCH0.shape[0]/int_time)))):
+                            out.append(np.sum(inFnCH0[int_time*(i-1):int_time*i]))
+                    else:
+                        out = inFnCH0
+                    print('int_time',int_time)
                     raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration (the first moment)
                     var_count = np.var(out) #This is the second moment the variance
 
                     
 
                     #Calculate the number of kcounts / Hz.
-                    print(self.dwell_time)
                     kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
                     kcountCH0.append(kcount/1000)#KHz
 
@@ -196,8 +198,11 @@ class scanObject():
                         signal_to_noiseCH1.append(self.calc_signal_to_noise(inFnCH1,AC1))
                         
                         out = []
-                        for i in range(1,int(np.ceil((inFnCH1.shape[0]/int_time)))):
-                            out.append(np.sum(inFnCH1[int_time*(i-1):int_time*i]))
+                        if int_time >1:
+                            for i in range(1,int(np.ceil((inFnCH1.shape[0]/int_time)))):
+                                out.append(np.sum(inFnCH1[int_time*(i-1):int_time*i]))
+                        else:
+                            out = inFnCH1
 
                         raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration
                         kcount = raw_count/(int_time*self.dwell_time*self.spatialBin)
@@ -247,6 +252,7 @@ class scanObject():
         #self.deltat=float(self.parObj.DeltatEdit.text())
         self.m = self.parObj.m #int(self.parObj.mEdit.text())
         self.spatialBin = self.parObj.spatialBin #int(self.parObj.spatialBinEdit.text())
+        self.int_time = self.parObj.int_time
         #self.photonCountBin = int(self.parObj.photonCountEdit.text())
         
         if self.ext == 'tif' or self.ext == 'tiff':
