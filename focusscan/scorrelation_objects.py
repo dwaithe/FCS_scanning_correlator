@@ -137,6 +137,7 @@ class scanObject():
                     
 
                     #Calculate the number of kcounts / Hz.
+                    print(self.dwell_time)
                     kcount = raw_count/(int_time*self.dwell_time*self.spatialBin) #Hz dwell time is important here, not line time.
                     kcountCH0.append(kcount/1000)#KHz
 
