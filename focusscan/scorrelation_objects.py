@@ -133,7 +133,6 @@ class scanObject():
                             out.append(np.sum(inFnCH0[int_time*(i-1):int_time*i]))
                     else:
                         out = inFnCH0
-                    print('int_time',int_time)
                     raw_count = np.average(out) #This is the unnormalised intensity count for int_time duration (the first moment)
                     var_count = np.var(out) #This is the second moment the variance
 
@@ -254,7 +253,38 @@ class scanObject():
         self.spatialBin = self.parObj.spatialBin #int(self.parObj.spatialBinEdit.text())
         self.int_time = self.parObj.int_time
         #self.photonCountBin = int(self.parObj.photonCountEdit.text())
-        
+        if self.ext == 'czi':
+            self.dimSize = self.imDataStore.shape
+
+            self.name = str(self.filepath).split('/')[-1]
+            self.deltat = self.imDataDesc[0]
+            self.dwell_time = self.imDataDesc[1]
+            self.numOfCH = 1
+            temp = np.array(self.imDataStore).astype(np.float64)
+            if temp.shape.__len__() == 7:
+                self.CH0 = temp.reshape(temp.shape[1],temp.shape[5])
+            else:
+                print('shape',temp.shape,temp.shape.__len__())
+                print('unrecognised czi file shape. Please send file to Dominic.')
+
+            if self.cmin == None:
+                self.cmin = 0
+            if self.cmax == None:
+                self.cmax = self.CH0.shape[1]
+            
+            
+            
+            if self.end_pt != 0 and self.numOfCH == 1:
+                self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                
+            if self.end_pt != 0 and self.numOfCH == 2:
+                self.CH0 = np.array(self.CH0[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+                self.CH1 = np.array(self.CH1[self.start_pt:self.end_pt,self.cmin:self.cmax]).astype(np.float64)
+            
+
+            self.CH0_pc = np.zeros((self.CH0.shape))
+            if self.numOfCH == 2:
+                self.CH1_pc = np.zeros((self.CH1.shape))
         if self.ext == 'tif' or self.ext == 'tiff':
             
             self.dimSize = self.imDataStore.shape

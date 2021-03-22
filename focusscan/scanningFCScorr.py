@@ -22,7 +22,7 @@ from matplotlib.widgets import  SpanSelector
 import matplotlib.cm as cm
 
 sys.path.append('../../FCS_point/FCS_point_correlator/focuspoint')
-from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr
+from simport_methods import Import_lif, Import_tiff, Import_lsm, Import_msr, Import_czi
 from splugin_methods import bleachCorr, cropDataWindow, bleachCorr2, bleachCorr3, SpotSizeCalculation
 from scorrelation_objects import scanObject
 from focuspoint.correlation_objects import corrObject
@@ -162,8 +162,8 @@ class FileDialog(QMainWindow):
 		self.file_dialog = FileDialog_2(self)
 		self.file_dialog.setDirectory(str(self.loadpath))
 		#self.file_dialog.setOption(QFileDialog.DontUseNativeDialog,on=True)
-		self.file_dialog.setNameFilters(["lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm)", "All Files (*.*)"])
-		self.file_dialog.selectNameFilter("lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm)")
+		self.file_dialog.setNameFilters(["czi lif msr tif and lsm files (*.czi *.lif *.msr *.tif *.tiff *.lsm)", "All Files (*.*)"])
+		self.file_dialog.selectNameFilter("czi lif msr tif and lsm files (*.czi *.lif *.msr *.tif *.tiff *.lsm)")
 		
 		#self.file_list = dialog.open(self, 'Open a data file',self.loadpath, 'lif msr tif and lsm files (*.lif *.msr *.tif *.tiff *.lsm);;All Files (*.*)')
 		self.file_dialog.show()
@@ -211,14 +211,17 @@ class FileDialog(QMainWindow):
 				imLif = Import_lif(self.filename,self.par_obj,self.win_obj)
 				self.imLif_Arr.append(imLif)
 
-			if self.fileExt == 'msr':
+			elif self.fileExt == 'msr':
 				self.imMsr = Import_msr(self.filename,self.par_obj,self.win_obj)
-			if self.fileExt == 'tif' or self.fileExt == 'tiff':
+			elif self.fileExt == 'tif' or self.fileExt == 'tiff':
 				imTif = Import_tiff(self.filename,self.par_obj,self.win_obj)
 				#self.par_obj.objectRef[-1].cb.setChecked(True)
-			if self.fileExt == 'lsm':
+			elif self.fileExt == 'lsm':
 				imTif = Import_lsm(self.filename,self.par_obj,self.win_obj)
-			
+			elif self.fileExt == 'czi':
+				imTif = Import_czi(self.filename,self.par_obj,self.win_obj)
+			else:
+				print(self.fileExt, ' is not a recognised file extension.')
 			
 			
 
@@ -2077,7 +2080,7 @@ def start_gui():
 	win_tab.addTab(fit_obj, "FCS Function Fitting")
 	win_tab.setTabToolTip(0,"test1")
 	win_tab.setTabToolTip(1,"test2")
-	win_tab.resize(1400,800)
+	win_tab.resize(1400,1000)
 
 	def closeEvent(event):
 		try:

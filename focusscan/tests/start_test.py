@@ -32,7 +32,7 @@ def test_import_scripts():
 	res5 = test_scan_PB1_buttons(par_obj,win_obj)
 	res5 = test_scan_PB2_buttons(par_obj,win_obj)
 	win_tab.setCurrentIndex(1)
-	res6 = test_for_fit_btns(par_obj,win_obj,fit_obj)
+	#res6 = test_for_fit_btns(par_obj,win_obj,fit_obj)
 
 	win_tab.show()
 	sys.exit(app.exec_())

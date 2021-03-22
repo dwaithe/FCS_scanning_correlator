@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QDialog
 import warnings
 import numpy as np
 import tifffile as tif_fn
+import czifile as czi_fn
 import zlib
 import platform
 import time
@@ -15,6 +16,8 @@ class dialog_import(QDialog):
 			QDialog.__init__(self)
 			self.win_obj = win_obj
 			self.par_obj = par_obj
+			self.suggest_pixel_time = ""
+			self.suggest_line_time = ""
 		def create_main_frame(self):
 			#Creates window with the data files which need loading.        
 			self.main_dialog_win = QDialog(self)     
@@ -86,7 +89,7 @@ class dialog_import(QDialog):
 				self.next_index(0)
 				
 				
-		def create_line_sampling(self,suggest_line_time):        
+		def create_line_sampling(self,suggest_line_time=""):        
 			self.line_sampling_win = QDialog(self.win_obj)     
 			
 			
@@ -119,7 +122,7 @@ class dialog_import(QDialog):
 			self.cancel.clicked.connect(self.cancel1)
 			self.ok.clicked.connect(self.ok_fun_1)
 			self.line_sampling_win.show()
-		def create_pixel_dwell(self):        
+		def create_pixel_dwell(self,suggest_pixel_time=''):        
 			self.dialog_dwell_win = QDialog(self.win_obj)     
 			
 			self.dialog_dwell_win.setWindowTitle('File: '+self.stack_ind['title']+' '+self.stack_ind['name'])
@@ -130,7 +133,7 @@ class dialog_import(QDialog):
 			
 			
 			self.label = QtWidgets.QLabel('Enter the pixel dwell time (us):')	
-			self.input_text = QtWidgets.QLineEdit('')	
+			self.input_text = QtWidgets.QLineEdit(str(suggest_pixel_time))	
 			self.cancel = QtWidgets.QPushButton('Cancel')
 			self.ok = QtWidgets.QPushButton('Ok')
 			hbox1.addLayout(vbox1)
@@ -184,7 +187,7 @@ class dialog_import(QDialog):
 			self.text_1 = self.input_text.text()
 			self.ok_1 = True
 			self.line_sampling_win.close()
-			self.create_pixel_dwell()
+			self.create_pixel_dwell(self.suggest_pixel_time)
 			
 		def cancel1(self):
 			self.text_1 = []
@@ -260,7 +263,79 @@ def Import_tiff(filename,par_obj,win_obj):
 		win_obj.diag.ok_1 = True
 		win_obj.diag.ok_2 = True
 		win_obj.diag.import_data_fn(win_obj.diag)
+def Import_czi(filename,par_obj,win_obj):
+	
+	win_obj.diag = dialog_import(par_obj,win_obj)
+	def import_data_fn(self):
+		deltat= 1000/float(self.text_1)
+		data_array = czi_fn.imread(str(filename))
+		scanObject(filename,par_obj,[deltat,float(self.text_2)/1000000],data_array,0,0);
+		win_obj.bleachCorr1 = False
+		win_obj.bleachCorr2 = False
+		win_obj.DeltatEdit.setText(str(deltat));
+		win_obj.label.generateList()
+		
+		self.win_obj.image_status_text.showMessage("Correlating carpet: File " +str(self.win_obj.file_import.file_index+1)+' of '+str(self.win_obj.file_import.file_list.__len__()))
+		self.win_obj.app.processEvents()
 
+		if win_obj.last_in_list == False:
+			print( 'moving to next file')
+			win_obj.file_import.load_next_file()
+		else:
+			print ('finished with all files')
+			win_obj.file_import.post_initial_import()
+
+
+
+
+	win_obj.diag.import_data_fn = import_data_fn
+	#There is only carpet in each file.
+	
+
+	czifile = czi_fn.CziFile(str(filename))
+
+	
+
+	filename.replace('\\', '/')
+
+	xml = czifile.metadata()
+	root = ET.XML(xml)
+
+	suggest_line_time = "0.0"
+
+
+	for neighbor in root:
+	    #print(neighbor)
+	    for element in neighbor.iter():
+	        
+	        
+	        if element.tag == "PixelTime":
+	            suggest_pixel_time = np.round(float(element.text)*1e6,8)
+	        if element.tag == "LineTime":
+	            suggest_line_time = np.round(1./float(element.text),8)
+	
+	
+	name = str(filename).split('/')[-1]
+	
+	win_obj.diag.stack_ind = {}
+	win_obj.diag.stack_ind['title'] = name
+	win_obj.diag.stack_ind['name'] =""
+	win_obj.diag.czifile = czifile
+	
+	win_obj.last_in_file = False
+	if win_obj.last_in_list == True:
+			win_obj.last_in_file = True
+	if win_obj.yes_to_all == None:
+					
+		win_obj.diag.suggest_pixel_time	= suggest_pixel_time		
+		win_obj.diag.create_line_sampling(suggest_line_time)
+	else: 
+		
+		win_obj.diag.text_1 = win_obj.diag.win_obj.text_1
+		win_obj.diag.text_2 = win_obj.diag.win_obj.text_2
+		win_obj.diag.ok_1 = True
+		win_obj.diag.ok_2 = True
+		win_obj.diag.import_data_fn(win_obj.diag)
 	
 		
 def Import_lsm(filename,par_obj,win_obj):
