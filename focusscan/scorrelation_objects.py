@@ -255,14 +255,22 @@ class scanObject():
         #self.photonCountBin = int(self.parObj.photonCountEdit.text())
         if self.ext == 'czi':
             self.dimSize = self.imDataStore.shape
-
+            
             self.name = str(self.filepath).split('/')[-1]
             self.deltat = self.imDataDesc[0]
             self.dwell_time = self.imDataDesc[1]
-            self.numOfCH = 1
+            self.numOfCH = self.dimSize[2]
             temp = np.array(self.imDataStore).astype(np.float64)
             if temp.shape.__len__() == 7:
-                self.CH0 = temp.reshape(temp.shape[1],temp.shape[5])
+                if self.numOfCH == 1:
+                    self.CH0 = temp.reshape(temp.shape[1],temp.shape[5])
+                elif self.numOfCH == 2:
+                    self.CH0 = temp[:,:,0,:,:,:,:].reshape(temp.shape[1],temp.shape[5])
+                    self.CH1 = temp[:,:,1,:,:,:,:].reshape(temp.shape[1],temp.shape[5])
+                else:
+                    print('shape',temp.shape,temp.shape.__len__())
+                    print('unrecognised czi file shape. Please send file to Dominic.')
+
             else:
                 print('shape',temp.shape,temp.shape.__len__())
                 print('unrecognised czi file shape. Please send file to Dominic.')
