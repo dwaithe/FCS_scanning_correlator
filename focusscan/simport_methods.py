@@ -564,13 +564,21 @@ def Import_msr(fname, par_obj,win_obj):
 			#print 'end'
 			left_over = f.read()
 
-	#Establish whether the imagefile is a time-series. 
+	#Establish whether the imagefile is a time-series. å
 	for subindex in stack_holder:
-		meta_info =  ET.XML(stack_holder[subindex]['meta'])
 		stack_holder[subindex]['timeseries'] = False
-		for d in meta_info.findall(".//item"):
-			if d.text == 'ExpControl T':
-				stack_holder[subindex]['timeseries'] = True
+		if stack_holder[subindex]['meta'].__len__() != 0:
+			meta_info =  ET.XML(stack_holder[subindex]['meta'])
+
+			
+			for d in meta_info.findall(".//item"):
+				if d.text == 'ExpControl T':
+					stack_holder[subindex]['timeseries'] = True
+		else:
+			#If there is no meta data, only one file, and so should just work, without further organisation.
+			stack_holder[subindex]['timeseries'] = True
+		
+
 				
 			
 	
