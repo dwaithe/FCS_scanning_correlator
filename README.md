@@ -37,13 +37,21 @@ This repository is kept so that FoCuS-scan continues to run on current versions 
 
 ### Installation
 
-FoCuS-scan needs Python 3.9 or newer (tested with Python 3.11 and 3.13). It uses the fitting window of [FoCuS-point](https://github.com/dwaithe/FCS_point_correlator), which is installed with the other requirements:
+FoCuS-scan needs Python 3.9 or newer (tested with Python 3.11 and 3.13). It uses the fitting window of [FoCuS-point](https://github.com/dwaithe/FCS_point_correlator), which is installed with the other requirements.
+
+It is best installed in its own virtual environment, so that it does not change the packages other software relies on (FoCuS-scan needs NumPy 2, for example, which some older packages cannot use). In a terminal, from a copy of this repository:
 
 ```
+python3 -m venv focus-env
+source focus-env/bin/activate        # Windows: focus-env\Scripts\activate
 pip install -r requirements.txt
 cd focusscan
 python scanningFCScorr.py
 ```
+
+The next time, activate the environment again (`source focus-env/bin/activate`) and run the last two lines.
+
+**Troubleshooting.** `ValueError: numpy.dtype size changed, may indicate binary incompatibility` means a package built for NumPy 1 (often pandas, which lmfit uses if it is present) was found alongside NumPy 2: install FoCuS-scan in a new virtual environment as above. An error that mentions `focuspoint-0.1` or `QtWebEngineWidgets` comes from an old installation of FoCuS-point in that Python; remove it with `pip uninstall focuspoint`, or use a new virtual environment.
 
 ### Updates for current Python (2026)
 
