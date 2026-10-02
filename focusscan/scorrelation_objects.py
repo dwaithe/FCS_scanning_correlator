@@ -3,7 +3,7 @@ import numpy as np
 import _pickle as pickle
 from scorrelation_methods import *
 import csv
-from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
+from lmfit import minimize, Parameters,report_fit, fit_report
 from focuspoint.fitting_methods.fitting_methods_SE import equation_
 import time
 import copy
@@ -526,11 +526,11 @@ class scanObject():
         #Find the length of the generated correlation function.
         
         k = int(np.floor(np.log2(self.num_of_lines/self.m)))
-        self.lenG = np.int(np.floor(self.m + k*self.m/2))
+        self.lenG = int(np.floor(self.m + k*self.m/2))
         mar = int((self.spatialBin-1)/2)
 
 
-        AC_all_CH0 = np.zeros((np.int(np.floor(self.m + k*self.m/2)),int(self.CH0.shape[1]-(2*mar)),int(1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines)))
+        AC_all_CH0 = np.zeros((int(np.floor(self.m + k*self.m/2)),int(self.CH0.shape[1]-(2*mar)),int(1+np.ceil(self.CH0.shape[0]-self.num_of_lines)/self.num_of_lines)))
         if self.numOfCH==2:
             AC_all_CH1  = np.zeros((AC_all_CH0.shape))
             CC_all_CH01 = np.zeros((AC_all_CH0.shape))

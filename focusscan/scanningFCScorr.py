@@ -849,7 +849,7 @@ class Window(QWidget):
 
 				metadata = json.dumps(metadata)
 
-				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'.tif', self.carpet_img.astype(np.float32), description=metadata)
+				tif_fn.imwrite(self.folderOutput.filepath+'/'+objId.name+'.tif', self.carpet_img.astype(np.float32), description=metadata)
 	def save_raw_carpet_fn(self):
 		"""Saves the carpet raw data to an image file"""
 		for objId in self.par_obj.objectRef:
@@ -874,7 +874,7 @@ class Window(QWidget):
 
 				metadata = json.dumps(metadata)
 
-				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'_raw.tif', export_im.astype(np.float32), description=metadata)
+				tif_fn.imwrite(self.folderOutput.filepath+'/'+objId.name+'_raw.tif', export_im.astype(np.float32), description=metadata)
 
 	def save_carpets(self):
 		"""Saves the carpet raw data to an image file"""
@@ -916,7 +916,7 @@ class Window(QWidget):
 
 				metadata = json.dumps(metadata)
 
-				tif_fn.imsave(self.folderOutput.filepath+'/'+objId.name+'.tif', export_im.astype(np.float32), description=metadata)
+				tif_fn.imwrite(self.folderOutput.filepath+'/'+objId.name+'.tif', export_im.astype(np.float32), description=metadata)
 
 	def save_figure(self):
 		for objId in self.par_obj.objectRef:
@@ -1101,7 +1101,7 @@ class Window(QWidget):
 		
 
 		#The span function which changes the carpet visualisation.
-		self.span1 = SpanSelector(self.plt1, self.setCarpetExposure, 'horizontal', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )		
+		self.span1 = SpanSelector(self.plt1, self.setCarpetExposure, 'horizontal', useblit=True, minspan =0, props=dict(edgecolor='black',alpha=1.0, facecolor='None') )		
 		
 		yLimMn = int((objId.pane)*(objId.CH0.shape[1]/64)*150)
 		yLimMx = int((objId.pane+1)*(objId.CH0.shape[1]/64)*150)
@@ -1184,7 +1184,7 @@ class Window(QWidget):
 		#print 'mesh',img.shape[1]
 		#print 'carp',self.carpet_img.shape
 		X, Y = np.meshgrid(np.arange(0,img.shape[1]+1),carp_scale)
-		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img,cmap='jet')
+		self.corr_carpet = self.plt2.pcolormesh(Y,X,self.carpet_img[:Y.shape[0]-1,:Y.shape[1]-1],cmap='jet') # trimmed to the grid, as matplotlib < 3.3 did
 		self.plt2.set_xlim(0,objId.corrArrScale[-1])
 
 		#Plot the interpolation iensity profile to the left.
@@ -1205,7 +1205,7 @@ class Window(QWidget):
 		colbar = self.figure1.colorbar(self.corr_carpet, cax=self.plt6)
 		colbar.set_label('Scale (norm. to pix max)')
 		
-		self.span2 = SpanSelector(self.plt2, self.onselect, 'vertical', useblit=True, minspan =0, rectprops=dict(edgecolor='black',alpha=1.0, facecolor='None') )
+		self.span2 = SpanSelector(self.plt2, self.onselect, 'vertical', useblit=True, minspan =0, props=dict(edgecolor='black',alpha=1.0, facecolor='None') )
 		if self.clickedS1 and self.clickedS2 != None:
 			self.onselect(self.clickedS1, self.clickedS2)
 			self.plt2.set_ylim([0,img.shape[1]])
