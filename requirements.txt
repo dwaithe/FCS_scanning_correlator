@@ -1,0 +1,11 @@
+# FoCuS-scan runs on Python 3.9 or newer (tested with Python 3.13).
+# FoCuS-scan uses the fitting window of FoCuS-point, so FoCuS-point is installed too.
+focuspoint @ git+https://github.com/dwaithe/FCS_point_correlator.git
+numpy
+scipy
+matplotlib>=3.5
+lmfit
+PyQt5
+pyperclip
+tifffile
+czifile

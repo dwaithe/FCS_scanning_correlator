@@ -149,7 +149,7 @@ def autocorrelate(a, m=16, deltat=1, normalize=False,
     # In the base2 multiple-tau scheme, the length of the correlation
     # array is (only taking into account values that are computed from
     # traces that are just larger than m):  
-    lenG = np.int(np.floor(m + k*m/2))
+    lenG = int(np.floor(m + k*m/2))
 
     G = np.zeros((lenG, 2), dtype=dtype)
 
@@ -359,7 +359,7 @@ def correlate(a, v, m=16, deltat=1, normalize=False,
     # In the base2 multiple-tau scheme, the length of the correlation
     # array is (only taking into account values that are computed from
     # traces that are just larger than m):   
-    lenG = np.int(np.floor(m + k*m/2))
+    lenG = int(np.floor(m + k*m/2))
         
     G = np.zeros((lenG, 2), dtype=dtype)
     normstat = np.zeros(lenG, dtype=dtype)

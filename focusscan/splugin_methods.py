@@ -4,11 +4,11 @@ import matplotlib
 
 import matplotlib.pyplot as plt
 import matplotlib.lines as lines
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import numpy as np
-from lmfit import minimize, Parameters,report_fit,report_errors, fit_report
+from lmfit import minimize, Parameters,report_fit, fit_report
 from matplotlib.patches import Rectangle
 from matplotlib.font_manager import FontProperties
 from matplotlib.widgets import Slider, SpanSelector
@@ -205,7 +205,7 @@ class bleachCorr2(QMainWindow):
         
         X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),carp_scale)
         
-        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img[:Y.shape[0]-1,:Y.shape[1]-1],cmap='jet') # trimmed to the grid, as matplotlib < 3.3 did
         self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
         self.canvas1.draw()
 
@@ -263,7 +263,7 @@ class bleachCorr2(QMainWindow):
 
             k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
 
-            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+            lenG = int(np.floor(self.objId.m + k*self.objId.m/2))
 
             out_all = np.zeros((lenG,int(1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines))))
             c = 0
@@ -322,7 +322,7 @@ class bleachCorr2(QMainWindow):
                 num_of_lines -= 1
 
             k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
-            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+            lenG = int(np.floor(self.objId.m + k*self.objId.m/2))
 
             mar = int((self.objId.spatialBin-1)/2)
             
@@ -446,7 +446,7 @@ class bleachCorr2(QMainWindow):
         
         X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale_pc)
         
-        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img[:Y.shape[0]-1,:Y.shape[1]-1],cmap='jet') # trimmed to the grid, as matplotlib < 3.3 did
         self.plt3.set_xlim(0,self.objId.corrArrScale[-1])
         self.plotData()
         self.canvas1.draw()
@@ -661,7 +661,7 @@ class bleachCorr3(QMainWindow):
         
         X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale)
         
-        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img[:Y.shape[0]-1,:Y.shape[1]-1],cmap='jet') # trimmed to the grid, as matplotlib < 3.3 did
         self.canvas1.draw()
         
 
@@ -720,7 +720,7 @@ class bleachCorr3(QMainWindow):
 
             k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
 
-            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+            lenG = int(np.floor(self.objId.m + k*self.objId.m/2))
 
             out_all = np.zeros((lenG,1+np.ceil((FT.__len__()-num_of_lines)/num_of_lines)))
             c = 0
@@ -774,7 +774,7 @@ class bleachCorr3(QMainWindow):
                 num_of_lines -= 1
 
             k = int(np.floor(np.log2(num_of_lines/self.objId.m)))
-            lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+            lenG = int(np.floor(self.objId.m + k*self.objId.m/2))
 
             mar = int((self.objId.spatialBin-1)/2)
             
@@ -885,7 +885,7 @@ class bleachCorr3(QMainWindow):
             
         X, Y = np.meshgrid(np.arange(0,self.win_obj.carpet_img.shape[1]+1),self.objId.corrArrScale)
         
-        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img,cmap='jet')
+        self.plt3.pcolormesh(Y,X,self.win_obj.carpet_img[:Y.shape[0]-1,:Y.shape[1]-1],cmap='jet') # trimmed to the grid, as matplotlib < 3.3 did
         self.plotData()
         self.canvas1.draw()
 
@@ -1020,9 +1020,9 @@ class cropDataWindow(QMainWindow):
 
         #Set limits on the spinboxes
         self.start_pt_sp.setMinimum(0)
-        self.start_pt_sp.setMaximum(np.round(self.objId.num_of_lines*self.objId.deltat,0))
+        self.start_pt_sp.setMaximum(int(np.round(self.objId.num_of_lines*self.objId.deltat,0)))
         self.end_pt_sp.setMinimum(0)
-        self.end_pt_sp.setMaximum(np.round(self.objId.num_of_lines*self.objId.deltat,0))
+        self.end_pt_sp.setMaximum(int(np.round(self.objId.num_of_lines*self.objId.deltat,0)))
         self.interval_pt_sp.setMinimum(1)
         self.interval_pt_sp.setMaximum(20)
 
@@ -1031,8 +1031,8 @@ class cropDataWindow(QMainWindow):
         self.end_col_sp.setMinimum(0)
         self.end_col_sp.setMaximum(self.objId.CH0.shape[1])
         
-        self.start_pt_sp.setValue(self.start_pt)
-        self.end_pt_sp.setValue(self.end_pt)
+        self.start_pt_sp.setValue(int(self.start_pt))
+        self.end_pt_sp.setValue(int(self.end_pt))
         self.interval_pt_sp.setValue(1)
         if self.win_obj.clickedS1 != None and self.win_obj.clickedS2 != None:
             self.start_col_sp.setValue(self.win_obj.clickedS1)
@@ -1139,7 +1139,7 @@ class cropDataWindow(QMainWindow):
             XTcarpet[:,:,1]=np.flipud(self.objId.CH1[yLimMn:yLimMx,:].T)
         
 
-        self.span1 = SpanSelector(self.plt2, self.set_column_pixels, 'vertical', useblit=True, span_stays=True,minspan =0, rectprops=dict(edgecolor='red',alpha=1.0, facecolor='None') )        
+        self.span1 = SpanSelector(self.plt2, self.set_column_pixels, 'vertical', useblit=True, interactive=True,minspan =0, props=dict(edgecolor='red',alpha=1.0, facecolor='None') )        
         
 
         self.plt2.imshow(((XTcarpet.astype(np.float64))/np.max(XTcarpet.astype(np.float64))),interpolation = 'nearest',extent=[yLimMn,yLimMx,0,self.objId.CH0.shape[1]])
@@ -1701,7 +1701,7 @@ class SpotSizeCalculation(QMainWindow):
 
         #Find the length of the generated correlation function.
         k = int(np.floor(np.log2(self.num_of_lines/self.objId.m)))
-        self.lenG = np.int(np.floor(self.objId.m + k*self.objId.m/2))
+        self.lenG = int(np.floor(self.objId.m + k*self.objId.m/2))
         mar = int((self.objId.spatialBin-1)/2)
 
         #self.lenG = 104

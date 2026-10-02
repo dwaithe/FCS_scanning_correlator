@@ -28,22 +28,25 @@ class dialog_import(QDialog):
 			vbox1 = QtWidgets.QVBoxLayout()
 			
 			c =0 
+			# One namespace shared by the exec calls below: from Python 3.13 each
+			# locals() call is a fresh snapshot, so names made by one exec are lost.
+			ns = locals()
 			for subindex in self.stack_holder:
 				
 				if self.stack_holder[subindex]['timeseries'] == True and self.stack_holder[subindex]['size'][1] > 500:
 					
 					c = c+1
-					exec("subhbox"+str(c)+" = QtWidgets.QHBoxLayout()")
+					exec("subhbox"+str(c)+" = QtWidgets.QHBoxLayout()", globals(), ns)
 				
-					exec("self.main_dialog_win.check"+str(c)+" = QtWidgets.QCheckBox()");
+					exec("self.main_dialog_win.check"+str(c)+" = QtWidgets.QCheckBox()", globals(), ns);
 					
-					exec("self.main_dialog_win.label"+str(c)+" = QtWidgets.QLabel()");
-					exec("self.main_dialog_win.label"+str(c)+".setText(\""+str(self.stack_holder[subindex]['name'])+"\")")
+					exec("self.main_dialog_win.label"+str(c)+" = QtWidgets.QLabel()", globals(), ns);
+					exec("self.main_dialog_win.label"+str(c)+".setText(\""+str(self.stack_holder[subindex]['name'])+"\")", globals(), ns)
 					
-					exec("subhbox"+str(c)+".addWidget(self.main_dialog_win.check"+str(c)+")");
-					exec("subhbox"+str(c)+".addWidget(self.main_dialog_win.label"+str(c)+")");
-					exec("subhbox"+str(c)+".addStretch(1)");
-					exec("vbox1.addLayout(subhbox"+str(c)+")");
+					exec("subhbox"+str(c)+".addWidget(self.main_dialog_win.check"+str(c)+")", globals(), ns);
+					exec("subhbox"+str(c)+".addWidget(self.main_dialog_win.label"+str(c)+")", globals(), ns);
+					exec("subhbox"+str(c)+".addStretch(1)", globals(), ns);
+					exec("vbox1.addLayout(subhbox"+str(c)+")", globals(), ns);
 				
 				
 			self.main_dialog_win.button = QtWidgets.QPushButton('load Images')
@@ -268,7 +271,11 @@ def Import_czi(filename,par_obj,win_obj):
 	win_obj.diag = dialog_import(par_obj,win_obj)
 	def import_data_fn(self):
 		deltat= 1000/float(self.text_1)
-		data_array = czi_fn.imread(str(filename))
+		try:
+			#Newer czifile versions squeeze unit axes by default; keep the full layout.
+			data_array = czi_fn.imread(str(filename), squeeze=False)
+		except TypeError:
+			data_array = czi_fn.imread(str(filename))
 		scanObject(filename,par_obj,[deltat,float(self.text_2)/1000000],data_array,0,0);
 		win_obj.bleachCorr1 = False
 		win_obj.bleachCorr2 = False
@@ -374,12 +381,16 @@ def Import_lsm(filename,par_obj,win_obj):
 	filename.replace('\\', '/')
 	
 	try:
-		for page in lsm:
-			
-			suggest_line_time = 1.0/float(page.tags['cz_lsm_info'].value[23])#lineTime.
-			break;
+		#Newer tifffile versions give the CZ_LSMINFO structure as a dict.
+		suggest_line_time = 1.0/float(lsm.lsm_metadata['TimeIntervall'])#lineTime.
 	except:
-		suggest_line_time = "0.0"
+		try:
+			for page in lsm:
+
+				suggest_line_time = 1.0/float(page.tags['cz_lsm_info'].value[23])#lineTime.
+				break;
+		except:
+			suggest_line_time = "0.0"
 	name = str(filename).split('/')[-1]
 	
 	win_obj.diag.stack_ind = {}
